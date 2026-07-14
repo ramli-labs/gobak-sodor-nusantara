@@ -9,6 +9,7 @@
 export const PROFILE_KEY = "gsnLearningProfileV1";
 export const QUESTION_SETS_KEY = "gsnQuestionSetsV1";
 export const ACTIVE_QUESTION_SET_KEY = "gsnActiveQuestionSetV1";
+export const CAMPAIGN_QUESTION_HISTORY_KEY = "gsnCampaignQuestionHistoryV1";
 export const CATEGORIES = ["Informatika", "IPS", "IPA", "Matematika", "Bahasa Indonesia"];
 
 function emptyCategoryStats() {
@@ -27,15 +28,21 @@ function getStorage() {
   return typeof window !== "undefined" ? window.localStorage : null;
 }
 
+function getSessionStorage() {
+  return typeof window !== "undefined" ? window.sessionStorage : null;
+}
+
 export class QuizSystem {
-  constructor({ source = "data/questions.json", storage = getStorage() } = {}) {
+  constructor({ source = "data/questions.json", storage = getStorage(), sessionStorage = getSessionStorage() } = {}) {
     this.source = source;
     this.storage = storage;
+    this.sessionStorage = sessionStorage;
     this.baseQuestions = [];
     this.questions = [];
     this.questionSets = [];
     this.activeSetId = "default";
     this.usedQuestionIds = new Set();
+    this.questionCycle = 1;
     this.sessionStats = emptyCategoryStats();
     this.profile = this.loadProfile();
     this.currentQuestion = null;
@@ -107,7 +114,8 @@ export class QuizSystem {
     const selected = this.questionSets.find((set) => set.id === setId);
     this.activeSetId = selected ? selected.id : "default";
     this.questions = selected ? selected.questions.map((question) => ({ ...question })) : [...this.baseQuestions];
-    this.resetSession();
+    this.usedQuestionIds = this.loadCampaignQuestionHistory(this.activeSetId);
+    this.resetSession({ preserveUsed: true });
     if (persist && this.storage) this.storage.setItem(ACTIVE_QUESTION_SET_KEY, this.activeSetId);
     return this.getActiveSetInfo();
   }
@@ -116,10 +124,34 @@ export class QuizSystem {
     return this.getAvailableSets().find((set) => set.id === this.activeSetId) ?? this.getAvailableSets()[0];
   }
 
-  resetSession() {
-    this.usedQuestionIds.clear();
+  loadCampaignQuestionHistory(setId = this.activeSetId) {
+    const stored = safeParse(this.sessionStorage?.getItem(CAMPAIGN_QUESTION_HISTORY_KEY), {});
+    const validIds = new Set(this.questions.map((question) => question.id));
+    const used = Array.isArray(stored[setId]) ? stored[setId] : [];
+    return new Set(used.filter((id) => validIds.has(id)));
+  }
+
+  saveCampaignQuestionHistory() {
+    if (!this.sessionStorage) return;
+    const stored = safeParse(this.sessionStorage.getItem(CAMPAIGN_QUESTION_HISTORY_KEY), {});
+    stored[this.activeSetId] = [...this.usedQuestionIds];
+    this.sessionStorage.setItem(CAMPAIGN_QUESTION_HISTORY_KEY, JSON.stringify(stored));
+  }
+
+  resetSession({ preserveUsed = true } = {}) {
+    if (!preserveUsed) {
+      this.usedQuestionIds.clear();
+      this.questionCycle = 1;
+      this.saveCampaignQuestionHistory();
+    }
     this.sessionStats = emptyCategoryStats();
     this.currentQuestion = null;
+  }
+
+  getQuestionPoolStatus() {
+    const total = this.questions.length;
+    const used = Math.min(this.usedQuestionIds.size, total);
+    return { total, used, remaining: Math.max(0, total - used), cycle: this.questionCycle };
   }
 
   loadProfile() {
@@ -165,7 +197,10 @@ export class QuizSystem {
 
     let available = this.questions.filter((question) => !this.usedQuestionIds.has(question.id));
     if (!available.length) {
+      // Pengulangan baru diizinkan setelah seluruh soal dalam set pernah muncul.
       this.usedQuestionIds.clear();
+      this.questionCycle += 1;
+      this.saveCampaignQuestionHistory();
       available = [...this.questions];
     }
 
@@ -175,6 +210,7 @@ export class QuizSystem {
     const question = categoryQuestions[Math.floor(Math.random() * categoryQuestions.length)];
 
     this.usedQuestionIds.add(question.id);
+    this.saveCampaignQuestionHistory();
     this.currentQuestion = question;
     return question;
   }

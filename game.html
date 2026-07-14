@@ -66,7 +66,7 @@
     <div class="container">
       <div class="game-setup reveal">
         <div class="game-mode-summary">
-          <div><span class="badge" data-mode-badge><i class="fa-solid fa-user"></i> Mode Solo</span><h2 data-game-title>Gobak Sodor · Jawa</h2><p data-game-description>3 nyawa · 90 detik · 3 checkpoint soal adaptif</p></div>
+          <div><span class="badge" data-mode-badge><i class="fa-solid fa-user"></i> Mode Solo</span><h2 data-game-title>Gobak Sodor · Jawa</h2><p data-game-description>3 nyawa · 90 detik · 6 soal adaptif (3 pergi + 3 pulang)</p></div>
           <div class="game-mode-actions">
             <button class="btn btn-blue" type="button" data-start-solo><i class="fa-solid fa-user"></i> Mulai Solo</button>
             <button class="btn btn-success" type="button" data-start-coop><i class="fa-solid fa-user-group"></i> Mulai Co-op</button>
@@ -75,15 +75,25 @@
         <div class="question-set-picker">
           <label for="questionSet"><i class="fa-solid fa-layer-group"></i> Set soal ronde</label>
           <select id="questionSet" data-question-set aria-describedby="question-set-help"><option>Memuat bank soal...</option></select>
-          <small id="question-set-help">Set buatan guru dari perangkat ini akan muncul otomatis.</small>
+          <small id="question-set-help">Soal yang sudah muncul tidak akan diulang pada pulau berikutnya selama perjalanan ini.</small>
         </div>
+      </div>
+
+
+      <div class="score-rules reveal" aria-label="Informasi nyawa dan perolehan poin">
+        <div class="score-rule score-rule-lives"><i class="fa-solid fa-heart"></i><span>Nyawa awal</span><strong data-rule-lives>3 nyawa</strong></div>
+        <div class="score-rule positive"><i class="fa-solid fa-circle-check"></i><span>Jawaban benar</span><strong>+100 poin</strong></div>
+        <div class="score-rule negative"><i class="fa-solid fa-circle-xmark"></i><span>Jawaban salah</span><strong>−10 poin</strong></div>
+        <div class="score-rule positive"><i class="fa-solid fa-flag"></i><span>Ambil bendera</span><strong>+250 poin</strong></div>
+        <div class="score-rule negative"><i class="fa-solid fa-person-falling"></i><span>Tertangkap</span><strong>−1 nyawa · −50</strong></div>
+        <div class="score-rule positive"><i class="fa-solid fa-house-flag"></i><span>Kembali ke Start</span><strong>+1.000 + bonus</strong></div>
       </div>
 
       <article class="game-shell reveal" aria-label="Arena permainan Gobak Sodor">
         <div class="game-hud" aria-label="Informasi permainan">
           <div class="hud-item"><span>Waktu</span><strong data-hud-time>01:30</strong></div>
-          <div class="hud-item"><span>Nyawa Tim</span><strong data-hud-lives>❤❤❤</strong></div>
-          <div class="hud-item"><span>Skor</span><strong data-hud-score>0000</strong></div>
+          <div class="hud-item"><span>Nyawa Tim</span><strong data-hud-lives>3 / 3 ♥</strong></div>
+          <div class="hud-item"><span>Skor</span><strong data-hud-score>0 poin</strong></div>
           <div class="hud-item"><span>Combo</span><strong data-hud-combo>x0</strong></div>
           <div class="hud-item"><span>Shield</span><strong data-hud-shield>Nonaktif</strong></div>
           <div class="hud-item"><span>Pulau</span><strong data-hud-level>Jawa</strong></div>
@@ -96,18 +106,19 @@
         </div>
 
         <div class="game-arena" data-game-arena>
+          <div class="score-event" data-score-event aria-live="polite"></div>
           <canvas id="gameCanvas" data-game-canvas tabindex="0" role="img" aria-label="Arena Gobak Sodor. Ambil bendera di kanan lalu kembali ke Start di kiri sambil menghindari penjaga."></canvas>
           <div class="game-overlay show" data-game-overlay aria-hidden="false">
             <div class="game-overlay-card">
               <div class="game-overlay-icon" aria-hidden="true"><i class="fa-solid fa-person-running" data-overlay-icon></i></div>
-              <small data-overlay-eyebrow>Petualangan Jawa</small><h2 data-overlay-title>Siap menembus garis penjaga?</h2><p data-overlay-text>Pilih Solo atau Co-op, ambil bendera, lalu kembali ke START.</p>
+              <small data-overlay-eyebrow>Petualangan Jawa</small><h2 data-overlay-title>Siap menembus garis penjaga?</h2><p data-overlay-text>Jawab soal saat pergi, ambil bendera, lalu jawab lagi saat kembali ke START.</p>
               <div class="game-overlay-actions"><button class="btn btn-primary" type="button" data-overlay-primary>Mulai Solo <i class="fa-solid fa-arrow-right"></i></button><button class="btn btn-secondary" type="button" data-overlay-secondary hidden>Ulangi Ronde</button></div>
             </div>
           </div>
 
           <div class="quiz-layer" data-quiz-layer aria-hidden="true">
             <article class="quiz-card" role="dialog" aria-modal="true" aria-labelledby="quiz-question">
-              <div class="quiz-card-head"><span class="quiz-category" data-quiz-category>Matematika</span><span class="quiz-progress" data-quiz-progress>Checkpoint 1 dari 3</span></div>
+              <div class="quiz-card-head"><span class="quiz-category" data-quiz-category>Matematika</span><span class="quiz-progress" data-quiz-progress>Perjalanan pergi 1/3 · Soal 1/6</span></div>
               <h2 id="quiz-question" data-quiz-question>Soal sedang dimuat...</h2><div class="quiz-choices" data-quiz-choices></div><div class="quiz-feedback" data-quiz-feedback aria-live="polite"></div><button class="btn btn-primary quiz-continue" type="button" data-quiz-continue hidden>Lanjut Bermain <i class="fa-solid fa-arrow-right"></i></button>
             </article>
           </div>
@@ -128,7 +139,7 @@
       </section>
 
       <div class="game-help-grid reveal">
-        <article class="game-help-card"><span class="eyebrow"><i class="fa-solid fa-keyboard"></i> Kontrol</span><h3>Dua pemain, satu keyboard</h3><p><strong>P1:</strong> <span data-p1-controls>W A S D</span> · <strong>P2:</strong> <span data-p2-controls>↑ ← ↓ →</span>. Tekan P atau Escape untuk pause. Kontrol dapat diubah di panel aksesibilitas.</p></article>
+        <article class="game-help-card"><span class="eyebrow"><i class="fa-solid fa-keyboard"></i> Kontrol</span><h3>Dua pemain, satu keyboard</h3><p><strong>P1:</strong> <span data-p1-controls>W A S D</span> · <strong>P2:</strong> <span data-p2-controls>↑ ← ↓ →</span>. Tiga soal muncul saat pergi dan tiga soal baru muncul saat pembawa bendera pulang. Tekan P atau Escape untuk pause.</p></article>
         <article class="game-help-card"><span class="eyebrow"><i class="fa-solid fa-people-arrows-left-right"></i> Strategi Co-op</span><h3>Alihkan penjaga untuk melindungi teman</h3><p>Satu pemain membawa bendera, sementara pemain lain memancing penjaga. Jika pengalih tertangkap, pembawa bendera memperoleh Shield singkat sebagai bonus gotong royong.</p></article>
       </div>
     </div>
@@ -151,10 +162,10 @@
     </div>
   </section>
 
-  <section class="section-sm"><div class="container"><div class="placeholder-panel reveal"><div class="placeholder-icon"><i class="fa-solid fa-rocket"></i></div><span class="badge">Versi final 1.0</span><h2>Tahap 5 selesai: siap dipakai, dipasang, dan dipamerkan</h2><p>Audio prosedural, particle effect, confetti, transisi halaman, PWA, offline mode, dan optimasi lintas-perangkat telah aktif.</p><div class="progress-shell" aria-label="Progres proyek 5 dari 5"><div class="progress-bar stage-progress stage-five"></div></div><p><strong>5 dari 5 tahap selesai</strong></p></div></div></section>
+  <section class="section-sm"><div class="container"><div class="placeholder-panel reveal"><div class="placeholder-icon"><i class="fa-solid fa-rocket"></i></div><span class="badge">Versi 1.1 · Revisi gameplay</span><h2>Perjalanan pergi dan pulang kini sama-sama menantang</h2><p>Enam soal berbeda per ronde, informasi nyawa dan poin yang jelas, serta riwayat soal lintas-pulau telah aktif.</p><div class="progress-shell" aria-label="Progres proyek 5 dari 5"><div class="progress-bar stage-progress stage-five"></div></div><p><strong>5 dari 5 tahap selesai</strong></p></div></div></section>
 </main>
 
-<footer class="site-footer"><div class="container"><div class="footer-grid"><div><a class="brand footer-brand" href="index.html"><span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-person-running"></i></span><span class="brand-text">Gobak Sodor Nusantara<small>Game edukasi budaya Indonesia</small></span></a><p>Budaya, strategi, gotong royong, dan pembelajaran sekolah hadir dalam satu pengalaman interaktif.</p></div><div><h3>Jelajah</h3><div class="footer-links"><a href="game.html">Mulai bermain</a><a href="culture.html">Belajar budaya</a><a href="tutorial.html">Cara bermain</a></div></div><div><h3>Untuk Kelas</h3><div class="footer-links"><a href="teacher.html">Mode Guru</a><a href="leaderboard.html">Leaderboard</a><button class="btn btn-secondary" type="button" data-open-onboarding><i class="fa-solid fa-circle-question"></i> Ulangi panduan</button></div></div></div><div class="footer-bottom"><span>© <span data-current-year></span> Gobak Sodor Nusantara.</span><span>Versi 1.0 — Siap dipasang dan digunakan secara offline.</span></div></div></footer>
+<footer class="site-footer"><div class="container"><div class="footer-grid"><div><a class="brand footer-brand" href="index.html"><span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-person-running"></i></span><span class="brand-text">Gobak Sodor Nusantara<small>Game edukasi budaya Indonesia</small></span></a><p>Budaya, strategi, gotong royong, dan pembelajaran sekolah hadir dalam satu pengalaman interaktif.</p></div><div><h3>Jelajah</h3><div class="footer-links"><a href="game.html">Mulai bermain</a><a href="culture.html">Belajar budaya</a><a href="tutorial.html">Cara bermain</a></div></div><div><h3>Untuk Kelas</h3><div class="footer-links"><a href="teacher.html">Mode Guru</a><a href="leaderboard.html">Leaderboard</a><button class="btn btn-secondary" type="button" data-open-onboarding><i class="fa-solid fa-circle-question"></i> Ulangi panduan</button></div></div></div><div class="footer-bottom"><span>© <span data-current-year></span> Gobak Sodor Nusantara.</span><span>Versi 1.1 — Revisi checkpoint, skor, dan riwayat soal.</span></div></div></footer>
 
 <div class="modal-backdrop" data-onboarding-modal aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="onboarding-title"><article class="onboarding"><button class="icon-button modal-close" type="button" data-onboarding-close aria-label="Tutup panduan"><i class="fa-solid fa-xmark"></i></button><div class="onboarding-progress" aria-hidden="true"><span data-onboarding-progress></span></div><div class="onboarding-body"><div class="onboarding-visual" aria-hidden="true"><i class="fa-solid fa-people-group" data-onboarding-icon></i></div><div class="onboarding-content"><span class="badge"><i class="fa-solid fa-compass"></i> Panduan singkat · <span data-onboarding-step>1 / 3</span></span><h2 id="onboarding-title" data-onboarding-title>Belajar lewat kerja sama</h2><p data-onboarding-description>Gobak Sodor mengajarkan strategi, komunikasi, dan gotong royong.</p></div></div><div class="onboarding-footer"><button class="btn btn-secondary" type="button" data-onboarding-prev hidden><i class="fa-solid fa-arrow-left"></i> Kembali</button><button class="btn btn-primary" type="button" data-onboarding-next>Lanjut <i class="fa-solid fa-arrow-right"></i></button></div></article></div>
 </body>

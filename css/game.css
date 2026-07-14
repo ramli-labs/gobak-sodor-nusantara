@@ -1240,3 +1240,123 @@
     animation: none;
   }
 }
+
+/* Revisi gameplay: informasi skor/nyawa dan umpan balik poin. */
+.score-rules {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.score-rule {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 9px;
+  min-width: 0;
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.score-rule i {
+  grid-row: 1 / 3;
+  width: 26px;
+  text-align: center;
+  color: var(--blue);
+  font-size: 1.05rem;
+}
+
+.score-rule.positive i,
+.score-rule.positive strong {
+  color: var(--green);
+}
+
+.score-rule.negative i,
+.score-rule.negative strong {
+  color: var(--red);
+}
+
+.score-rule-lives i,
+.score-rule-lives strong {
+  color: #e84444;
+}
+
+.score-rule span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.score-rule strong {
+  overflow: hidden;
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score-event {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  z-index: 8;
+  max-width: calc(100% - 30px);
+  padding: 9px 15px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(23, 32, 51, 0.94);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+  font-size: 0.82rem;
+  font-weight: 800;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -14px) scale(0.94);
+  transition: opacity 170ms ease, transform 170ms ease;
+}
+
+.score-event.show {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.score-event.positive {
+  background: rgba(18, 123, 82, 0.96);
+}
+
+.score-event.negative {
+  background: rgba(190, 48, 48, 0.96);
+}
+
+.hud-item [data-hud-score],
+.hud-item [data-hud-lives] {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1050px) {
+  .score-rules {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .score-rules {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .score-rule {
+    padding: 10px;
+  }
+
+  .score-rule strong {
+    font-size: 0.74rem;
+  }
+}

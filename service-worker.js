@@ -1,5 +1,5 @@
 /* Gobak Sodor Nusantara — Service Worker Tahap 5. */
-const VERSION = "gsn-v5.0.0";
+const VERSION = "gsn-v5.1.0";
 const APP_CACHE = `${VERSION}-app`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const OFFLINE_PAGE = "offline.html";

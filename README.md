@@ -1,4 +1,13 @@
-# Gobak Sodor Nusantara — Versi 1.0 (Tahap 5)
+# Gobak Sodor Nusantara — Versi 1.1 (Revisi Gameplay)
+
+## Perubahan versi 1.1
+
+- Checkpoint soal aktif dua arah: 3 soal saat menuju bendera dan 3 soal baru saat kembali ke START.
+- Riwayat soal dipertahankan antar-pulau selama tab permainan masih terbuka, sehingga soal tidak berulang sebelum seluruh bank soal habis.
+- HUD menampilkan nyawa secara numerik dan skor dalam satuan poin.
+- Rincian perolehan serta pengurangan poin ditampilkan sebelum arena.
+- Setiap perubahan skor memunculkan notifikasi singkat di arena.
+
 
 Website game edukasi berbasis **HTML5, CSS3, Vanilla JavaScript ES6, Canvas API, Web Audio API, dan Progressive Web App** tanpa framework atau proses build. Versi ini menyelesaikan seluruh tahap pengembangan dari fondasi hingga versi profesional yang siap dipamerkan dan di-host di GitHub Pages.
 

@@ -17,7 +17,7 @@ const onboardingSlides = [
   {
     icon: "fa-flag",
     title: "Ambil bendera dan kembali",
-    description: "Lewati garis penjaga, jawab soal pada checkpoint, ambil bendera, lalu kembali ke area mulai sebelum waktu habis."
+    description: "Jawab soal saat menembus checkpoint, ambil bendera, lalu jawab soal baru saat kembali ke area mulai sebelum waktu habis."
   },
   {
     icon: "fa-wifi",
