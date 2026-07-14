@@ -1,5 +1,5 @@
-/* Gobak Sodor Nusantara — Service Worker Tahap 5. */
-const VERSION = "gsn-v5.1.0";
+/* Gobak Sodor Nusantara — Service Worker v1.2.3 Final Stabil. */
+const VERSION = "gsn-v5.2.3";
 const APP_CACHE = `${VERSION}-app`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const OFFLINE_PAGE = "offline.html";
@@ -29,6 +29,7 @@ const APP_SHELL = [
   "js/teacher.js",
   "js/accessibility.js",
   "js/gamification.js",
+  "js/difficulty.js",
   "data/questions.json",
   "assets/img/icon-32.png",
   "assets/img/icon-48.png",

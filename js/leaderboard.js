@@ -118,7 +118,7 @@ class LeaderboardPage {
     const strong = document.createElement("strong");
     strong.textContent = entry.name;
     const details = document.createElement("small");
-    details.textContent = `${entry.mode || "Solo"}${entry.practice ? " · Latihan" : ""} · ${entry.result || "Selesai"} · Akurasi ${Number(entry.accuracy) || 0}% · Combo x${Number(entry.maxCombo) || 0}`;
+    details.textContent = `${entry.mode || "Solo"} · ${entry.difficulty || "Normal"}${entry.practice ? " · Latihan" : ""} · ${entry.result || "Selesai"} · Akurasi ${Number(entry.accuracy) || 0}% · Combo x${Number(entry.maxCombo) || 0}`;
     name.append(strong, details);
     score.textContent = Number(entry.score).toLocaleString("id-ID");
     level.textContent = entry.level || "Jawa";

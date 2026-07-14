@@ -1,5 +1,5 @@
 /**
- * Gobak Sodor Nusantara — Tahap 5.
+ * Gobak Sodor Nusantara — Versi 1.2.3 Final Stabil.
  * Gameplay Solo/Co-op, peta Nusantara, set soal guru, aksesibilitas,
  * streak harian, achievement, rapor, dan leaderboard lokal.
  */
@@ -13,18 +13,20 @@ import {
   keyLabel
 } from "./accessibility.js";
 import { ACHIEVEMENTS, GamificationSystem } from "./gamification.js";
+import { DifficultySettings } from "./difficulty.js";
 
 const GAME_WIDTH = 960;
 const GAME_HEIGHT = 560;
 const MAX_BONUS_TIME = 130;
-const QUIZ_TIME_BONUS = 3;
-const QUIZ_SHIELD_DURATION = 3;
 const START_ZONE_WIDTH = 108;
 const LEADERBOARD_KEY = "gsnLeaderboardV1";
+const PLAYTEST_KEY = "gsnPlaytestV1";
+const MAX_PLAYTEST_RECORDS = 120;
 
 const GAME_STATES = Object.freeze({
   LOADING: "loading",
   READY: "ready",
+  COUNTDOWN: "countdown",
   RUNNING: "running",
   QUIZ: "quiz",
   PAUSED: "paused",
@@ -121,18 +123,29 @@ class GobakSodorGame {
     this.quiz = new QuizSystem();
     this.mapProgress = new MapProgress();
     this.gamification = new GamificationSystem();
+    this.difficultySettings = new DifficultySettings();
+    this.difficulty = this.difficultySettings.getSelected();
     this.level = this.mapProgress.getSelected();
     this.mode = "Solo";
     this.quizReady = false;
     this.state = GAME_STATES.LOADING;
     this.lastTime = 0;
-    this.remainingTime = this.level.roundTime;
+    this.roundTime = this.level.roundTime;
+    this.remainingTime = this.roundTime;
     this.lives = this.level.livesSolo;
     this.maxLives = this.level.livesSolo;
     this.score = 0;
     this.combo = 0;
     this.maxCombo = 0;
     this.collisions = 0;
+    this.questionAnsweredCount = 0;
+    this.elapsedActiveTime = 0;
+    this.returnStartedAt = null;
+    this.returnDuration = null;
+    this.playtestRecorded = false;
+    this.returnGateNoticeAt = 0;
+    this.countdownRemaining = 0;
+    this.lastCountdownNumber = null;
     this.messageTimer = 0;
     this.message = "";
     this.flag = { x: 880, y: GAME_HEIGHT / 2, radius: 22, carrierId: null };
@@ -168,12 +181,21 @@ class GobakSodorGame {
       lives: document.querySelector("[data-hud-lives]"),
       score: document.querySelector("[data-hud-score]"),
       scoreEvent: document.querySelector("[data-score-event]"),
+      countdown: document.querySelector("[data-game-countdown]"),
+      countdownValue: document.querySelector("[data-countdown-value]"),
+      countdownLabel: document.querySelector("[data-countdown-label]"),
       ruleLives: document.querySelector("[data-rule-lives]"),
+      ruleFinish: document.querySelector("[data-rule-finish]"),
       questionSetHelp: document.querySelector("#question-set-help"),
+      difficultyInputs: [...document.querySelectorAll("[data-difficulty]")],
       combo: document.querySelector("[data-hud-combo]"),
       shield: document.querySelector("[data-hud-shield]"),
       flag: document.querySelector("[data-hud-flag]"),
       level: document.querySelector("[data-hud-level]"),
+      journeyPhase: document.querySelector("[data-hud-phase]"),
+      journeyQuestions: document.querySelector("[data-hud-question-progress]"),
+      journeyDifficulty: document.querySelector("[data-hud-difficulty]"),
+      journeyBar: document.querySelector("[data-journey-progress-bar]"),
       status: document.querySelector("[data-game-status]"),
       soloButton: document.querySelector("[data-start-solo]"),
       coopButton: document.querySelector("[data-start-coop]"),
@@ -200,6 +222,10 @@ class GobakSodorGame {
       reportAccuracy: document.querySelector("[data-report-accuracy]"),
       reportGrid: document.querySelector("[data-report-grid]"),
       roundUnlocks: document.querySelector("[data-round-unlocks]"),
+      playtestSummary: document.querySelector("[data-playtest-summary]"),
+      playtestCount: document.querySelector("[data-playtest-count]"),
+      exportPlaytest: document.querySelector("[data-export-playtest]"),
+      resetPlaytest: document.querySelector("[data-reset-playtest]"),
       scoreForm: document.querySelector("[data-score-form]"),
       saveFeedback: document.querySelector("[data-save-feedback]")
     };
@@ -212,6 +238,8 @@ class GobakSodorGame {
     initAccessibilityPanel();
     this.bindControls();
     this.renderMap();
+    this.syncDifficultyInputs();
+    this.updatePlaytestCount();
     this.updateSetupText();
     this.updateControlLabels();
     this.resetGame();
@@ -251,9 +279,22 @@ class GobakSodorGame {
     this.elements.soloButton?.addEventListener("click", () => this.chooseModeAndStart("Solo"));
     this.elements.coopButton?.addEventListener("click", () => this.chooseModeAndStart("Co-op"));
 
+    this.elements.difficultyInputs.forEach((input) => {
+      input.addEventListener("change", () => {
+        if (!input.checked || [GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state)) return;
+        this.difficulty = this.difficultySettings.select(input.value);
+        this.resetGame();
+        this.showReadyOverlay();
+        this.syncDifficultyInputs();
+        this.setStatus(`Kesulitan ${this.difficulty.label} dipilih.`);
+      });
+    });
+    this.elements.exportPlaytest?.addEventListener("click", () => this.exportPlaytestData());
+    this.elements.resetPlaytest?.addEventListener("click", () => this.resetPlaytestData());
+
     this.elements.adventureMap?.addEventListener("click", (event) => {
       const button = event.target.closest("[data-level-id]");
-      if (!button || button.disabled || [GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state)) return;
+      if (!button || button.disabled || [GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state)) return;
       if (this.mapProgress.select(button.dataset.levelId)) {
         this.level = getLevel(button.dataset.levelId);
         this.resetGame();
@@ -265,7 +306,7 @@ class GobakSodorGame {
     });
 
     this.elements.questionSet?.addEventListener("change", () => {
-      if ([GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state)) return;
+      if ([GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state)) return;
       const info = this.quiz.setActiveSet(this.elements.questionSet.value);
       this.updateQuestionPoolInfo();
       this.resetGame();
@@ -350,14 +391,26 @@ class GobakSodorGame {
 
   resetGame() {
     this.level = this.mapProgress.getSelected();
+    this.difficulty = this.difficultySettings.getSelected();
     this.state = this.quizReady ? GAME_STATES.READY : GAME_STATES.LOADING;
-    this.remainingTime = this.level.roundTime;
-    this.maxLives = this.mode === "Co-op" ? this.level.livesCoop : this.level.livesSolo;
+    const baseLives = this.mode === "Co-op" ? this.level.livesCoop : this.level.livesSolo;
+    const minimumLives = this.mode === "Co-op" ? 3 : 2;
+    this.roundTime = Math.round(this.level.roundTime * this.difficulty.timeMultiplier);
+    this.remainingTime = this.roundTime;
+    this.maxLives = Math.max(minimumLives, baseLives + this.difficulty.livesOffset);
     this.lives = this.maxLives;
     this.score = 0;
     this.combo = 0;
     this.maxCombo = 0;
     this.collisions = 0;
+    this.questionAnsweredCount = 0;
+    this.elapsedActiveTime = 0;
+    this.returnStartedAt = null;
+    this.returnDuration = null;
+    this.playtestRecorded = false;
+    this.returnGateNoticeAt = 0;
+    this.countdownRemaining = 0;
+    this.lastCountdownNumber = null;
     this.message = "";
     this.messageTimer = 0;
     this.flag.carrierId = null;
@@ -371,6 +424,9 @@ class GobakSodorGame {
     this.roundId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     // Statistik rapor direset per ronde, tetapi riwayat soal dipertahankan antar-pulau.
     this.quiz.resetSession({ preserveUsed: true });
+    this.input.clear();
+    window.clearTimeout(this.scoreEventTimer);
+    this.elements.scoreEvent?.classList.remove("show", "positive", "negative");
 
     this.checkpoints = this.level.checkpoints.map((x, index) => ({
       id: index + 1,
@@ -378,13 +434,21 @@ class GobakSodorGame {
       outboundAsked: false,
       returnAsked: false
     }));
-    this.players = [new Player({ x: 65, y: this.mode === "Co-op" ? 225 : GAME_HEIGHT / 2, playerNumber: 1, color: "#2775d8", accent: "#153c78" })];
+    this.players = [new Player({ x: 65, y: this.mode === "Co-op" ? 225 : GAME_HEIGHT / 2, speed: this.difficulty.playerSpeed, playerNumber: 1, color: "#2775d8", accent: "#153c78" })];
     if (this.mode === "Co-op") {
-      this.players.push(new Player({ x: 65, y: 335, playerNumber: 2, color: "#1fa678", accent: "#0d523d" }));
+      this.players.push(new Player({ x: 65, y: 335, speed: this.difficulty.playerSpeed, playerNumber: 2, color: "#1fa678", accent: "#0d523d" }));
     }
-    this.enemies = this.level.enemies.map((config) => new Enemy(config));
+    this.enemies = this.level.enemies.map((config) => {
+      const enemy = new Enemy(config);
+      enemy.configureDifficulty({
+        speedMultiplier: this.difficulty.enemySpeedMultiplier,
+        behaviorIntensity: this.difficulty.behaviorIntensity
+      });
+      return enemy;
+    });
 
     this.hideQuiz();
+    this.hideCountdown();
     this.hideReport();
     this.clearSaveFeedback();
     this.updateSetupText();
@@ -397,23 +461,65 @@ class GobakSodorGame {
       this.setStatus("Bank soal belum siap. Jalankan melalui server lokal dan muat ulang halaman.");
       return;
     }
-    if ([GAME_STATES.RUNNING, GAME_STATES.QUIZ].includes(this.state)) return;
+    if ([GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ].includes(this.state)) return;
     if ([GAME_STATES.WON, GAME_STATES.LOST].includes(this.state)) this.resetGame();
 
     const dailyUnlocks = this.gamification.touchDailyStreak();
     this.pendingUnlocks = [...new Set([...this.pendingUnlocks, ...dailyUnlocks])];
     this.updateStreakDisplay();
+    this.beginCountdown();
+  }
+
+  beginCountdown() {
+    this.state = GAME_STATES.COUNTDOWN;
+    this.countdownRemaining = 3;
+    this.lastCountdownNumber = null;
+    this.lastTime = performance.now();
+    window.gsnAudio?.stopMusic();
+    this.hideOverlay();
+    this.hideReport();
+    this.showCountdown();
+    this.setStatus(`${this.mode} · ${this.difficulty.label}: bersiap di ${this.level.name}.`);
+    this.updateButtons();
+    this.updateHud();
+    this.canvas.focus();
+  }
+
+  updateCountdown(deltaTime) {
+    this.countdownRemaining = Math.max(0, this.countdownRemaining - deltaTime);
+    const number = Math.ceil(this.countdownRemaining);
+    if (number > 0 && number !== this.lastCountdownNumber) {
+      this.lastCountdownNumber = number;
+      if (this.elements.countdownValue) this.elements.countdownValue.textContent = String(number);
+      if (this.elements.countdownLabel) this.elements.countdownLabel.textContent = number === 1 ? "Siap!" : "Bersiap";
+      window.gsnAudio?.play("click");
+    }
+    if (this.countdownRemaining <= 0) this.beginRunning();
+  }
+
+  beginRunning() {
     this.state = GAME_STATES.RUNNING;
     this.lastTime = performance.now();
+    this.hideCountdown();
     window.gsnAudio?.startMusic();
     window.gsnAudio?.play("start");
     window.gsnEffects?.burst(window.innerWidth / 2, Math.min(window.innerHeight * 0.42, 360), { count: 28, speed: 4 });
-    this.hideOverlay();
-    this.hideReport();
-    this.setMessage(this.mode === "Co-op" ? "Bagi peran: pergi, ambil bendera, lalu jawab lagi saat pulang!" : "Jawab saat pergi dan pulang, lalu bawa bendera ke START!", 3);
+    this.setMessage(this.mode === "Co-op" ? "Bagi peran—perjalanan pulang lebih cepat!" : "Ambil bendera, lalu hadapi ritme pulang yang lebih cepat!", 3);
     this.setStatus(`${this.mode} dimulai di ${this.level.name}. Timer berjalan.`);
     this.updateButtons();
-    this.canvas.focus();
+    this.updateHud();
+  }
+
+  showCountdown() {
+    this.elements.countdown?.classList.add("show");
+    this.elements.countdown?.setAttribute("aria-hidden", "false");
+    if (this.elements.countdownValue) this.elements.countdownValue.textContent = "3";
+    if (this.elements.countdownLabel) this.elements.countdownLabel.textContent = "Bersiap";
+  }
+
+  hideCountdown() {
+    this.elements.countdown?.classList.remove("show");
+    this.elements.countdown?.setAttribute("aria-hidden", "true");
   }
 
   resetAndStart() {
@@ -452,12 +558,14 @@ class GobakSodorGame {
   loop(currentTime) {
     const deltaTime = Math.min((currentTime - this.lastTime) / 1000 || 0, 0.05);
     this.lastTime = currentTime;
+    if (this.state === GAME_STATES.COUNTDOWN) this.updateCountdown(deltaTime);
     if (this.state === GAME_STATES.RUNNING) this.update(deltaTime);
     this.draw();
     requestAnimationFrame((time) => this.loop(time));
   }
 
   update(deltaTime) {
+    this.elapsedActiveTime += deltaTime;
     this.remainingTime = Math.max(0, this.remainingTime - deltaTime);
     this.messageTimer = Math.max(0, this.messageTimer - deltaTime);
     if (this.remainingTime <= 0) {
@@ -568,23 +676,24 @@ class GobakSodorGame {
       this.changeScore(100, "Jawaban benar");
       this.combo += 1;
       this.maxCombo = Math.max(this.maxCombo, this.combo);
-      this.remainingTime = Math.min(MAX_BONUS_TIME, this.remainingTime + QUIZ_TIME_BONUS);
-      this.players.forEach((player) => player.activateShield(QUIZ_SHIELD_DURATION));
+      this.remainingTime = Math.min(MAX_BONUS_TIME, this.remainingTime + this.difficulty.quizTimeBonus);
+      this.players.forEach((player) => player.activateShield(this.difficulty.shieldDuration));
       window.gsnAudio?.play("correct");
       this.pulseArena("success");
       window.gsnEffects?.burst(window.innerWidth / 2, window.innerHeight / 2, { count: 42, colors: ["#2ca66f", "#f7c948", "#ffffff"], speed: 6 });
-      this.elements.quizFeedback.textContent = `Benar! +100 poin, +${QUIZ_TIME_BONUS} detik, Combo x${this.combo}, dan Shield tim selama ${QUIZ_SHIELD_DURATION} detik.`;
+      this.elements.quizFeedback.textContent = `Benar! +100 poin, +${this.difficulty.quizTimeBonus} detik, Combo x${this.combo}, dan Shield tim selama ${this.difficulty.shieldDuration} detik.`;
       this.elements.quizFeedback.className = "quiz-feedback correct";
     } else {
       this.changeScore(-10, "Jawaban salah");
       this.combo = 0;
-      this.enemies.forEach((enemy) => enemy.increaseSpeed(1.12));
+      this.enemies.forEach((enemy) => enemy.increaseSpeed(this.difficulty.wrongSpeedMultiplier));
       window.gsnAudio?.play("wrong");
       this.pulseArena("danger");
       window.gsnEffects?.burst(window.innerWidth / 2, window.innerHeight / 2, { count: 22, colors: ["#e84444", "#172033"], speed: 4, gravity: 0.24 });
       this.elements.quizFeedback.textContent = `Belum tepat. Jawaban benar: ${result.question.choices[result.correctIndex]}. Penjaga menjadi lebih cepat.`;
       this.elements.quizFeedback.className = "quiz-feedback wrong";
     }
+    this.questionAnsweredCount += 1;
     this.elements.quizContinue.hidden = false;
     this.elements.quizContinue.focus();
     this.updateHud();
@@ -630,13 +739,26 @@ class GobakSodorGame {
     if (this.flag.carrierId !== null) return;
     const collector = this.players.find((player) => this.circleCollision(player.getCircle(), this.flag));
     if (!collector) return;
+
+    const missingOutbound = this.checkpoints.filter((checkpoint) => !checkpoint.outboundAsked).length;
+    if (missingOutbound > 0) {
+      if (this.messageTimer <= 0) {
+        this.setMessage(`Masih ada ${missingOutbound} checkpoint pergi. Kembali dan jawab soalnya.`, 2.4);
+        this.setStatus("Bendera belum dapat diambil sebelum seluruh soal perjalanan pergi selesai.");
+      }
+      return;
+    }
+
     this.flag.carrierId = collector.playerNumber;
     collector.hasFlag = true;
+    this.returnStartedAt = this.elapsedActiveTime;
+    this.setEnemyReturnPhase(true);
     this.changeScore(250, "Bendera diambil");
     window.gsnAudio?.play("flag");
     this.effectAtGamePoint(collector.x, collector.y, { count: 44, colors: [this.level.colors.accent, "#f7c948", "#ffffff"], speed: 6 });
-    this.setMessage(`Pemain ${collector.playerNumber} membawa bendera! Kembali ke START!`, 3);
-    this.setStatus(`Bendera diambil Pemain ${collector.playerNumber}. Tim harus kembali ke Start.`);
+    const returnIncrease = Math.round((this.difficulty.returnSpeedMultiplier - 1) * 100);
+    this.setMessage(`P${collector.playerNumber} membawa bendera—penjaga +${returnIncrease}%! Kembali ke START!`, 3);
+    this.setStatus(`Bendera diambil Pemain ${collector.playerNumber}. Perjalanan pulang kini ${returnIncrease}% lebih cepat.`);
   }
 
   checkEnemyCollisions() {
@@ -683,6 +805,8 @@ class GobakSodorGame {
     const carrier = this.players.find((player) => player.playerNumber === this.flag.carrierId);
     if (carrier) carrier.hasFlag = false;
     this.flag.carrierId = null;
+    this.returnStartedAt = null;
+    this.setEnemyReturnPhase(false);
   }
 
   checkWinCondition() {
@@ -692,16 +816,32 @@ class GobakSodorGame {
     const insideStart = carrier.x - carrier.radius <= this.startZone.x + this.startZone.width;
     if (!insideStart) return;
 
+    const missingReturn = this.checkpoints.filter((checkpoint) => !checkpoint.returnAsked).length;
+    if (missingReturn > 0) {
+      const now = performance.now();
+      if (now - this.returnGateNoticeAt > 1600) {
+        this.returnGateNoticeAt = now;
+        this.setMessage(`Belum selesai: jawab ${missingReturn} soal perjalanan pulang.`, 2.2);
+        this.setStatus("START belum terbuka sebelum seluruh soal perjalanan pulang dijawab.");
+      }
+      return;
+    }
+
+    if (this.returnStartedAt !== null) this.returnDuration = Math.max(0, this.elapsedActiveTime - this.returnStartedAt);
     const modeBonus = this.mode === "Co-op" ? 300 : 0;
     const lifeBonus = this.settings.practiceMode ? 0 : this.lives * 100;
-    const finishBonus = 1000 + Math.floor(this.remainingTime * 10) + lifeBonus + this.maxCombo * 25 + modeBonus;
-    this.changeScore(finishBonus, "Bendera kembali ke START");
+    const rawFinishBonus = 1000 + Math.floor(this.remainingTime * 10) + lifeBonus + this.maxCombo * 25 + modeBonus;
+    const finishBonus = Math.round(rawFinishBonus * this.difficulty.finishScoreMultiplier);
+    this.changeScore(finishBonus, `Bendera kembali · bonus ${this.difficulty.label}`);
     this.finish(true, `Bendera kembali melalui Pemain ${carrier.playerNumber}${this.settings.practiceMode ? " dalam Mode Latihan" : ` dengan ${this.lives} nyawa tim tersisa`}.`);
   }
 
   finish(won, detail) {
     if ([GAME_STATES.WON, GAME_STATES.LOST].includes(this.state)) return;
     this.state = won ? GAME_STATES.WON : GAME_STATES.LOST;
+    if (this.returnStartedAt !== null && this.returnDuration === null) {
+      this.returnDuration = Math.max(0, this.elapsedActiveTime - this.returnStartedAt);
+    }
     this.roundResult = won ? "Menang" : "Belum menang";
     this.input.clear();
 
@@ -722,6 +862,7 @@ class GobakSodorGame {
     });
     this.roundUnlocks = [...new Set([...this.pendingUnlocks, ...roundAchievementUnlocks])];
     this.pendingUnlocks = [];
+    this.recordPlaytest(won, report);
 
     window.gsnAudio?.stopMusic();
     window.gsnAudio?.play(won ? "win" : "lose");
@@ -742,7 +883,8 @@ class GobakSodorGame {
     const report = this.quiz.getSessionReport();
     this.elements.report.hidden = false;
     this.elements.reportAccuracy.textContent = `${report.accuracy}%`;
-    this.elements.reportSummary.textContent = `${report.correct}/${report.total} benar · Combo terbaik x${this.maxCombo} · ${this.mode} · ${report.set.name}.`;
+    this.elements.reportSummary.textContent = `${report.correct}/${report.total} benar · Combo terbaik x${this.maxCombo} · ${this.mode} · ${this.difficulty.label} · ${report.set.name}.`;
+    this.renderPlaytestSummary(report);
     this.elements.reportGrid.innerHTML = report.categories.map((item) => {
       const accuracy = item.accuracy ?? 0;
       const label = item.total ? `${item.correct}/${item.total} benar` : "Belum muncul";
@@ -801,6 +943,8 @@ class GobakSodorGame {
       level: this.level.name,
       levelId: this.level.id,
       mode: this.mode,
+      difficulty: this.difficulty.label,
+      difficultyId: this.difficulty.id,
       practice: this.settings.practiceMode,
       result: this.roundResult,
       accuracy: report.accuracy,
@@ -818,6 +962,90 @@ class GobakSodorGame {
     this.roundSaved = true;
     this.elements.scoreForm.querySelector("button[type='submit']").disabled = true;
     this.setSaveFeedback(`Skor ${this.score.toLocaleString("id-ID")} atas nama ${name} berhasil disimpan.`, "success", true);
+  }
+
+  readPlaytestData() {
+    try {
+      const data = JSON.parse(localStorage.getItem(PLAYTEST_KEY) || "[]");
+      return Array.isArray(data) ? data : [];
+    } catch {
+      return [];
+    }
+  }
+
+  recordPlaytest(won, report) {
+    if (this.playtestRecorded) return;
+    const records = this.readPlaytestData();
+    records.push({
+      id: this.roundId,
+      date: new Date().toISOString(),
+      version: "1.2.3",
+      levelId: this.level.id,
+      level: this.level.name,
+      difficultyId: this.difficulty.id,
+      difficulty: this.difficulty.label,
+      mode: this.mode,
+      practice: this.settings.practiceMode,
+      won,
+      score: this.score,
+      accuracy: report.accuracy,
+      correct: report.correct,
+      totalQuestions: report.total,
+      questionsAnswered: this.questionAnsweredCount,
+      collisions: this.collisions,
+      livesRemaining: this.settings.practiceMode ? null : Math.max(0, this.lives),
+      activeSeconds: Number(this.elapsedActiveTime.toFixed(2)),
+      returnSeconds: this.returnDuration === null ? null : Number(this.returnDuration.toFixed(2)),
+      roundTime: this.roundTime,
+      enemyCount: this.enemies.length
+    });
+    localStorage.setItem(PLAYTEST_KEY, JSON.stringify(records.slice(-MAX_PLAYTEST_RECORDS)));
+    this.playtestRecorded = true;
+    this.updatePlaytestCount();
+  }
+
+  renderPlaytestSummary(report) {
+    if (!this.elements.playtestSummary) return;
+    const returnText = this.returnDuration === null ? "Belum sampai pulang" : `${this.returnDuration.toFixed(1)} detik`;
+    const livesText = this.settings.practiceMode ? "Mode Latihan" : `${Math.max(0, this.lives)}/${this.maxLives}`;
+    this.elements.playtestSummary.innerHTML = `
+      <article><span>Kesulitan</span><strong>${this.difficulty.label}</strong></article>
+      <article><span>Durasi aktif</span><strong>${this.elapsedActiveTime.toFixed(1)} dtk</strong></article>
+      <article><span>Perjalanan pulang</span><strong>${returnText}</strong></article>
+      <article><span>Tertangkap</span><strong>${this.collisions} kali</strong></article>
+      <article><span>Nyawa tersisa</span><strong>${livesText}</strong></article>
+      <article><span>Akurasi</span><strong>${report.accuracy}%</strong></article>`;
+  }
+
+  updatePlaytestCount() {
+    const count = this.readPlaytestData().length;
+    if (this.elements.playtestCount) this.elements.playtestCount.textContent = `${count} ronde tersimpan`;
+    if (this.elements.exportPlaytest) this.elements.exportPlaytest.disabled = count === 0;
+    if (this.elements.resetPlaytest) this.elements.resetPlaytest.disabled = count === 0;
+  }
+
+  exportPlaytestData() {
+    const data = this.readPlaytestData();
+    if (!data.length) return this.setStatus("Belum ada data playtest untuk diekspor.");
+    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), version: "1.2.3", records: data }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `gobak-sodor-playtest-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    this.setStatus(`${data.length} data ronde berhasil diekspor.`);
+  }
+
+  resetPlaytestData() {
+    const count = this.readPlaytestData().length;
+    if (!count) return;
+    if (!window.confirm(`Hapus ${count} catatan playtest pada perangkat ini?`)) return;
+    localStorage.removeItem(PLAYTEST_KEY);
+    this.updatePlaytestCount();
+    this.setStatus("Data playtest lokal telah dihapus.");
   }
 
   readLeaderboard() {
@@ -900,12 +1128,61 @@ class GobakSodorGame {
 
   updateSetupText() {
     const icon = this.mode === "Co-op" ? "fa-user-group" : "fa-user";
-    if (this.elements.modeBadge) this.elements.modeBadge.innerHTML = `<i class="fa-solid ${icon}"></i> Mode ${this.mode}${this.settings.practiceMode ? " · Latihan" : ""}`;
+    if (this.elements.modeBadge) this.elements.modeBadge.innerHTML = `<i class="fa-solid ${icon}"></i> ${this.mode} · ${this.difficulty.label}${this.settings.practiceMode ? " · Latihan" : ""}`;
     if (this.elements.gameTitle) this.elements.gameTitle.textContent = `${this.level.title} · ${this.level.name}`;
     if (this.elements.gameDescription) {
-      const lives = this.settings.practiceMode ? "nyawa tanpa batas" : `${this.mode === "Co-op" ? this.level.livesCoop : this.level.livesSolo} nyawa tim`;
+      const lives = this.settings.practiceMode ? "nyawa tanpa batas" : `${this.maxLives} nyawa tim`;
       const checkpointCount = this.checkpoints.length || this.level.checkpoints.length;
-      this.elements.gameDescription.textContent = `${lives} · ${this.level.roundTime} detik · ${this.level.enemies.length} penjaga · ${checkpointCount * 2} soal (pergi + pulang)`;
+      this.elements.gameDescription.textContent = `${this.difficulty.label} · ${lives} · ${this.roundTime} detik · ${this.level.enemies.length} penjaga · ${checkpointCount * 2} soal`;
+    }
+  }
+
+  syncDifficultyInputs() {
+    this.elements.difficultyInputs.forEach((input) => {
+      input.checked = input.value === this.difficulty.id;
+      input.closest(".difficulty-option")?.classList.toggle("selected", input.checked);
+    });
+  }
+
+  setEnemyReturnPhase(active) {
+    this.enemies.forEach((enemy) => enemy.setReturnPhase(active, this.difficulty.returnSpeedMultiplier));
+    if (active) {
+      const increase = Math.round((this.difficulty.returnSpeedMultiplier - 1) * 100);
+      this.setMessage(`Bendera diambil—ritme pulang naik ${increase}%!`, 2.8);
+    }
+  }
+
+  getJourneyProgress() {
+    if (this.state === GAME_STATES.WON) return 100;
+    const routeLength = Math.max(1, this.flag.x - 65);
+    if (this.flag.carrierId === null) {
+      const furthestX = Math.max(65, ...this.players.map((player) => player.x));
+      return Math.max(0, Math.min(50, ((furthestX - 65) / routeLength) * 50));
+    }
+    const carrier = this.players.find((player) => player.playerNumber === this.flag.carrierId);
+    if (!carrier) return 50;
+    return Math.max(50, Math.min(100, 50 + ((this.flag.x - carrier.x) / routeLength) * 50));
+  }
+
+  updateJourneyHud() {
+    let phase = "Belum dimulai";
+    if (this.state === GAME_STATES.COUNTDOWN) phase = "Bersiap";
+    else if (this.state === GAME_STATES.QUIZ) phase = this.activeTrip === "return" ? "Soal perjalanan pulang" : "Soal menuju bendera";
+    else if (this.flag.carrierId !== null) phase = "Kembali ke START";
+    else if ([GAME_STATES.RUNNING, GAME_STATES.PAUSED].includes(this.state)) phase = "Menuju bendera";
+    else if (this.state === GAME_STATES.WON) phase = "Bendera kembali";
+    else if (this.state === GAME_STATES.LOST) phase = "Ronde selesai";
+
+    if (this.elements.journeyPhase) this.elements.journeyPhase.textContent = phase;
+    if (this.elements.journeyQuestions) this.elements.journeyQuestions.textContent = `${this.questionAnsweredCount}/${this.checkpoints.length * 2} soal`;
+    if (this.elements.journeyDifficulty) this.elements.journeyDifficulty.textContent = this.difficulty.label;
+    if (this.elements.journeyBar) {
+      const progress = Number(this.getJourneyProgress().toFixed(1));
+      const track = this.elements.journeyBar.parentElement;
+      this.elements.journeyBar.style.width = `${progress}%`;
+      track?.setAttribute("aria-valuenow", String(Math.round(progress)));
+      track?.style.setProperty("--journey-progress", `${progress}%`);
+      track?.classList.toggle("returning", this.flag.carrierId !== null);
     }
   }
 
@@ -932,6 +1209,7 @@ class GobakSodorGame {
       this.elements.lives.closest(".hud-item")?.classList.toggle("danger", !this.settings.practiceMode && this.lives <= 1);
     }
     if (this.elements.ruleLives) this.elements.ruleLives.textContent = this.settings.practiceMode ? "Tanpa batas" : `${this.maxLives} nyawa`;
+    if (this.elements.ruleFinish) this.elements.ruleFinish.textContent = `Bonus akhir ×${this.difficulty.finishScoreMultiplier.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     if (this.elements.score) this.elements.score.textContent = `${this.score.toLocaleString("id-ID")} poin`;
     if (this.elements.combo) {
       this.elements.combo.textContent = `x${this.combo}`;
@@ -947,6 +1225,7 @@ class GobakSodorGame {
       this.elements.flag.closest(".hud-item")?.classList.toggle("success", this.flag.carrierId !== null);
     }
     if (this.elements.level) this.elements.level.textContent = this.level.name;
+    this.updateJourneyHud();
   }
 
   updateButtons() {
@@ -958,7 +1237,12 @@ class GobakSodorGame {
     const locked = !this.quizReady;
     if (this.elements.soloButton) this.elements.soloButton.disabled = locked;
     if (this.elements.coopButton) this.elements.coopButton.disabled = locked;
-    if (this.elements.questionSet) this.elements.questionSet.disabled = locked || [GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state);
+    const activeRound = [GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state);
+    if (this.elements.questionSet) this.elements.questionSet.disabled = locked || activeRound;
+    if (this.elements.restartButton) this.elements.restartButton.disabled = locked;
+    this.elements.difficultyInputs.forEach((input) => {
+      input.disabled = locked || [GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state);
+    });
   }
 
   effectAtGamePoint(x, y, options = {}) {
@@ -998,7 +1282,7 @@ class GobakSodorGame {
 
   showReadyOverlay() {
     this.overlayPrimaryAction = "start";
-    this.configureOverlay({ icon: this.mode === "Co-op" ? "fa-people-group" : "fa-person-running", eyebrow: `${this.level.title} · ${this.level.name}`, title: `Siap bermain ${this.mode}?`, text: this.mode === "Co-op" ? "P1 memakai kontrol pertama, P2 memakai kontrol kedua. Soal muncul saat perjalanan pergi dan saat pembawa bendera kembali." : "Jawab tiga soal saat pergi, ambil bendera, lalu jawab tiga soal lagi saat kembali ke START.", primary: `Mulai ${this.mode}`, showSecondary: false });
+    this.configureOverlay({ icon: this.mode === "Co-op" ? "fa-people-group" : "fa-person-running", eyebrow: `${this.level.title} · ${this.level.name} · ${this.difficulty.label}`, title: `Siap bermain ${this.mode}?`, text: this.mode === "Co-op" ? `P1 dan P2 berbagi ${this.maxLives} nyawa. Saat pulang, penjaga bergerak ${Math.round((this.difficulty.returnSpeedMultiplier - 1) * 100)}% lebih cepat.` : `Jawab enam soal, ambil bendera, lalu kembali. Kesulitan ${this.difficulty.label}: ${this.roundTime} detik dan ${this.maxLives} nyawa.`, primary: `Mulai ${this.mode}`, showSecondary: false });
   }
 
   showPauseOverlay() {
@@ -1011,7 +1295,7 @@ class GobakSodorGame {
     const report = this.quiz.getSessionReport();
     this.overlayPrimaryAction = "report";
     this.overlaySecondaryAction = "restart";
-    this.configureOverlay({ icon: won ? "fa-trophy" : "fa-chart-line", eyebrow: won ? `${this.level.name} selesai` : "Ronde belajar selesai", title: won ? "Bendera berhasil dibawa pulang!" : "Gunakan rapor untuk mencoba lebih kuat.", text: `${detail} Skor ${this.score.toLocaleString("id-ID")} · Akurasi ${report.accuracy}%.`, primary: "Lihat Rapor", showSecondary: true, secondary: "Main Lagi", result: won ? "won" : "lost" });
+    this.configureOverlay({ icon: won ? "fa-trophy" : "fa-chart-line", eyebrow: won ? `${this.level.name} selesai` : "Ronde belajar selesai", title: won ? "Bendera berhasil dibawa pulang!" : "Gunakan rapor untuk mencoba lebih kuat.", text: `${detail} ${this.difficulty.label} · Skor ${this.score.toLocaleString("id-ID")} · Akurasi ${report.accuracy}%.`, primary: "Lihat Rapor", showSecondary: true, secondary: "Main Lagi", result: won ? "won" : "lost" });
   }
 
   showErrorOverlay(detail) {

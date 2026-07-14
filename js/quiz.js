@@ -10,6 +10,7 @@ export const PROFILE_KEY = "gsnLearningProfileV1";
 export const QUESTION_SETS_KEY = "gsnQuestionSetsV1";
 export const ACTIVE_QUESTION_SET_KEY = "gsnActiveQuestionSetV1";
 export const CAMPAIGN_QUESTION_HISTORY_KEY = "gsnCampaignQuestionHistoryV1";
+export const MIN_PLAYABLE_QUESTIONS = 6;
 export const CATEGORIES = ["Informatika", "IPS", "IPA", "Matematika", "Bahasa Indonesia"];
 
 function emptyCategoryStats() {
@@ -58,7 +59,9 @@ export class QuizSystem {
     this.reloadQuestionSets();
 
     const preferred = this.storage?.getItem(ACTIVE_QUESTION_SET_KEY) || "default";
-    this.setActiveSet(preferred, { persist: false });
+    // Simpan kembali pilihan aktual agar set lama yang sudah tidak layak dimainkan
+    // otomatis kembali ke bank soal bawaan.
+    this.setActiveSet(preferred, { persist: true });
     return this.questions.length;
   }
 
@@ -106,15 +109,20 @@ export class QuizSystem {
   getAvailableSets() {
     return [
       { id: "default", name: "Bank Soal Nusantara (100 soal)", count: this.baseQuestions.length, builtIn: true },
-      ...this.questionSets.map((set) => ({ id: set.id, name: set.name, count: set.questions.length, builtIn: false }))
+      ...this.questionSets
+        .filter((set) => set.questions.length >= MIN_PLAYABLE_QUESTIONS)
+        .map((set) => ({ id: set.id, name: set.name, count: set.questions.length, builtIn: false }))
     ];
   }
 
   setActiveSet(setId = "default", { persist = true } = {}) {
-    const selected = this.questionSets.find((set) => set.id === setId);
+    const selected = this.questionSets.find((set) => (
+      set.id === setId && set.questions.length >= MIN_PLAYABLE_QUESTIONS
+    ));
     this.activeSetId = selected ? selected.id : "default";
     this.questions = selected ? selected.questions.map((question) => ({ ...question })) : [...this.baseQuestions];
     this.usedQuestionIds = this.loadCampaignQuestionHistory(this.activeSetId);
+    this.questionCycle = 1;
     this.resetSession({ preserveUsed: true });
     if (persist && this.storage) this.storage.setItem(ACTIVE_QUESTION_SET_KEY, this.activeSetId);
     return this.getActiveSetInfo();
@@ -125,17 +133,30 @@ export class QuizSystem {
   }
 
   loadCampaignQuestionHistory(setId = this.activeSetId) {
-    const stored = safeParse(this.sessionStorage?.getItem(CAMPAIGN_QUESTION_HISTORY_KEY), {});
+    // Riwayat utama disimpan di Local Storage agar soal tidak kembali muncul
+    // setelah siswa menutup tab atau melanjutkan pulau pada hari berikutnya.
+    const persistent = safeParse(this.storage?.getItem(CAMPAIGN_QUESTION_HISTORY_KEY), {});
+    // Migrasi riwayat versi 1.2.2 yang sebelumnya hanya berada di Session Storage.
+    const legacy = safeParse(this.sessionStorage?.getItem(CAMPAIGN_QUESTION_HISTORY_KEY), {});
     const validIds = new Set(this.questions.map((question) => question.id));
-    const used = Array.isArray(stored[setId]) ? stored[setId] : [];
-    return new Set(used.filter((id) => validIds.has(id)));
+    const combined = [
+      ...(Array.isArray(persistent[setId]) ? persistent[setId] : []),
+      ...(Array.isArray(legacy[setId]) ? legacy[setId] : [])
+    ];
+    const used = [...new Set(combined)].filter((id) => validIds.has(id));
+    if (this.storage) {
+      persistent[setId] = used;
+      this.storage.setItem(CAMPAIGN_QUESTION_HISTORY_KEY, JSON.stringify(persistent));
+    }
+    this.sessionStorage?.removeItem(CAMPAIGN_QUESTION_HISTORY_KEY);
+    return new Set(used);
   }
 
   saveCampaignQuestionHistory() {
-    if (!this.sessionStorage) return;
-    const stored = safeParse(this.sessionStorage.getItem(CAMPAIGN_QUESTION_HISTORY_KEY), {});
+    if (!this.storage) return;
+    const stored = safeParse(this.storage.getItem(CAMPAIGN_QUESTION_HISTORY_KEY), {});
     stored[this.activeSetId] = [...this.usedQuestionIds];
-    this.sessionStorage.setItem(CAMPAIGN_QUESTION_HISTORY_KEY, JSON.stringify(stored));
+    this.storage.setItem(CAMPAIGN_QUESTION_HISTORY_KEY, JSON.stringify(stored));
   }
 
   resetSession({ preserveUsed = true } = {}) {
@@ -228,6 +249,8 @@ export class QuizSystem {
       this.profile[category].correct += 1;
     }
     this.saveProfile();
+    // Cegah satu soal tercatat dua kali jika terjadi double-click sangat cepat.
+    this.currentQuestion = null;
 
     return { isCorrect, correctIndex: question.answer, selectedIndex: choiceIndex, question };
   }

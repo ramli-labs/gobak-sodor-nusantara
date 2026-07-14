@@ -65,7 +65,7 @@
           <div class="teacher-import-box">
             <input type="file" accept="application/json,.json" data-import-input hidden>
             <button class="btn btn-secondary" type="button" data-import-trigger><i class="fa-solid fa-file-import"></i> Impor JSON</button>
-            <small>Impor satu set atau beberapa set dari file JSON.</small>
+            <small>Impor satu set atau beberapa set dari file JSON. Minimal 6 soal diperlukan agar set dapat dimainkan tanpa pengulangan dalam satu ronde.</small>
           </div>
         </aside>
 
@@ -143,7 +143,7 @@
 
   <section class="section-sm">
     <div class="container">
-      <div class="notice reveal"><i class="fa-solid fa-database"></i><div><strong>Penyimpanan lokal.</strong><br>Set soal tersimpan pada browser perangkat ini. Gunakan Ekspor JSON sebelum menghapus data browser atau saat membagikan set kepada siswa.</div></div>
+      <div class="notice reveal"><i class="fa-solid fa-database"></i><div><strong>Penyimpanan lokal.</strong><br>Set soal tersimpan pada browser perangkat ini. Gunakan Ekspor JSON sebelum menghapus data browser. Mode Guru lokal belum memakai login; autentikasi akan dipindahkan ke Supabase saat proyek menjadi portal.</div></div>
     </div>
   </section>
 </main>
@@ -155,7 +155,7 @@
       <div><h3>Jelajah</h3><div class="footer-links"><a href="game.html">Mulai bermain</a><a href="culture.html">Belajar budaya</a><a href="tutorial.html">Cara bermain</a></div></div>
       <div><h3>Untuk Kelas</h3><div class="footer-links"><a href="teacher.html">Mode Guru</a><a href="leaderboard.html">Leaderboard</a><button class="btn btn-secondary" type="button" data-open-onboarding><i class="fa-solid fa-circle-question"></i> Ulangi panduan</button></div></div>
     </div>
-    <div class="footer-bottom"><span>© <span data-current-year></span> Gobak Sodor Nusantara.</span><span>Tahap 4 — Editor soal dan pembelajaran kelas aktif.</span></div>
+    <div class="footer-bottom"><span>© <span data-current-year></span> Gobak Sodor Nusantara.</span><span>Versi 1.2.3 — Editor soal lokal; autentikasi guru menyusul di portal Supabase.</span></div>
   </div>
 </footer>
 

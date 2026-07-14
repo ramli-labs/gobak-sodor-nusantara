@@ -2,7 +2,7 @@
  * Mode Guru — editor set soal tanpa menyentuh kode.
  * Mendukung tambah/edit/hapus, aktivasi set, ekspor JSON, dan impor JSON.
  */
-import { CATEGORIES, QUESTION_SETS_KEY, ACTIVE_QUESTION_SET_KEY } from "./quiz.js";
+import { CATEGORIES, QUESTION_SETS_KEY, ACTIVE_QUESTION_SET_KEY, MIN_PLAYABLE_QUESTIONS } from "./quiz.js";
 
 function safeParse(value, fallback) {
   try {
@@ -162,7 +162,9 @@ class TeacherEditor {
   activateSet() {
     const set = this.getSelectedSet();
     if (!set) return;
-    if (!set.questions.length) return this.showFeedback("Tambahkan minimal satu soal sebelum set diaktifkan.", "error");
+    if (set.questions.length < MIN_PLAYABLE_QUESTIONS) {
+      return this.showFeedback(`Tambahkan minimal ${MIN_PLAYABLE_QUESTIONS} soal agar satu ronde tidak mengulang pertanyaan. Saat ini baru ${set.questions.length}.`, "error");
+    }
     localStorage.setItem(ACTIVE_QUESTION_SET_KEY, set.id);
     this.render();
     this.showFeedback(`“${set.name}” aktif dan akan dipakai pada ronde berikutnya.`);
@@ -266,7 +268,7 @@ class TeacherEditor {
     document.body.append(link);
     link.click();
     link.remove();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     this.showFeedback("File JSON berhasil diekspor.");
   }
 
@@ -369,7 +371,10 @@ class TeacherEditor {
       element.disabled = !hasSet;
     });
     this.elements.deleteSet.disabled = !hasSet;
-    this.elements.activateSet.disabled = !hasSet;
+    this.elements.activateSet.disabled = !hasSet || this.getSelectedSet().questions.length < MIN_PLAYABLE_QUESTIONS;
+    this.elements.activateSet.title = hasSet && this.getSelectedSet().questions.length < MIN_PLAYABLE_QUESTIONS
+      ? `Minimal ${MIN_PLAYABLE_QUESTIONS} soal diperlukan`
+      : "Aktifkan set untuk permainan";
     this.elements.exportSet.disabled = !hasSet;
   }
 

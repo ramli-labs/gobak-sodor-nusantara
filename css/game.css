@@ -1360,3 +1360,424 @@
     font-size: 0.74rem;
   }
 }
+
+/* ==============================================================
+   Versi 1.2.3 — Tingkat kesulitan, progres perjalanan, countdown,
+   dan catatan playtest untuk balancing.
+   ============================================================== */
+.difficulty-picker {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin: 0;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.difficulty-picker legend {
+  padding: 0 8px;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.difficulty-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.difficulty-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 14px;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+}
+
+.difficulty-option:hover {
+  border-color: color-mix(in srgb, var(--blue) 65%, var(--border));
+  transform: translateY(-1px);
+}
+
+.difficulty-option.selected,
+.difficulty-option:has(input:checked) {
+  border-color: var(--blue);
+  background: color-mix(in srgb, var(--surface) 86%, var(--blue) 14%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 38%, transparent);
+}
+
+.difficulty-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.difficulty-option:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.difficulty-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 13px;
+  color: var(--blue);
+  background: color-mix(in srgb, var(--surface) 72%, var(--blue) 28%);
+  font-size: 1.05rem;
+}
+
+.difficulty-option strong,
+.difficulty-option small {
+  display: block;
+}
+
+.difficulty-option strong {
+  margin-bottom: 2px;
+  font-size: 0.9rem;
+}
+
+.difficulty-option small {
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.journey-strip {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(260px, 2.5fr) minmax(110px, 0.7fr) minmax(95px, 0.6fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 93%, var(--yellow) 7%);
+}
+
+.journey-stat {
+  min-width: 0;
+}
+
+.journey-stat span,
+.journey-track-label {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.journey-stat strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 2px;
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.journey-track-wrap {
+  min-width: 0;
+}
+
+.journey-track-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.journey-track {
+  position: relative;
+  height: 10px;
+  overflow: visible;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 72%, var(--surface) 28%);
+}
+
+.journey-track::after {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 2px;
+  height: 18px;
+  content: "";
+  background: color-mix(in srgb, var(--ink) 48%, transparent);
+}
+
+.journey-track > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--blue), var(--yellow), var(--green));
+  transition: width 180ms linear;
+}
+
+.journey-track > i {
+  position: absolute;
+  top: 50%;
+  left: clamp(4px, calc(var(--journey-progress, 0%) - 8px), calc(100% - 14px));
+  display: block;
+  color: var(--ink);
+  font-size: 0.82rem;
+  transform: translateY(-50%);
+  transition: left 180ms linear, transform 180ms ease;
+}
+
+.journey-track.returning > i {
+  transform: translateY(-50%) scaleX(-1);
+}
+
+.game-countdown {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  color: #fff;
+  background: rgba(7, 20, 34, 0.55);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 140ms ease, visibility 140ms ease;
+}
+
+.game-countdown.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.game-countdown strong {
+  display: grid;
+  width: 122px;
+  height: 122px;
+  place-items: center;
+  border: 7px solid rgba(255, 255, 255, 0.88);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--blue) 82%, transparent);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+  font-size: 4rem;
+  line-height: 1;
+  animation: countdown-pop 720ms ease infinite;
+}
+
+.game-countdown span {
+  margin-top: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@keyframes countdown-pop {
+  0% { transform: scale(0.88); opacity: 0.68; }
+  38% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(0.96); opacity: 0.9; }
+}
+
+.playtest-summary {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.playtest-summary:empty {
+  display: none;
+}
+
+.playtest-summary article {
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.playtest-summary span,
+.playtest-summary strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playtest-summary span {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.playtest-summary strong {
+  margin-top: 3px;
+  font-size: 0.82rem;
+}
+
+.playtest-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  margin-top: 18px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.playtest-panel h3,
+.playtest-panel p {
+  margin: 0;
+}
+
+.playtest-panel p {
+  max-width: 720px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.playtest-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  flex-shrink: 0;
+}
+
+.playtest-actions strong {
+  width: 100%;
+  color: var(--muted);
+  font-size: 0.76rem;
+  text-align: right;
+}
+
+@media (max-width: 1050px) {
+  .journey-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .journey-track-wrap {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .playtest-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .difficulty-options {
+    grid-template-columns: 1fr;
+  }
+
+  .journey-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .journey-track-wrap {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .playtest-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .playtest-actions {
+    justify-content: flex-start;
+  }
+
+  .playtest-actions strong {
+    text-align: left;
+  }
+}
+
+@media (max-width: 520px) {
+  .difficulty-picker {
+    padding: 15px;
+  }
+
+  .journey-strip {
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+  }
+
+  .playtest-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .game-countdown strong {
+    width: 96px;
+    height: 96px;
+    font-size: 3.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-countdown strong {
+    animation: none;
+  }
+
+  .journey-track > span {
+    transition: none;
+  }
+}
+
+.rhythm-legend {
+  grid-column: 1 / -1;
+}
+
+.rhythm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rhythm-chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--surface-2);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.rhythm-chips b {
+  display: grid;
+  min-width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--red);
+  font-size: 0.72rem;
+}
+
+@media (max-width: 620px) {
+  .rhythm-legend {
+    grid-column: auto;
+  }
+}

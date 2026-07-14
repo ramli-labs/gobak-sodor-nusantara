@@ -1,12 +1,39 @@
-# Gobak Sodor Nusantara — Versi 1.1 (Revisi Gameplay)
+# Gobak Sodor Nusantara — Versi 1.2.3 (Final Stabil)
 
-## Perubahan versi 1.1
+## Perbaikan final versi 1.2.3
 
-- Checkpoint soal aktif dua arah: 3 soal saat menuju bendera dan 3 soal baru saat kembali ke START.
-- Riwayat soal dipertahankan antar-pulau selama tab permainan masih terbuka, sehingga soal tidak berulang sebelum seluruh bank soal habis.
-- HUD menampilkan nyawa secara numerik dan skor dalam satuan poin.
-- Rincian perolehan serta pengurangan poin ditampilkan sebelum arena.
-- Setiap perubahan skor memunculkan notifikasi singkat di arena.
+- Memulihkan seluruh antarmuka v1.2 yang sempat tergantikan oleh halaman versi lama pada paket v1.2.1.
+- Countdown 3–2–1 tetap tampil dan timer baru berjalan setelah countdown selesai.
+- Pilihan kesulitan, rincian poin/nyawa, progres perjalanan, progres soal, dan panel playtest kembali tampil lengkap.
+- Tutorial dikembalikan ke alur enam langkah: tiga soal pergi dan tiga soal pulang.
+- Ikon pelari pada progres perjalanan kini bergerak dan berbalik arah saat perjalanan pulang.
+- Cache PWA dinaikkan menjadi `gsn-v5.2.3` dan kini memasukkan `difficulty.js` agar pilihan kesulitan tetap bekerja secara offline.
+- Kemenangan kini divalidasi hanya setelah 3 soal pergi dan 3 soal pulang selesai.
+- Bendera tidak dapat diambil bila checkpoint perjalanan pergi belum lengkap.
+- Riwayat soal dipindahkan ke Local Storage sehingga tidak berulang setelah tab ditutup atau pulau dilanjutkan kemudian.
+- Set soal guru harus memiliki minimal 6 soal sebelum dapat diaktifkan.
+- Double-click jawaban tidak dapat mencatat satu soal dua kali.
+
+## Perubahan versi 1.2
+
+- Tiga tingkat kesulitan yang benar-benar memengaruhi gameplay:
+  - **Santai:** waktu lebih panjang, satu nyawa tambahan, penjaga lebih lambat, Shield lebih lama.
+  - **Normal:** konfigurasi utama yang seimbang untuk kelas dan demo.
+  - **Ahli:** waktu lebih singkat, nyawa terbatas, ritme penjaga agresif, Shield lebih pendek.
+- Jumlah penjaga per pulau dinaikkan menjadi 3, 4, 4, 5, dan 6.
+- Penjaga mempunyai pola `steady`, `pause`, `pulse`, `surge`, dan `fakeout` dengan ikon ritme pada Canvas.
+- Setelah bendera diambil, seluruh penjaga bergerak lebih cepat sesuai kesulitan.
+- Countdown 3–2–1 sebelum timer mulai berjalan.
+- Indikator selalu tampil untuk status perjalanan, progres pergi–pulang, progres soal, dan tingkat kesulitan.
+- Skor akhir diberi faktor kesulitan agar Mode Santai tidak otomatis menguasai leaderboard.
+- Setiap ronde otomatis mencatat data playtest lokal: durasi, hasil, kesulitan, jumlah tertangkap, akurasi, nyawa tersisa, dan durasi perjalanan pulang.
+- Data playtest dapat diekspor sebagai JSON untuk membantu balancing berdasarkan data nyata.
+
+## Perubahan versi 1.1 yang tetap aktif
+
+- Tiga soal saat menuju bendera dan tiga soal baru saat kembali ke START.
+- Soal tidak berulang antar-pulau sebelum seluruh bank soal habis.
+- HUD nyawa dan poin numerik serta rincian perolehan skor.
 
 
 Website game edukasi berbasis **HTML5, CSS3, Vanilla JavaScript ES6, Canvas API, Web Audio API, dan Progressive Web App** tanpa framework atau proses build. Versi ini menyelesaikan seluruh tahap pengembangan dari fondasi hingga versi profesional yang siap dipamerkan dan di-host di GitHub Pages.
@@ -22,7 +49,8 @@ Website game edukasi berbasis **HTML5, CSS3, Vanilla JavaScript ES6, Canvas API,
 - Mode Solo dan Co-op satu keyboard.
 - Pemain, penjaga horizontal/vertikal, checkpoint, bendera, Start, timer, nyawa, skor, Combo, dan Shield.
 - Pause, restart, fullscreen, kontrol sentuh Pemain 1, serta kondisi menang/kalah.
-- Lima pulau dengan tingkat kesulitan dan pola penjaga berbeda.
+- Lima pulau dengan 3–6 penjaga, pola ritmis berbeda, dan perjalanan pulang yang lebih cepat.
+- Pilihan kesulitan Santai, Normal, dan Ahli serta countdown sebelum ronde.
 
 ### 3. Sistem belajar
 - 100 soal JSON: masing-masing 20 soal Informatika, IPS, IPA, Matematika, dan Bahasa Indonesia.
@@ -71,6 +99,7 @@ gobak-sodor-nusantara/
     teacher.js
     accessibility.js
     gamification.js
+    difficulty.js
     leaderboard.js
     culture.js
   data/
@@ -91,6 +120,8 @@ gobak-sodor-nusantara/
     PROMPT-FINAL.md
     TAHAP-4-TESTING.md
     TAHAP-5-TESTING.md
+    REVISI-GAMEPLAY-1.1.md
+    REVISI-GAMEPLAY-1.2.md
 ```
 
 ## Menjalankan secara lokal
@@ -158,9 +189,16 @@ Seluruh URL menggunakan path relatif sehingga aman ketika repository diterbitkan
 - `gsnMapProgressV1`: pulau terpilih dan level selesai.
 - `gsnAccessibilityV1`: mode latihan, mode buta warna, dan remap kontrol.
 - `gsnGamificationV1`: streak, kemenangan, statistik soal, dan achievement.
+- `gsnDifficultyV1`: tingkat kesulitan terakhir yang dipilih.
+- `gsnPlaytestV1`: maksimal 120 catatan ronde anonim untuk evaluasi balancing.
 
 ## Batasan versi statis
 
 - Leaderboard hanya berlaku pada perangkat/browser yang sama.
 - Sinkronisasi lintas siswa memerlukan backend opsional seperti Supabase.
 - Font Poppins dan Font Awesome dimuat dari CDN saat pertama kali online. Jika CDN belum pernah masuk cache, mode offline tetap memakai font sistem dan seluruh fungsi utama tetap berjalan.
+
+
+## Audit final
+
+Lihat `docs/AUDIT-FINAL-1.2.3.md` untuk temuan perbaikan, hasil pengujian, dan checklist verifikasi setelah deployment.
