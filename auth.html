@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Masuk atau daftar Portal Permainan Nusantara.">
+  <meta name="theme-color" content="#123f73">
+  <link rel="manifest" href="manifest.json"><link rel="icon" href="shared/assets/icons/icon-32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared/css/portal.css"><link rel="stylesheet" href="shared/css/dashboard.css">
+  <title>Masuk | Portal Permainan Nusantara</title>
+  <script type="module" src="shared/js/portal.js"></script><script type="module" src="shared/js/auth-page.js"></script>
+</head>
+<body data-page="auth">
+<a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+<header class="portal-header"><div class="portal-container nav-shell"><a class="portal-brand" href="index.html"><span class="portal-brand-mark">N</span><span><strong>Permainan Nusantara</strong><small>Belajar melalui budaya</small></span></a><nav class="portal-nav" data-portal-nav><a href="index.html">Beranda</a><a href="games.html">Katalog Game</a><a href="leaderboard.html">Peringkat</a></nav><div class="portal-actions"><button class="round-button" type="button" data-theme-toggle aria-label="Ubah tema">◐</button><button class="round-button menu-toggle" type="button" data-menu-toggle aria-label="Buka menu">☰</button></div></div></header>
+<main id="main-content" class="auth-page">
+  <section class="auth-shell portal-container">
+    <article class="auth-intro">
+      <span class="eyebrow">Akun portal</span><h1>Satu akun untuk seluruh permainan.</h1>
+      <p>Progres, nilai, kelas, achievement, dan leaderboard dapat tersimpan lintas perangkat setelah portal terhubung ke Supabase.</p>
+      <div class="security-list"><div><strong>Data sesuai peran</strong><span>Siswa, guru, dan admin memiliki izin berbeda.</span></div><div><strong>Kunci jawaban terpisah</strong><span>Jawaban benar tidak dikirim bersama pertanyaan.</span></div><div><strong>Mode lokal tetap ada</strong><span>Game masih dapat dicoba tanpa akun.</span></div></div>
+    </article>
+    <article class="auth-card">
+      <div class="backend-state" data-auth-backend-state></div>
+      <section class="demo-access" aria-labelledby="demo-title">
+        <div><span class="eyebrow">Uji tanpa Supabase</span><h2 id="demo-title">Masuk sebagai akun demo</h2><p>Uji dashboard dan alur data sebelum backend produksi dibuat.</p></div>
+        <div class="demo-role-grid">
+          <button class="demo-role-card" type="button" data-demo-role="student"><span>🎒</span><strong>Siswa</strong><small>Kelas, tugas, hasil</small></button>
+          <button class="demo-role-card" type="button" data-demo-role="teacher"><span>🧑‍🏫</span><strong>Guru</strong><small>Kelas, soal, tugas</small></button>
+          <button class="demo-role-card" type="button" data-demo-role="admin"><span>🛠️</span><strong>Admin</strong><small>Role dan registry</small></button>
+        </div>
+        <div class="button-row"><a class="button text" href="setup.html">Status sistem</a><button class="button danger-ghost" type="button" data-stop-demo>Matikan demo</button></div>
+      </section>
+      <div class="auth-tabs" role="tablist"><button class="active" type="button" data-auth-tab="login">Masuk</button><button type="button" data-auth-tab="register">Daftar</button></div>
+      <form class="auth-form" data-auth-panel="login" data-login-form data-production-auth>
+        <h2>Masuk ke portal</h2><p>Gunakan email dan password yang telah didaftarkan.</p>
+        <label>Email<input name="email" type="email" autocomplete="email" required></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+        <button class="button primary" type="submit">Masuk</button>
+      </form>
+      <form class="auth-form" data-auth-panel="register" data-register-form data-production-auth hidden>
+        <h2>Buat akun siswa</h2><p>Role awal selalu siswa. Permintaan guru harus disetujui admin.</p>
+        <label>Nama lengkap<input name="fullName" type="text" minlength="2" maxlength="80" required></label>
+        <label>Email<input name="email" type="email" autocomplete="email" required></label>
+        <div class="form-grid two"><label>Sekolah<input name="schoolName" type="text" maxlength="120"></label><label>Kelas<input name="classLabel" type="text" maxlength="40"></label></div>
+        <label>Avatar<select name="avatar"><option>🌟</option><option>🧭</option><option>🏃</option><option>📚</option><option>🦅</option></select></label>
+        <div class="form-grid two"><label>Password<input name="password" type="password" minlength="8" autocomplete="new-password" required></label><label>Ulangi password<input name="passwordConfirmation" type="password" minlength="8" autocomplete="new-password" required></label></div>
+        <label class="check-row"><input name="requestTeacher" type="checkbox"><span>Saya guru dan ingin meminta akses dashboard guru.</span></label>
+        <button class="button primary" type="submit">Buat akun</button>
+      </form>
+      <p class="form-feedback" data-auth-feedback aria-live="polite"></p>
+    </article>
+  </section>
+</main>
+<footer class="portal-footer"><div class="portal-container footer-grid"><div><strong>Portal Permainan Nusantara</strong><p>Game edukasi budaya Indonesia dengan sistem kelas.</p></div><div class="footer-links"><a href="setup.html">Setup Supabase</a><a href="games.html">Main sebagai tamu</a></div><small>Versi 1.1 RC · <span data-current-year></span></small></div></footer>
+<div class="portal-toast" data-toast role="status" aria-live="polite"></div>
+</body></html>

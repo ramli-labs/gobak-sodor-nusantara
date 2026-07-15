@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Portal game edukasi budaya Indonesia untuk siswa, guru, dan sekolah.">
+  <meta name="theme-color" content="#123f73">
+  <meta name="application-name" content="Portal Permainan Nusantara">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Permainan Nusantara">
+  <meta property="og:title" content="Portal Permainan Nusantara">
+  <meta property="og:description" content="Belajar melalui permainan tradisional Indonesia.">
+  <meta property="og:image" content="shared/assets/social-preview.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="shared/assets/icons/icon-32.png">
+  <link rel="apple-touch-icon" href="shared/assets/icons/icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared/css/portal.css">
+  <title>Katalog Game | Portal Permainan Nusantara</title>
+  <script type="module" src="shared/js/portal.js"></script>
+  <script type="module" src="shared/js/games.js"></script>
+</head>
+<body data-page="games">
+<a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+
+<header class="portal-header">
+  <div class="portal-container nav-shell">
+    <a class="portal-brand" href="index.html" aria-label="Portal Permainan Nusantara — Beranda">
+      <span class="portal-brand-mark" aria-hidden="true">N</span>
+      <span><strong>Permainan Nusantara</strong><small>Belajar melalui budaya</small></span>
+    </a>
+    <nav class="portal-nav" data-portal-nav aria-label="Navigasi utama">
+      <a data-nav="home" href="index.html">Beranda</a>
+      <a data-nav="games" href="games.html">Katalog Game</a>
+      <a data-nav="profile" href="profile.html">Profil</a>
+      <a data-nav="leaderboard" href="leaderboard.html">Peringkat</a>
+      <a data-nav="teacher" href="teacher.html">Guru</a><a data-auth-link href="auth.html">Masuk</a>
+    </nav>
+    <div class="portal-actions">
+      <button class="round-button" type="button" data-theme-toggle aria-label="Ubah tema" title="Ubah tema">◐</button>
+      <button class="round-button install-button" type="button" data-install-app hidden aria-label="Pasang aplikasi" title="Pasang aplikasi">⇩</button>
+      <button class="round-button menu-toggle" type="button" data-menu-toggle aria-label="Buka menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<section class="page-hero compact"><div class="portal-container"><span class="eyebrow">Katalog permainan</span><h1>Pilih cara belajarmu.</h1><p>Game yang tersedia dapat langsung dimainkan. Dua game sudah dapat dimainkan. Game berstatus “Segera hadir” menunjukkan arah pengembangan berikutnya.</p></div></section>
+<section class="portal-section">
+  <div class="portal-container">
+    <div class="catalog-toolbar">
+      <div class="filter-row" role="group" aria-label="Filter status game"><button class="filter-chip active" data-game-filter="all">Semua</button><button class="filter-chip" data-game-filter="available">Tersedia</button><button class="filter-chip" data-game-filter="soon">Segera hadir</button></div>
+      <label class="search-box"><span>⌕</span><input type="search" data-game-search placeholder="Cari game, pelajaran, atau keterampilan" aria-label="Cari game"></label>
+    </div>
+    <div class="catalog-summary"><strong data-catalog-result>Memuat katalog…</strong><span>Registry: <code>data/games.json</code></span></div>
+    <div class="game-catalog" data-game-catalog aria-live="polite"></div>
+  </div>
+</section></main>
+
+<footer class="portal-footer">
+  <div class="portal-container footer-grid">
+    <div><strong>Portal Permainan Nusantara</strong><p>Portal game edukasi budaya Indonesia dengan mode lokal dan Supabase.</p></div>
+    <div class="footer-links"><a href="games.html">Katalog</a><a href="profile.html">Profil</a><a href="teacher.html">Dashboard Guru</a></div>
+    <small>Versi 1.1 RC · <span data-current-year></span></small>
+  </div>
+</footer>
+<div class="portal-toast" data-toast role="status" aria-live="polite"></div>
+</body>
+</html>

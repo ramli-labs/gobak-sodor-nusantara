@@ -1,0 +1,392 @@
+[
+  {
+    "id": "jn-001",
+    "category": "Geografi",
+    "question": "Pulau yang menjadi tempat Danau Toba berada adalah...",
+    "choices": [
+      "Sumatra",
+      "Jawa",
+      "Sulawesi",
+      "Papua"
+    ],
+    "answer": 0,
+    "explanation": "Danau Toba berada di Provinsi Sumatera Utara."
+  },
+  {
+    "id": "jn-002",
+    "category": "Budaya",
+    "question": "Rumah Gadang merupakan rumah adat masyarakat...",
+    "choices": [
+      "Minangkabau",
+      "Baduy",
+      "Asmat",
+      "Toraja"
+    ],
+    "answer": 0,
+    "explanation": "Rumah Gadang berasal dari kebudayaan Minangkabau di Sumatera Barat."
+  },
+  {
+    "id": "jn-003",
+    "category": "Geografi",
+    "question": "Selat yang memisahkan Pulau Jawa dan Pulau Sumatra adalah...",
+    "choices": [
+      "Selat Sunda",
+      "Selat Makassar",
+      "Selat Bali",
+      "Selat Karimata"
+    ],
+    "answer": 0,
+    "explanation": "Selat Sunda terletak di antara Jawa dan Sumatra."
+  },
+  {
+    "id": "jn-004",
+    "category": "Budaya",
+    "question": "Tari Saman berasal dari daerah...",
+    "choices": [
+      "Aceh",
+      "Bali",
+      "Maluku",
+      "Kalimantan Timur"
+    ],
+    "answer": 0,
+    "explanation": "Tari Saman berasal dari masyarakat Gayo di Aceh."
+  },
+  {
+    "id": "jn-005",
+    "category": "Bahasa",
+    "question": "Semboyan Bhinneka Tunggal Ika berarti...",
+    "choices": [
+      "Berbeda-beda tetapi tetap satu",
+      "Bersatu kita teguh",
+      "Sekali merdeka tetap merdeka",
+      "Rajin pangkal pandai"
+    ],
+    "answer": 0,
+    "explanation": "Bhinneka Tunggal Ika menegaskan persatuan dalam keberagaman."
+  },
+  {
+    "id": "jn-006",
+    "category": "Budaya",
+    "question": "Alat musik angklung dimainkan dengan cara...",
+    "choices": [
+      "Digoyangkan",
+      "Dipukul dengan stik",
+      "Ditiup",
+      "Digesek"
+    ],
+    "answer": 0,
+    "explanation": "Tabung bambu angklung menghasilkan bunyi ketika digoyangkan."
+  },
+  {
+    "id": "jn-007",
+    "category": "Geografi",
+    "question": "Candi Borobudur berada di provinsi...",
+    "choices": [
+      "Jawa Tengah",
+      "Jawa Barat",
+      "Jawa Timur",
+      "DI Yogyakarta"
+    ],
+    "answer": 0,
+    "explanation": "Borobudur berada di Kabupaten Magelang, Jawa Tengah."
+  },
+  {
+    "id": "jn-008",
+    "category": "Budaya",
+    "question": "Wayang kulit tradisional terutama dimainkan menggunakan...",
+    "choices": [
+      "Bayangan pada kelir",
+      "Air dan cahaya",
+      "Topeng batu",
+      "Boneka logam"
+    ],
+    "answer": 0,
+    "explanation": "Wayang kulit menghasilkan bayangan pada layar atau kelir."
+  },
+  {
+    "id": "jn-009",
+    "category": "Geografi",
+    "question": "Pulau terbesar yang seluruh wilayahnya berada di Indonesia adalah...",
+    "choices": [
+      "Sumatra",
+      "Jawa",
+      "Sulawesi",
+      "Bali"
+    ],
+    "answer": 0,
+    "explanation": "Di antara pilihan tersebut, Sumatra adalah yang terbesar."
+  },
+  {
+    "id": "jn-010",
+    "category": "Budaya",
+    "question": "Upacara Ngaben dikenal sebagai tradisi dari...",
+    "choices": [
+      "Bali",
+      "Papua",
+      "Lampung",
+      "Banten"
+    ],
+    "answer": 0,
+    "explanation": "Ngaben merupakan upacara kremasi dalam tradisi Hindu Bali."
+  },
+  {
+    "id": "jn-011",
+    "category": "Geografi",
+    "question": "Garis khatulistiwa melewati kota...",
+    "choices": [
+      "Pontianak",
+      "Bandung",
+      "Surabaya",
+      "Denpasar"
+    ],
+    "answer": 0,
+    "explanation": "Pontianak dikenal sebagai Kota Khatulistiwa."
+  },
+  {
+    "id": "jn-012",
+    "category": "Budaya",
+    "question": "Suku Dayak banyak mendiami Pulau...",
+    "choices": [
+      "Kalimantan",
+      "Madura",
+      "Nias",
+      "Timor"
+    ],
+    "answer": 0,
+    "explanation": "Dayak adalah sebutan bagi berbagai kelompok masyarakat asli Kalimantan."
+  },
+  {
+    "id": "jn-013",
+    "category": "Geografi",
+    "question": "Sungai Kapuas mengalir di Pulau...",
+    "choices": [
+      "Kalimantan",
+      "Sulawesi",
+      "Jawa",
+      "Papua"
+    ],
+    "answer": 0,
+    "explanation": "Sungai Kapuas berada di Kalimantan Barat."
+  },
+  {
+    "id": "jn-014",
+    "category": "Budaya",
+    "question": "Kain sasirangan merupakan kain tradisional dari...",
+    "choices": [
+      "Kalimantan Selatan",
+      "Jawa Tengah",
+      "Sumatera Selatan",
+      "Nusa Tenggara Barat"
+    ],
+    "answer": 0,
+    "explanation": "Sasirangan merupakan kain tradisional Banjar dari Kalimantan Selatan."
+  },
+  {
+    "id": "jn-015",
+    "category": "Geografi",
+    "question": "Taman Nasional Tanjung Puting terkenal sebagai kawasan konservasi...",
+    "choices": [
+      "Orangutan",
+      "Komodo",
+      "Anoa",
+      "Jalak Bali"
+    ],
+    "answer": 0,
+    "explanation": "Tanjung Puting di Kalimantan Tengah terkenal dengan konservasi orangutan."
+  },
+  {
+    "id": "jn-016",
+    "category": "Budaya",
+    "question": "Rumah Tongkonan berasal dari masyarakat...",
+    "choices": [
+      "Toraja",
+      "Betawi",
+      "Sunda",
+      "Melayu"
+    ],
+    "answer": 0,
+    "explanation": "Tongkonan merupakan rumah adat masyarakat Toraja di Sulawesi Selatan."
+  },
+  {
+    "id": "jn-017",
+    "category": "Geografi",
+    "question": "Taman laut Bunaken berada dekat kota...",
+    "choices": [
+      "Manado",
+      "Makassar",
+      "Palu",
+      "Kendari"
+    ],
+    "answer": 0,
+    "explanation": "Taman Nasional Bunaken berada dekat Manado, Sulawesi Utara."
+  },
+  {
+    "id": "jn-018",
+    "category": "Budaya",
+    "question": "Alat musik kolintang berasal dari...",
+    "choices": [
+      "Sulawesi Utara",
+      "Sumatera Barat",
+      "Bali",
+      "Papua Barat"
+    ],
+    "answer": 0,
+    "explanation": "Kolintang berkembang dalam budaya Minahasa di Sulawesi Utara."
+  },
+  {
+    "id": "jn-019",
+    "category": "Geografi",
+    "question": "Hewan endemik anoa berasal dari...",
+    "choices": [
+      "Sulawesi",
+      "Sumatra",
+      "Jawa",
+      "Kalimantan"
+    ],
+    "answer": 0,
+    "explanation": "Anoa adalah mamalia endemik Sulawesi."
+  },
+  {
+    "id": "jn-020",
+    "category": "Budaya",
+    "question": "Kapal pinisi berkaitan erat dengan tradisi pelaut dari...",
+    "choices": [
+      "Sulawesi Selatan",
+      "Jawa Barat",
+      "Aceh",
+      "Maluku Utara"
+    ],
+    "answer": 0,
+    "explanation": "Pinisi dikenal dalam tradisi maritim masyarakat Bugis dan Makassar."
+  },
+  {
+    "id": "jn-021",
+    "category": "Geografi",
+    "question": "Kepulauan Raja Ampat berada di wilayah...",
+    "choices": [
+      "Papua Barat Daya",
+      "Nusa Tenggara Timur",
+      "Maluku",
+      "Sulawesi Tenggara"
+    ],
+    "answer": 0,
+    "explanation": "Raja Ampat berada di Provinsi Papua Barat Daya."
+  },
+  {
+    "id": "jn-022",
+    "category": "Budaya",
+    "question": "Noken merupakan tas tradisional dari...",
+    "choices": [
+      "Papua",
+      "Bali",
+      "Jambi",
+      "Madura"
+    ],
+    "answer": 0,
+    "explanation": "Noken dibuat dan digunakan oleh berbagai masyarakat di Papua."
+  },
+  {
+    "id": "jn-023",
+    "category": "Geografi",
+    "question": "Puncak Jaya berada di Pulau...",
+    "choices": [
+      "Papua",
+      "Sumatra",
+      "Sulawesi",
+      "Lombok"
+    ],
+    "answer": 0,
+    "explanation": "Puncak Jaya merupakan bagian dari Pegunungan Sudirman di Papua."
+  },
+  {
+    "id": "jn-024",
+    "category": "Budaya",
+    "question": "Rumah Honai dikenal sebagai rumah tradisional dari wilayah...",
+    "choices": [
+      "Pegunungan Papua",
+      "Pesisir Aceh",
+      "Kalimantan Selatan",
+      "Jawa Timur"
+    ],
+    "answer": 0,
+    "explanation": "Honai banyak dikenal sebagai rumah tradisional masyarakat pegunungan Papua."
+  },
+  {
+    "id": "jn-025",
+    "category": "Geografi",
+    "question": "Laut yang berada di antara Sulawesi dan Kepulauan Maluku adalah...",
+    "choices": [
+      "Laut Maluku",
+      "Laut Jawa",
+      "Laut Sawu",
+      "Laut Arafura"
+    ],
+    "answer": 0,
+    "explanation": "Laut Maluku berada di kawasan antara Sulawesi dan Maluku."
+  },
+  {
+    "id": "jn-026",
+    "category": "Budaya",
+    "question": "Tradisi lompat batu terkenal berasal dari Pulau...",
+    "choices": [
+      "Nias",
+      "Bali",
+      "Sumbawa",
+      "Belitung"
+    ],
+    "answer": 0,
+    "explanation": "Tradisi lompat batu atau fahombo berasal dari Nias."
+  },
+  {
+    "id": "jn-027",
+    "category": "Geografi",
+    "question": "Taman Nasional Komodo berada di provinsi...",
+    "choices": [
+      "Nusa Tenggara Timur",
+      "Nusa Tenggara Barat",
+      "Bali",
+      "Maluku"
+    ],
+    "answer": 0,
+    "explanation": "Taman Nasional Komodo berada di Nusa Tenggara Timur."
+  },
+  {
+    "id": "jn-028",
+    "category": "Budaya",
+    "question": "Sasando merupakan alat musik tradisional dari Pulau...",
+    "choices": [
+      "Rote",
+      "Batam",
+      "Madura",
+      "Seram"
+    ],
+    "answer": 0,
+    "explanation": "Sasando berasal dari Pulau Rote, Nusa Tenggara Timur."
+  },
+  {
+    "id": "jn-029",
+    "category": "Geografi",
+    "question": "Gunung Rinjani berada di Pulau...",
+    "choices": [
+      "Lombok",
+      "Flores",
+      "Sumba",
+      "Timor"
+    ],
+    "answer": 0,
+    "explanation": "Gunung Rinjani berada di Pulau Lombok, Nusa Tenggara Barat."
+  },
+  {
+    "id": "jn-030",
+    "category": "Budaya",
+    "question": "Tenun ikat banyak berkembang di wilayah...",
+    "choices": [
+      "Nusa Tenggara",
+      "Kepulauan Riau",
+      "Bangka Belitung",
+      "Banten"
+    ],
+    "answer": 0,
+    "explanation": "Berbagai tradisi tenun ikat berkembang kuat di Nusa Tenggara."
+  }
+]
