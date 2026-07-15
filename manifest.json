@@ -1,26 +1,102 @@
 {
-  "name": "Gobak Sodor Nusantara",
-  "short_name": "Gobak Sodor",
-  "description": "Game edukasi budaya Indonesia untuk belajar, bermain, dan bergotong royong.",
-  "lang": "id-ID",
-  "dir": "ltr",
-  "id": "./index.html",
-  "start_url": "./index.html",
+  "name": "Portal Permainan Nusantara",
+  "short_name": "Permainan Nusantara",
+  "description": "Portal game edukasi budaya Indonesia dengan Mode Demo, akun siswa, kelas guru, bank soal, dan leaderboard.",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#fff8e9",
+  "theme_color": "#123f73",
+  "lang": "id",
   "orientation": "any",
-  "background_color": "#f4f7fb",
-  "theme_color": "#153c78",
-  "categories": ["education", "games", "kids"],
   "icons": [
-    {"src": "assets/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "assets/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-    {"src": "assets/img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {
+      "src": "shared/assets/icons/icon-48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "shared/assets/icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "shared/assets/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "shared/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "shared/assets/icons/icon-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "shared/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "shared/assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    {"name": "Mulai Bermain", "short_name": "Bermain", "url": "./game.html", "icons": [{"src": "assets/img/icon-96.png", "sizes": "96x96"}]},
-    {"name": "Mode Guru", "short_name": "Guru", "url": "./teacher.html", "icons": [{"src": "assets/img/icon-96.png", "sizes": "96x96"}]},
-    {"name": "Leaderboard", "short_name": "Peringkat", "url": "./leaderboard.html", "icons": [{"src": "assets/img/icon-96.png", "sizes": "96x96"}]}
+    {
+      "name": "Katalog Game",
+      "url": "./games.html",
+      "icons": [
+        {
+          "src": "shared/assets/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Main Gobak Sodor",
+      "url": "./games/gobak-sodor/game.html",
+      "icons": [
+        {
+          "src": "shared/assets/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Jelajah Nusantara",
+      "url": "./games/jelajah-nusantara/",
+      "icons": [
+        {
+          "src": "shared/assets/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "url": "./dashboard.html",
+      "icons": [
+        {
+          "src": "shared/assets/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Status Sistem dan Demo",
+      "url": "./setup.html",
+      "icons": [
+        {
+          "src": "shared/assets/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
   ]
 }

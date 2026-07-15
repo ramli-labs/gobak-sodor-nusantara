@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#123f73">
+  <link rel="manifest" href="manifest.json"><link rel="icon" href="shared/assets/icons/icon-32.png">
+  <link rel="stylesheet" href="shared/css/portal.css"><link rel="stylesheet" href="shared/css/dashboard.css">
+  <title>Status Sistem | Portal Permainan Nusantara</title>
+  <script type="module" src="shared/js/portal.js"></script><script type="module" src="shared/js/setup.js"></script>
+</head>
+<body data-page="setup">
+<header class="portal-header"><div class="portal-container nav-shell"><a class="portal-brand" href="index.html"><span class="portal-brand-mark">N</span><span><strong>Permainan Nusantara</strong><small>Status sistem</small></span></a><nav class="portal-nav" data-portal-nav><a href="index.html">Beranda</a><a href="games.html">Game</a><a href="auth.html">Masuk / Demo</a></nav><div class="portal-actions"><button class="round-button" data-theme-toggle type="button">◐</button><button class="round-button menu-toggle" data-menu-toggle type="button">☰</button></div></div></header>
+<main>
+  <section class="page-hero compact"><div class="portal-container"><span class="eyebrow">Release Candidate v1.1</span><h1>Pilih cara portal menyimpan data.</h1><p>Mode lokal untuk bermain tanpa akun, Mode Demo untuk menguji seluruh alur, dan Supabase untuk penggunaan produksi lintas perangkat.</p><span class="connection-banner" data-backend-status></span></div></section>
+  <section class="portal-section"><div class="portal-container">
+    <div class="runtime-cards">
+      <article class="runtime-card" data-runtime-card="local"><strong>💻 Mode Lokal</strong><p>Game dan profil lokal. Tidak ada kelas, role, atau sinkronisasi akun.</p><a class="button text" href="games.html">Main lokal</a></article>
+      <article class="runtime-card" data-runtime-card="demo"><strong>🧪 Mode Demo</strong><p>Data contoh siswa, guru, admin, kelas, soal, tugas, dan hasil tersimpan di browser.</p><div class="button-row"><button class="button secondary" data-start-demo="student" type="button">Siswa</button><button class="button secondary" data-start-demo="teacher" type="button">Guru</button><button class="button secondary" data-start-demo="admin" type="button">Admin</button></div></article>
+      <article class="runtime-card" data-runtime-card="supabase"><strong>☁️ Supabase</strong><p>Backend produksi untuk akun, RLS, kelas, nilai, dan leaderboard lintas perangkat.</p><a class="button text" href="#supabase-config">Konfigurasi</a></article>
+    </div>
+  </div></section>
+
+  <section class="portal-section alt"><div class="portal-container setup-layout">
+    <article class="panel" id="supabase-config">
+      <span class="eyebrow">Backend produksi</span><h2>Konfigurasi Supabase</h2><p data-config-state></p>
+      <form class="profile-form" data-setup-form>
+        <label>Supabase Project URL<input name="url" type="url" placeholder="https://xxxx.supabase.co" required></label>
+        <label>Publishable key<input name="publishableKey" type="password" placeholder="sb_publishable_..." required></label>
+        <label>Alamat GitHub Pages<input name="siteUrl" type="url" placeholder="https://username.github.io/portal-permainan-nusantara/"></label>
+        <div class="form-actions"><button class="button primary" type="submit">Simpan dan tes</button><button class="button danger-ghost" type="button" data-clear-config>Hapus konfigurasi</button></div>
+        <p class="form-feedback" data-setup-feedback aria-live="polite"></p>
+      </form>
+    </article>
+    <article class="panel">
+      <div class="panel-heading"><div><span class="eyebrow">Pemeriksaan otomatis</span><h2>Diagnostik koneksi</h2></div><button class="button secondary" type="button" data-run-diagnostics>Periksa ulang</button></div>
+      <div class="diagnostic-grid" data-setup-diagnostics></div>
+      <div class="queue-panel" style="margin-top:16px"><div><strong>Antrean sinkronisasi: <span data-sync-count>0</span></strong><small>Hasil offline akan dicoba kembali secara otomatis.</small></div><button class="button secondary" type="button" data-retry-queue>Coba sinkron</button></div>
+    </article>
+  </div></section>
+
+  <section class="portal-section"><div class="portal-container setup-layout">
+    <article class="panel"><span class="eyebrow">Data uji</span><h2>Kontrol Mode Demo</h2><p>Mode Demo tidak memakai Supabase dan tidak memberikan keamanan produksi. Gunakan hanya untuk presentasi dan pengujian alur.</p><div class="button-row"><button class="button danger-ghost" type="button" data-stop-demo>Matikan demo</button><button class="button danger-ghost" type="button" data-reset-demo>Reset data demo</button></div><p class="form-feedback">Akun demo memakai password <code>demo12345</code>. Tombol masuk cepat tersedia pada halaman login.</p></article>
+    <article class="panel"><span class="eyebrow">Urutan produksi</span><h2>Checklist setup</h2><ol class="roadmap-list"><li><span>1</span>Buat proyek Supabase.</li><li><span>2</span>Jalankan migration dan reference seed.</li><li><span>3</span>Deploy dua Edge Function.</li><li><span>4</span>Isi URL dan publishable key.</li><li><span>5</span>Buat akun pertama dan tetapkan sebagai admin.</li><li><span>6</span>Jalankan checklist pengujian role.</li></ol><p><a class="button secondary" href="docs/SUPABASE-SETUP.md">Baca panduan lengkap</a></p></article>
+  </div></section>
+</main>
+<footer class="portal-footer"><div class="portal-container footer-grid"><div><strong>Portal Permainan Nusantara</strong><p>Konfigurasi frontend hanya menerima publishable key.</p></div><div class="footer-links"><a href="auth.html">Masuk / Demo</a><a href="docs/RELEASE-CANDIDATE-V1.1.md">Catatan RC</a></div><small>Versi 1.1 RC</small></div></footer><div class="portal-toast" data-toast></div>
+</body></html>

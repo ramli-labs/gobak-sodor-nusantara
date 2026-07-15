@@ -1,22 +1,60 @@
 <!doctype html>
-<html lang="id">
+<html lang="id" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#153c78">
-  <title>Offline | Gobak Sodor Nusantara</title>
-  <style>
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#172033;background:radial-gradient(circle at 20% 10%,#f7c94855,transparent 32%),linear-gradient(145deg,#f4f7fb,#eaf1fa)}
-    article{width:min(560px,100%);padding:38px;border:1px solid #dfe6f0;border-radius:28px;background:#fff;box-shadow:0 20px 55px #1d2d4a24;text-align:center}.icon{display:grid;place-items:center;width:84px;height:84px;margin:0 auto 20px;border-radius:24px;color:white;background:linear-gradient(145deg,#2775d8,#153c78);font-size:42px}h1{margin:.2em 0;font-size:clamp(2rem,8vw,3.2rem);line-height:1.05}p{color:#5d687c;line-height:1.65}a{display:inline-block;margin-top:14px;padding:13px 20px;border-radius:13px;color:white;background:#2775d8;text-decoration:none;font-weight:800}
-  </style>
+  <meta name="description" content="Portal game edukasi budaya Indonesia untuk siswa, guru, dan sekolah.">
+  <meta name="theme-color" content="#123f73">
+  <meta name="application-name" content="Portal Permainan Nusantara">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Permainan Nusantara">
+  <meta property="og:title" content="Portal Permainan Nusantara">
+  <meta property="og:description" content="Belajar melalui permainan tradisional Indonesia.">
+  <meta property="og:image" content="shared/assets/social-preview.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="shared/assets/icons/icon-32.png">
+  <link rel="apple-touch-icon" href="shared/assets/icons/icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared/css/portal.css">
+  <title>Offline | Portal Permainan Nusantara</title>
+  <script type="module" src="shared/js/portal.js"></script>
+  
 </head>
-<body>
-  <article>
-    <div class="icon" aria-hidden="true">↻</div>
-    <p><strong>Gobak Sodor Nusantara</strong></p>
-    <h1>Koneksi sedang terputus.</h1>
-    <p>Halaman yang pernah dibuka tetap dapat digunakan dari cache. Kembali ke beranda atau sambungkan internet untuk memuat halaman baru.</p>
-    <a href="index.html">Kembali ke Beranda</a>
-  </article>
+<body data-page="offline">
+<a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+
+<header class="portal-header">
+  <div class="portal-container nav-shell">
+    <a class="portal-brand" href="index.html" aria-label="Portal Permainan Nusantara — Beranda">
+      <span class="portal-brand-mark" aria-hidden="true">N</span>
+      <span><strong>Permainan Nusantara</strong><small>Belajar melalui budaya</small></span>
+    </a>
+    <nav class="portal-nav" data-portal-nav aria-label="Navigasi utama">
+      <a data-nav="home" href="index.html">Beranda</a>
+      <a data-nav="games" href="games.html">Katalog Game</a>
+      <a data-nav="profile" href="profile.html">Profil</a>
+      <a data-nav="leaderboard" href="leaderboard.html">Peringkat</a>
+      <a data-nav="teacher" href="teacher.html">Guru</a><a data-auth-link href="auth.html">Masuk</a>
+    </nav>
+    <div class="portal-actions">
+      <button class="round-button" type="button" data-theme-toggle aria-label="Ubah tema" title="Ubah tema">◐</button>
+      <button class="round-button install-button" type="button" data-install-app hidden aria-label="Pasang aplikasi" title="Pasang aplikasi">⇩</button>
+      <button class="round-button menu-toggle" type="button" data-menu-toggle aria-label="Buka menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<section class="offline-page"><div class="offline-card"><span>📡</span><h1>Portal sedang offline</h1><p>Halaman yang sudah pernah dibuka masih dapat tersedia. Sambungkan internet untuk memuat data atau halaman baru.</p><div class="button-row"><button class="button primary" onclick="location.reload()">Coba Lagi</button><a class="button secondary" href="index.html">Beranda</a></div></div></section></main>
+
+<footer class="portal-footer">
+  <div class="portal-container footer-grid">
+    <div><strong>Portal Permainan Nusantara</strong><p>Game dan aset yang pernah dibuka dapat tetap tersedia. Data online memerlukan koneksi.</p></div>
+    <div class="footer-links"><a href="games.html">Katalog</a><a href="profile.html">Profil</a><a href="teacher.html">Dashboard Guru</a></div>
+    <small>Versi 1.1 RC · <span data-current-year></span></small>
+  </div>
+</footer>
+<div class="portal-toast" data-toast role="status" aria-live="polite"></div>
 </body>
 </html>

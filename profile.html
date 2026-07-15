@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Portal game edukasi budaya Indonesia untuk siswa, guru, dan sekolah.">
+  <meta name="theme-color" content="#123f73">
+  <meta name="application-name" content="Portal Permainan Nusantara">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Permainan Nusantara">
+  <meta property="og:title" content="Portal Permainan Nusantara">
+  <meta property="og:description" content="Belajar melalui permainan tradisional Indonesia.">
+  <meta property="og:image" content="shared/assets/social-preview.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="shared/assets/icons/icon-32.png">
+  <link rel="apple-touch-icon" href="shared/assets/icons/icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared/css/portal.css">
+  <title>Profil | Portal Permainan Nusantara</title>
+  <script type="module" src="shared/js/portal.js"></script>
+  <script type="module" src="shared/js/profile.js"></script>
+</head>
+<body data-page="profile">
+<a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+
+<header class="portal-header">
+  <div class="portal-container nav-shell">
+    <a class="portal-brand" href="index.html" aria-label="Portal Permainan Nusantara — Beranda">
+      <span class="portal-brand-mark" aria-hidden="true">N</span>
+      <span><strong>Permainan Nusantara</strong><small>Belajar melalui budaya</small></span>
+    </a>
+    <nav class="portal-nav" data-portal-nav aria-label="Navigasi utama">
+      <a data-nav="home" href="index.html">Beranda</a>
+      <a data-nav="games" href="games.html">Katalog Game</a>
+      <a data-nav="profile" href="profile.html">Profil</a>
+      <a data-nav="leaderboard" href="leaderboard.html">Peringkat</a>
+      <a data-nav="teacher" href="teacher.html">Guru</a><a data-auth-link href="auth.html">Masuk</a>
+    </nav>
+    <div class="portal-actions">
+      <button class="round-button" type="button" data-theme-toggle aria-label="Ubah tema" title="Ubah tema">◐</button>
+      <button class="round-button install-button" type="button" data-install-app hidden aria-label="Pasang aplikasi" title="Pasang aplikasi">⇩</button>
+      <button class="round-button menu-toggle" type="button" data-menu-toggle aria-label="Buka menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+<main id="main-content">
+<section class="page-hero compact"><div class="portal-container"><span class="eyebrow">Profil portal</span><h1>Identitas dan progres belajarmu.</h1><p>Profil dapat bekerja secara lokal atau tersinkron lintas perangkat setelah login.</p></div></section>
+<section class="portal-section">
+  <div class="portal-container profile-layout">
+    <aside class="profile-card">
+      <div class="avatar-display" data-profile-avatar>🌟</div>
+      <h2 data-profile-name>Penjelajah Baru</h2>
+      <p data-profile-class>Belum mengisi kelas</p>
+      <span class="local-badge" data-profile-storage>Tersimpan lokal</span>
+      <div class="level-ring"><strong data-profile-level>1</strong><span>Level Portal</span></div>
+      <div class="xp-track"><span data-xp-track></span></div>
+      <small data-xp-caption>0 / 250 XP menuju level berikutnya</small>
+    </aside>
+    <div class="profile-main">
+      <section class="panel">
+        <div class="panel-heading"><div><span class="eyebrow">Identitas</span><h2>Atur profil</h2></div><span class="status-dot" data-profile-sync>Belum login</span></div>
+        <form data-profile-form class="profile-form">
+          <label>Nama panggilan<input name="displayName" maxlength="24" placeholder="Contoh: Sari" required></label>
+          <label>Kelas atau kelompok<input name="className" maxlength="40" placeholder="Contoh: VIII B"></label><label>Sekolah<input name="schoolName" maxlength="120" placeholder="Nama sekolah"></label>
+          <fieldset><legend>Pilih avatar</legend><div class="avatar-options" data-avatar-options></div></fieldset>
+          <div class="form-actions"><button class="button primary" type="submit">Simpan Profil</button><button class="button danger-ghost" type="button" data-reset-profile>Reset Profil</button></div>
+          <p class="form-feedback" data-profile-feedback aria-live="polite"></p>
+        </form>
+      </section>
+      <section class="stats-grid portal-stats">
+        <article><span>🏆</span><strong data-stat-wins>0</strong><small>Kemenangan</small></article>
+        <article><span>✅</span><strong data-stat-correct>0</strong><small>Jawaban benar</small></article>
+        <article><span>🗺️</span><strong data-stat-islands>0/5</strong><small>Pulau selesai</small></article>
+        <article><span>🔥</span><strong data-stat-streak>0</strong><small>Streak hari</small></article>
+      </section>
+      <section class="panel"><div class="panel-heading"><div><span class="eyebrow">Lintas-game</span><h2>Achievement portal</h2></div><span data-achievement-count>0/6</span></div><div class="achievement-list" data-portal-achievements></div></section>
+      <section class="panel"><div class="panel-heading"><div><span class="eyebrow">Aktivitas</span><h2>Riwayat terbaru</h2></div><a href="leaderboard.html">Lihat peringkat</a></div><div class="activity-list" data-recent-activity></div></section>
+    </div>
+  </div>
+</section></main>
+
+<footer class="portal-footer">
+  <div class="portal-container footer-grid">
+    <div><strong>Portal Permainan Nusantara</strong><p>Fondasi portal game edukasi budaya Indonesia. Data lokal dan akun Supabase dapat digunakan bersama.</p></div>
+    <div class="footer-links"><a href="games.html">Katalog</a><a href="profile.html">Profil</a><a href="teacher.html">Dashboard Guru</a></div>
+    <small>Versi 1.1 RC · <span data-current-year></span></small>
+  </div>
+</footer>
+<div class="portal-toast" data-toast role="status" aria-live="polite"></div>
+</body>
+</html>
