@@ -1,12 +1,21 @@
 /**
- * Simulasi Strategi Gobak Sodor — Versi 1.4.0.
- * Simulasi pembelajaran interdisipliner (Hari 3 KKA): bermain, mengamati pola
- * penjaga, menerapkan logika jika–maka, mencoba strategi, dan merefleksikan hasil.
- * Satu arena tunggal, tanpa peta pulau/level, tanpa leaderboard, tanpa combo/shield.
+ * Simulasi Strategi Gobak Sodor — Versi 1.5.0.
+ * Simulasi pembelajaran interdisipliner (Hari 3 KKA): membaca posisi dan
+ * target penjaga, menerapkan logika jika–maka, bekerja sama, mencoba
+ * strategi, dan merefleksikan hasil. Satu arena tunggal, tanpa peta pulau,
+ * leaderboard, combo, atau shield.
+ *
+ * Peran pemain (Mode Dua Pemain):
+ * - P1 (Pembawa Bendera): satu-satunya yang memicu checkpoint, mengambil
+ *   bendera, dan menyelesaikan sesi. Progres P1 adalah progres utama.
+ * - P2 (Pengalih Penjaga): dapat menarik target penjaga tetapi tidak dapat
+ *   mengambil bendera atau memicu checkpoint.
+ * Mode Satu Pemain: hanya P1 aktif; seluruh penjaga hanya dapat menargetkan P1.
  */
 import { Player } from "./player.js";
 import { Enemy } from "./enemy.js";
-import { QuizSystem } from "./quiz.js";
+import { QuizSystem, QUESTIONS_PER_SESSION } from "./quiz.js";
+import { EventLog } from "./eventlog.js";
 import { ARENA } from "./arena.js";
 import {
   initAccessibilityPanel,
@@ -19,8 +28,9 @@ const GAME_HEIGHT = 560;
 const START_ZONE_WIDTH = 108;
 const PLAYER_SPEED = 230;
 const MAX_CHANCES = 3;
+const DIVERSION_WINDOW_SECONDS = 4;
 const TOUCH_CONTROLS_KEY = "gsnTouchControlsV1";
-const GAME_VERSION = "1.4.0";
+const GAME_VERSION = "1.5.0";
 
 const GAME_STATES = Object.freeze({
   LOADING: "loading",
@@ -40,6 +50,17 @@ function isFormControl(target) {
 
 function isDemoMode() {
   return new URLSearchParams(location.search).get("demo") === "1";
+}
+
+function getDemoScene() {
+  return new URLSearchParams(location.search).get("scene");
+}
+
+function partition(list, predicate) {
+  const yes = [];
+  const no = [];
+  list.forEach((item) => (predicate(item) ? yes : no).push(item));
+  return [yes, no];
 }
 
 class InputController {
@@ -127,8 +148,10 @@ class GobakSodorGame {
     this.settings = loadAccessibilitySettings();
     this.input = new InputController(this.settings);
     this.quiz = new QuizSystem();
+    this.eventLog = new EventLog();
     this.arena = ARENA;
     this.demoMode = isDemoMode();
+    this.demoScene = this.demoMode ? getDemoScene() : null;
     this.mode = this.demoMode ? "Co-op" : "Solo";
     this.quizReady = false;
     this.state = GAME_STATES.LOADING;
@@ -136,11 +159,16 @@ class GobakSodorGame {
     this.elapsedActiveTime = 0;
     this.chances = MAX_CHANCES;
     this.catchesSinceContinue = 0;
-    this.collisions = 0;
+    this.collisionsP1 = 0;
+    this.collisionsP2 = 0;
     this.linesCrossed = 0;
     this.questionAnsweredCount = 0;
-    this.decoyEvents = 0;
+    this.diversionSuccessCount = 0;
+    this.diversionFailCount = 0;
+    this.activeDiversions = [];
     this.catchesByCheckpoint = {};
+    this.catchesByEnemy = {};
+    this.outboundDuration = null;
     this.returnStartedAt = null;
     this.returnDuration = null;
     this.countdownRemaining = 0;
@@ -178,6 +206,7 @@ class GobakSodorGame {
       answers: document.querySelector("[data-hud-answers]"),
       score: document.querySelector("[data-hud-score]"),
       flag: document.querySelector("[data-hud-flag]"),
+      focusList: document.querySelector("[data-focus-list]"),
       countdown: document.querySelector("[data-game-countdown]"),
       countdownValue: document.querySelector("[data-countdown-value]"),
       journeyPhase: document.querySelector("[data-hud-phase]"),
@@ -202,10 +231,20 @@ class GobakSodorGame {
       quizContinue: document.querySelector("[data-quiz-continue]"),
       resultSection: document.querySelector("[data-result-section]"),
       resultTime: document.querySelector("[data-result-time]"),
+      resultOutbound: document.querySelector("[data-result-outbound]"),
+      resultReturn: document.querySelector("[data-result-return]"),
       resultCorrect: document.querySelector("[data-result-correct]"),
-      resultCaught: document.querySelector("[data-result-caught]"),
+      resultScore: document.querySelector("[data-result-score]"),
+      resultCaughtP1: document.querySelector("[data-result-caught-p1]"),
+      resultCaughtP2: document.querySelector("[data-result-caught-p2]"),
       resultLines: document.querySelector("[data-result-lines]"),
+      resultTopEnemy: document.querySelector("[data-result-top-enemy]"),
+      resultWorstLine: document.querySelector("[data-result-worst-line]"),
+      resultDiversionSuccess: document.querySelector("[data-result-diversion-success]"),
+      resultDiversionFail: document.querySelector("[data-result-diversion-fail]"),
       resultStrategy: document.querySelector("[data-result-strategy]"),
+      lkpdText: document.querySelector("[data-lkpd-text]"),
+      lkpdCopyButton: document.querySelector("[data-lkpd-copy]"),
       resultRestart: document.querySelector("[data-result-restart]"),
       resultHome: document.querySelector("[data-result-home]")
     };
@@ -219,6 +258,8 @@ class GobakSodorGame {
     this.bindControls();
     this.applyDemoModeUi();
     this.updateControlLabels();
+    // Susun arena/canvas lebih dulu agar layar tidak kosong saat soal masih
+    // dimuat; resetGame() tidak membentuk sesi soal selama quizReady masih false.
     this.resetGame();
     this.showLoadingOverlay();
     requestAnimationFrame((time) => this.loop(time));
@@ -226,15 +267,24 @@ class GobakSodorGame {
     try {
       await this.quiz.load();
       this.quizReady = true;
-      this.state = GAME_STATES.READY;
-      this.showReadyOverlay();
-      this.setStatus("Bank soal siap. Amati pola penjaga, lalu mulai simulasi.");
+      // Bentuk sesi enam soal HANYA setelah bank soal selesai dimuat dan
+      // tervalidasi (memperbaiki urutan inisialisasi lama).
+      this.resetGame();
+      if (this.quiz.totalQuestions !== QUESTIONS_PER_SESSION) {
+        throw new Error("Sesi soal tidak lengkap.");
+      }
+      if (this.demoMode && this.demoScene) {
+        this.jumpToScene(this.demoScene);
+      } else {
+        this.showReadyOverlay();
+      }
+      this.setStatus("Bank soal siap. Amati posisi dan target penjaga, lalu mulai simulasi.");
       this.updateButtons();
     } catch (error) {
       console.error(error);
       this.state = GAME_STATES.ERROR;
-      this.showErrorOverlay(error.message);
-      this.setStatus("Bank soal gagal dimuat. Jalankan proyek melalui server lokal.");
+      this.showErrorOverlay();
+      this.setStatus("Soal pembelajaran belum dapat dimuat. Silakan muat ulang halaman.");
       this.updateButtons();
     }
   }
@@ -273,6 +323,7 @@ class GobakSodorGame {
 
     this.elements.resultRestart?.addEventListener("click", () => this.resetAndStart());
     this.elements.resultHome?.addEventListener("click", () => this.returnToStart());
+    this.elements.lkpdCopyButton?.addEventListener("click", () => this.copyLkpdText());
 
     this.elements.fullscreenButton?.addEventListener("click", async () => {
       try {
@@ -347,12 +398,17 @@ class GobakSodorGame {
     this.state = this.quizReady ? GAME_STATES.READY : GAME_STATES.LOADING;
     this.chances = MAX_CHANCES;
     this.catchesSinceContinue = 0;
-    this.collisions = 0;
+    this.collisionsP1 = 0;
+    this.collisionsP2 = 0;
     this.linesCrossed = 0;
     this.questionAnsweredCount = 0;
-    this.decoyEvents = 0;
+    this.diversionSuccessCount = 0;
+    this.diversionFailCount = 0;
+    this.activeDiversions = [];
     this.catchesByCheckpoint = {};
+    this.catchesByEnemy = {};
     this.elapsedActiveTime = 0;
+    this.outboundDuration = null;
     this.returnStartedAt = null;
     this.returnDuration = null;
     this.countdownRemaining = 0;
@@ -363,7 +419,10 @@ class GobakSodorGame {
     this.quizAnswered = false;
     this.activeTrip = "outbound";
     this.roundId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    this.quiz.startSession({ demo: this.demoMode });
+    this.eventLog.start();
+    this.eventLog.log("session_started", { mode: this.mode, demoMode: this.demoMode });
+    // Sesi soal hanya dibentuk setelah bank soal selesai dimuat & tervalidasi.
+    if (this.quizReady) this.quiz.startSession({ demo: this.demoMode });
     this.input.clear();
 
     this.checkpoints = this.arena.checkpoints.map((x, index) => ({
@@ -376,7 +435,7 @@ class GobakSodorGame {
     if (this.mode === "Co-op") {
       this.players.push(new Player({ x: 65, y: 335, speed: PLAYER_SPEED, playerNumber: 2, color: "#1fa678", accent: "#0d523d" }));
     }
-    this.enemies = this.arena.enemies.map((config) => new Enemy(config));
+    this.enemies = this.arena.enemies.map((config) => new Enemy({ ...config, deterministic: this.demoMode }));
 
     this.hideQuiz();
     this.hideCountdown();
@@ -428,8 +487,8 @@ class GobakSodorGame {
     window.gsnAudio?.startMusic();
     window.gsnAudio?.play("start");
     window.gsnEffects?.burst(window.innerWidth / 2, Math.min(window.innerHeight * 0.42, 360), { count: 28, speed: 4 });
-    this.setMessage(this.mode === "Co-op" ? "Amati pola penjaga, lalu bagi peran untuk mencapai bendera." : "Amati pola penjaga dan cari waktu yang tepat untuk bergerak.", 3);
-    this.setStatus(`Simulasi dimulai. Amati pola penjaga sebelum bergerak.`);
+    this.setMessage(this.mode === "Co-op" ? "Amati target penjaga, lalu bagi peran untuk mencapai bendera." : "Amati target dan arah penjaga sebelum bergerak.", 3);
+    this.setStatus("Simulasi dimulai. Amati posisi dan target penjaga sebelum bergerak.");
     this.updateButtons();
     this.updateHud();
   }
@@ -490,8 +549,8 @@ class GobakSodorGame {
     this.hideOverlay();
     this.state = GAME_STATES.RUNNING;
     this.lastTime = performance.now();
-    this.setMessage("Lanjutkan dari posisi aman. Amati ritme penjaga lebih cermat.", 2.6);
-    this.setStatus("Simulasi dilanjutkan dari posisi aman terakhir.");
+    this.setMessage("Lanjutkan dari posisi aman terakhir P1. Amati target penjaga lebih cermat.", 2.6);
+    this.setStatus("Simulasi dilanjutkan dari posisi aman terakhir P1.");
     this.updateButtons();
     this.updateHud();
     this.canvas.focus();
@@ -511,12 +570,17 @@ class GobakSodorGame {
     this.messageTimer = Math.max(0, this.messageTimer - deltaTime);
 
     const bounds = { left: 24, right: GAME_WIDTH - 24, top: 40, bottom: GAME_HEIGHT - 40 };
-    const previousPositions = this.players.map((player) => player.x);
+    const previousP1X = this.players[0].x;
     this.players[0].update(deltaTime, this.input.getDirection("p1"), bounds);
     if (this.players[1]) this.players[1].update(deltaTime, this.input.getDirection("p2"), bounds);
-    this.enemies.forEach((enemy) => enemy.update(deltaTime));
 
-    if (this.checkCheckpoint(previousPositions)) {
+    this.enemies.forEach((enemy) => {
+      const change = enemy.update(deltaTime, this.players);
+      if (change) this.handleTargetChange(enemy, change);
+    });
+    this.expireDiversions();
+
+    if (this.checkCheckpoint(previousP1X)) {
       this.updateHud();
       return;
     }
@@ -526,6 +590,60 @@ class GobakSodorGame {
     // modal pilihan); hentikan pemrosesan frame ini agar tidak tertimpa hasil.
     if (this.state === GAME_STATES.RUNNING) this.checkWinCondition();
     this.updateHud();
+  }
+
+  // ------------------------------------------------------------------
+  // Pengalihan penjaga (diversion): hanya dihitung berhasil bila didukung
+  // event log — bukan sekadar P2 mendekat atau tertangkap.
+  // ------------------------------------------------------------------
+  handleTargetChange(enemy, change) {
+    this.eventLog.log("enemy_target_changed", {
+      enemyId: enemy.id,
+      previousTarget: change.previousTarget,
+      newTarget: change.newTarget,
+      reason: change.reason
+    });
+
+    if (change.previousTarget === 1 && change.newTarget === 2) {
+      const p1 = this.players[0];
+      const p2 = this.players[1];
+      this.activeDiversions.push({
+        enemyId: enemy.id,
+        startedAt: this.elapsedActiveTime,
+        deadline: this.elapsedActiveTime + DIVERSION_WINDOW_SECONDS
+      });
+      this.eventLog.log("diversion_started", {
+        enemyId: enemy.id,
+        previousTarget: 1,
+        newTarget: 2,
+        p1Position: { x: Math.round(p1.x), y: Math.round(p1.y) },
+        p2Position: p2 ? { x: Math.round(p2.x), y: Math.round(p2.y) } : null
+      });
+    }
+
+    if (change.newTarget === 1) {
+      this.resolveDiversions(false, "penjaga-kembali-menargetkan-p1", (item) => item.enemyId === enemy.id);
+    }
+  }
+
+  expireDiversions() {
+    if (!this.activeDiversions.length) return;
+    this.resolveDiversions(false, "waktu-habis", (item) => this.elapsedActiveTime > item.deadline);
+  }
+
+  resolveDiversions(succeeded, reason, filterFn = () => true) {
+    const [matched, remaining] = partition(this.activeDiversions, filterFn);
+    if (!matched.length) return;
+    matched.forEach((diversion) => {
+      this.eventLog.log(succeeded ? "diversion_succeeded" : "diversion_failed", {
+        enemyId: diversion.enemyId,
+        reason,
+        elapsedSince: Number((this.elapsedActiveTime - diversion.startedAt).toFixed(2))
+      });
+      if (succeeded) this.diversionSuccessCount += 1;
+      else this.diversionFailCount += 1;
+    });
+    this.activeDiversions = remaining;
   }
 
   nearestCheckpointId(x) {
@@ -541,50 +659,50 @@ class GobakSodorGame {
     return closest?.id ?? 1;
   }
 
-  checkCheckpoint(previousPositions) {
-    // Perjalanan pergi: pemain mana pun dapat membuka checkpoint sebelum bendera diambil.
+  // ------------------------------------------------------------------
+  // Hanya P1 yang dapat memicu checkpoint, mengambil bendera, dan
+  // menyelesaikan sesi. P2 tidak memengaruhi progres utama ini.
+  // ------------------------------------------------------------------
+  checkCheckpoint(previousP1X) {
+    const p1 = this.players[0];
+
     if (this.flag.carrierId === null) {
-      for (let playerIndex = 0; playerIndex < this.players.length; playerIndex += 1) {
-        const player = this.players[playerIndex];
-        const checkpoint = this.checkpoints.find((item) => (
-          !item.outboundAsked
-          && previousPositions[playerIndex] < item.x
-          && player.x >= item.x
-        ));
-        if (!checkpoint) continue;
-        checkpoint.outboundAsked = true;
-        player.x = checkpoint.x - player.radius - 7;
-        this.linesCrossed += 1;
-        this.openQuiz(checkpoint, player, "outbound");
-        return true;
-      }
-      return false;
+      const checkpoint = this.checkpoints.find((item) => (
+        !item.outboundAsked && previousP1X < item.x && p1.x >= item.x
+      ));
+      if (!checkpoint) return false;
+      checkpoint.outboundAsked = true;
+      p1.x = checkpoint.x - p1.radius - 7;
+      p1.updateLastSafePosition(p1.x, p1.y);
+      this.linesCrossed += 1;
+      this.eventLog.log("checkpoint_crossed", { checkpointId: checkpoint.id, phase: "pergi" });
+      this.resolveDiversions(true, "p1-melewati-checkpoint");
+      this.openQuiz(checkpoint, "outbound");
+      return true;
     }
 
-    // Perjalanan pulang: hanya pembawa bendera yang memicu soal dari kanan ke kiri.
-    const carrierIndex = this.players.findIndex((player) => player.playerNumber === this.flag.carrierId);
-    if (carrierIndex < 0) return false;
-    const carrier = this.players[carrierIndex];
     const checkpoint = [...this.checkpoints].reverse().find((item) => (
-      !item.returnAsked
-      && previousPositions[carrierIndex] > item.x
-      && carrier.x <= item.x
+      !item.returnAsked && previousP1X > item.x && p1.x <= item.x
     ));
     if (!checkpoint) return false;
 
     checkpoint.returnAsked = true;
-    carrier.x = checkpoint.x + carrier.radius + 7;
+    p1.x = checkpoint.x + p1.radius + 7;
+    p1.updateLastSafePosition(p1.x, p1.y);
     this.linesCrossed += 1;
-    this.openQuiz(checkpoint, carrier, "return");
+    this.eventLog.log("checkpoint_crossed", { checkpointId: checkpoint.id, phase: "pulang" });
+    this.resolveDiversions(true, "p1-melewati-checkpoint");
+    this.openQuiz(checkpoint, "return");
     return true;
   }
 
-  openQuiz(checkpoint, triggerPlayer, trip = "outbound") {
+  openQuiz(checkpoint, trip = "outbound") {
     this.state = GAME_STATES.QUIZ;
     this.input.clear();
     this.activeTrip = trip;
     this.quizAnswered = false;
     const question = this.quiz.getNextQuestion();
+    this.eventLog.log("question_shown", { questionId: question.id, category: question.category });
     const tripLabel = trip === "return" ? "Perjalanan pulang" : "Perjalanan pergi";
     const tripNumber = trip === "return"
       ? this.checkpoints.length - checkpoint.id + 1
@@ -595,7 +713,7 @@ class GobakSodorGame {
     const totalRoundQuestions = this.checkpoints.length * 2;
 
     this.elements.quizCategory.textContent = question.category;
-    this.elements.quizProgress.textContent = `${tripLabel} ${tripNumber}/${this.checkpoints.length} · Soal ${totalQuestionNumber}/${totalRoundQuestions} · P${triggerPlayer.playerNumber}`;
+    this.elements.quizProgress.textContent = `${tripLabel} ${tripNumber}/${this.checkpoints.length} · Soal ${totalQuestionNumber} dari ${totalRoundQuestions}`;
     this.elements.quizQuestion.textContent = question.question;
     this.elements.quizFeedback.textContent = trip === "return"
       ? "Jawab untuk membuka jalur pulang menuju START."
@@ -609,7 +727,7 @@ class GobakSodorGame {
     this.elements.quizLayer.setAttribute("aria-hidden", "false");
     this.elements.quizChoices.querySelector("button")?.focus();
     window.gsnAudio?.play("checkpoint");
-    this.effectAtGamePoint(checkpoint.x, triggerPlayer.y, { count: 20, colors: [this.arena.colors.accent, "#ffffff", "#f7c948"], speed: 4 });
+    this.effectAtGamePoint(checkpoint.x, this.players[0].y, { count: 20, colors: [this.arena.colors.accent, "#ffffff", "#f7c948"], speed: 4 });
     this.setStatus(`${tripLabel}, garis ${checkpoint.id}: soal ${question.category}. Permainan berhenti sementara.`);
     this.updateButtons();
   }
@@ -617,6 +735,7 @@ class GobakSodorGame {
   submitQuizAnswer(choiceIndex) {
     const result = this.quiz.answer(choiceIndex);
     this.quizAnswered = true;
+    this.eventLog.log("question_answered", { questionId: result.question.id, isCorrect: result.isCorrect });
     const buttons = [...this.elements.quizChoices.querySelectorAll("[data-choice-index]")];
     buttons.forEach((button, index) => {
       button.disabled = true;
@@ -652,7 +771,7 @@ class GobakSodorGame {
     this.hideQuiz();
     this.state = GAME_STATES.RUNNING;
     this.lastTime = performance.now();
-    this.setMessage("Jalur terbuka. Tetap amati ritme penjaga.", 2.2);
+    this.setMessage("Jalur terbuka. Tetap amati target penjaga.", 2.2);
     this.setStatus(this.activeTrip === "return" ? "Jalur pulang terbuka. Lanjut menuju START." : "Jalur pergi terbuka. Lanjut menuju bendera.");
     this.updateButtons();
     this.canvas.focus();
@@ -665,8 +784,8 @@ class GobakSodorGame {
 
   checkFlagCollection() {
     if (this.flag.carrierId !== null) return;
-    const collector = this.players.find((player) => this.circleCollision(player.getCircle(), this.flag));
-    if (!collector) return;
+    const p1 = this.players[0];
+    if (!this.circleCollision(p1.getCircle(), this.flag)) return;
 
     const missingOutbound = this.checkpoints.filter((checkpoint) => !checkpoint.outboundAsked).length;
     if (missingOutbound > 0) {
@@ -677,53 +796,78 @@ class GobakSodorGame {
       return;
     }
 
-    this.flag.carrierId = collector.playerNumber;
-    collector.hasFlag = true;
+    this.flag.carrierId = 1;
+    p1.hasFlag = true;
+    p1.updateLastSafePosition(p1.x, p1.y);
+    this.outboundDuration = this.elapsedActiveTime;
     this.returnStartedAt = this.elapsedActiveTime;
     this.setEnemyReturnPhase(true);
+    this.eventLog.log("flag_taken", {});
+    this.eventLog.log("return_started", {});
+    this.resolveDiversions(true, "p1-mengambil-bendera");
     window.gsnAudio?.play("flag");
-    this.effectAtGamePoint(collector.x, collector.y, { count: 40, colors: [this.arena.colors.accent, "#f7c948", "#ffffff"], speed: 6 });
-    this.setMessage(`P${collector.playerNumber} membawa bendera — penjaga bergerak lebih cepat. Kembali ke START!`, 3);
-    this.setStatus(`Bendera diambil Pemain ${collector.playerNumber}. Perjalanan pulang kini lebih menantang.`);
+    this.effectAtGamePoint(p1.x, p1.y, { count: 40, colors: [this.arena.colors.accent, "#f7c948", "#ffffff"], speed: 6 });
+    this.setMessage("P1 membawa bendera — penjaga sedikit lebih waspada. Kembali ke START!", 3);
+    this.setStatus("Bendera diambil P1. Perjalanan pulang kini lebih menantang.");
   }
 
   checkEnemyCollisions() {
     for (const player of this.players) {
       if (player.isInvulnerable()) continue;
-      const hit = this.enemies.some((enemy) => this.circleRectCollision(player.getCircle(), enemy.getRect()));
-      if (!hit) continue;
+      const hitEnemy = this.enemies.find((enemy) => this.circleRectCollision(player.getCircle(), enemy.getRect()));
+      if (!hitEnemy) continue;
 
-      this.collisions += 1;
-      this.catchesSinceContinue += 1;
-      this.chances = Math.max(0, MAX_CHANCES - this.catchesSinceContinue);
-      const lineId = this.nearestCheckpointId(player.x);
-      this.catchesByCheckpoint[lineId] = (this.catchesByCheckpoint[lineId] || 0) + 1;
+      const phase = this.flag.carrierId ? "pulang" : "pergi";
+      this.catchesByEnemy[hitEnemy.id] = (this.catchesByEnemy[hitEnemy.id] || 0) + 1;
+      this.eventLog.log("player_caught", {
+        enemyId: hitEnemy.id,
+        enemyName: hitEnemy.name,
+        enemyOrientation: hitEnemy.orientation,
+        guardLineId: hitEnemy.id,
+        playerId: player.playerNumber,
+        collisionX: Math.round(player.x),
+        collisionY: Math.round(player.y),
+        phase,
+        hasFlag: player.hasFlag
+      });
 
       window.gsnAudio?.play("collision");
       this.pulseArena("danger");
       this.effectAtGamePoint(player.x, player.y, { count: 26, colors: ["#e84444", "#f7c948", "#172033"], speed: 5, gravity: 0.22 });
-      const wasCarrier = this.flag.carrierId === player.playerNumber;
-      if (wasCarrier) this.dropFlag();
 
-      const carrier = this.players.find((candidate) => candidate.playerNumber === this.flag.carrierId);
-      const decoyEvent = this.mode === "Co-op" && !wasCarrier && Boolean(carrier);
-      if (decoyEvent) this.decoyEvents += 1;
+      if (player.playerNumber === 1) {
+        this.collisionsP1 += 1;
+        this.catchesSinceContinue += 1;
+        this.chances = Math.max(0, MAX_CHANCES - this.catchesSinceContinue);
+        const lineId = this.nearestCheckpointId(player.x);
+        this.catchesByCheckpoint[lineId] = (this.catchesByCheckpoint[lineId] || 0) + 1;
+        if (player.hasFlag) this.dropFlag();
+        player.reset({ keepFlag: false });
+        this.resolveDiversions(false, "p1-tertangkap");
+        this.setMessage("Perhatikan kembali ritme dan posisi penjaga.", 2.4);
+        this.setStatus(`P1 tertangkap ${hitEnemy.name}.`);
 
-      player.reset({ keepFlag: false });
-      this.setMessage("Perhatikan kembali ritme dan posisi penjaga.", 2.4);
-
-      if (!this.settings.practiceMode && this.catchesSinceContinue >= MAX_CHANCES) {
-        this.showCatchLimitOverlay();
-        return;
+        if (!this.settings.practiceMode && this.catchesSinceContinue >= MAX_CHANCES) {
+          this.showCatchLimitOverlay();
+          return;
+        }
+      } else {
+        this.collisionsP2 += 1;
+        const wasDecoyAttempt = this.activeDiversions.some((item) => item.enemyId === hitEnemy.id);
+        player.reset({ keepFlag: false });
+        if (wasDecoyAttempt) {
+          this.resolveDiversions(false, "p2-tertangkap-saat-mengalihkan", (item) => item.enemyId === hitEnemy.id);
+          this.setStatus(`P2 tertangkap saat mengalihkan ${hitEnemy.name}.`);
+        } else {
+          this.setStatus(`P2 tertangkap ${hitEnemy.name}.`);
+        }
+        this.setMessage("Perhatikan kembali ritme dan posisi penjaga.", 2.4);
       }
-
-      this.setStatus(this.settings.practiceMode ? "Mode Latihan: sesi tetap berlanjut tanpa batas tertangkap." : `Kesempatan tersisa ${this.chances}.`);
     }
   }
 
   dropFlag() {
-    const carrier = this.players.find((player) => player.playerNumber === this.flag.carrierId);
-    if (carrier) carrier.hasFlag = false;
+    this.players[0].hasFlag = false;
     this.flag.carrierId = null;
     this.returnStartedAt = null;
     this.setEnemyReturnPhase(false);
@@ -736,28 +880,27 @@ class GobakSodorGame {
     this.overlaySecondaryAction = "restart";
     this.configureOverlay({
       icon: "fa-arrows-rotate",
-      eyebrow: "Sudah tiga kali tertangkap",
+      eyebrow: "P1 sudah tiga kali tertangkap",
       title: "Lanjutkan atau ulangi dari awal?",
-      text: "Amati kembali posisi dan ritme penjaga sebelum mencoba lagi.",
+      text: "Amati kembali posisi dan target penjaga sebelum mencoba lagi.",
       primary: "Coba Lagi dari Posisi Terakhir",
       showSecondary: true,
       secondary: "Ulangi Simulasi"
     });
-    this.setStatus("Tiga kali tertangkap. Pilih untuk melanjutkan atau mengulang simulasi.");
+    this.setStatus("P1 tiga kali tertangkap. Pilih untuk melanjutkan atau mengulang simulasi.");
     this.updateButtons();
   }
 
   checkWinCondition() {
     if (this.flag.carrierId === null) return;
-    const carrier = this.players.find((player) => player.playerNumber === this.flag.carrierId);
-    if (!carrier) return;
-    const insideStart = carrier.x - carrier.radius <= this.startZone.x + this.startZone.width;
+    const p1 = this.players[0];
+    const insideStart = p1.x - p1.radius <= this.startZone.x + this.startZone.width;
     if (!insideStart) return;
 
     const missingReturn = this.checkpoints.filter((checkpoint) => !checkpoint.returnAsked).length;
     if (missingReturn > 0) return;
 
-    if (this.returnStartedAt !== null) this.returnDuration = Math.max(0, this.elapsedActiveTime - this.returnStartedAt);
+    this.returnDuration = Math.max(0, this.elapsedActiveTime - this.returnStartedAt);
     this.finish();
   }
 
@@ -767,7 +910,9 @@ class GobakSodorGame {
     if (this.returnStartedAt !== null && this.returnDuration === null) {
       this.returnDuration = Math.max(0, this.elapsedActiveTime - this.returnStartedAt);
     }
+    if (this.outboundDuration === null) this.outboundDuration = this.elapsedActiveTime;
     this.input.clear();
+    this.eventLog.log("session_completed", {});
 
     window.gsnAudio?.stopMusic();
     window.gsnAudio?.play("win");
@@ -780,7 +925,7 @@ class GobakSodorGame {
       icon: "fa-flag-checkered",
       eyebrow: "Simulasi selesai",
       title: "Bendera berhasil dibawa pulang!",
-      text: "Lihat hasil, analisis strategi, dan pertanyaan refleksi di bawah.",
+      text: "Lihat hasil, analisis strategi, dan Data untuk LKPD di bawah.",
       primary: "Lihat Hasil",
       showSecondary: false
     });
@@ -793,6 +938,60 @@ class GobakSodorGame {
     this.elements.resultSection?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // ------------------------------------------------------------------
+  // Mode Simulasi Video: pintasan adegan agar setiap segmen dapat difilmkan
+  // ulang secara konsisten tanpa mengulang seluruh alur.
+  // ------------------------------------------------------------------
+  jumpToScene(scene) {
+    const p1 = this.players[0];
+    switch (scene) {
+      case "quiz1":
+        this.beginRunning();
+        this.checkpoints[0].outboundAsked = true;
+        p1.x = this.checkpoints[0].x - p1.radius - 7;
+        this.linesCrossed = 1;
+        this.openQuiz(this.checkpoints[0], "outbound");
+        break;
+      case "quiz2":
+        this.beginRunning();
+        this.checkpoints[0].outboundAsked = true;
+        p1.x = this.checkpoints[1].x - p1.radius - 7;
+        this.linesCrossed = 2;
+        this.openQuiz(this.checkpoints[1], "outbound");
+        break;
+      case "flag":
+        this.beginRunning();
+        this.checkpoints.forEach((checkpoint) => { checkpoint.outboundAsked = true; });
+        this.linesCrossed = this.checkpoints.length;
+        p1.x = this.flag.x - p1.radius - 30;
+        p1.updateLastSafePosition(p1.x, p1.y);
+        break;
+      case "return":
+        this.beginRunning();
+        this.checkpoints.forEach((checkpoint) => { checkpoint.outboundAsked = true; });
+        this.linesCrossed = this.checkpoints.length;
+        this.flag.carrierId = 1;
+        p1.hasFlag = true;
+        p1.x = this.checkpoints[this.checkpoints.length - 1].x + p1.radius + 40;
+        p1.updateLastSafePosition(p1.x, p1.y);
+        this.outboundDuration = 0;
+        this.returnStartedAt = this.elapsedActiveTime;
+        this.setEnemyReturnPhase(true);
+        break;
+      case "result":
+        this.checkpoints.forEach((checkpoint) => { checkpoint.outboundAsked = true; checkpoint.returnAsked = true; });
+        this.linesCrossed = this.checkpoints.length * 2;
+        this.outboundDuration = 24;
+        this.returnStartedAt = 0;
+        this.finish();
+        break;
+      case "start":
+      default:
+        this.showReadyOverlay();
+        break;
+    }
+  }
+
   mostCaughtLine() {
     const entries = Object.entries(this.catchesByCheckpoint);
     if (!entries.length) return null;
@@ -800,41 +999,113 @@ class GobakSodorGame {
     return { id: Number(id), count };
   }
 
+  mostActiveEnemy() {
+    const entries = Object.entries(this.catchesByEnemy);
+    if (!entries.length) return null;
+    const [id, count] = entries.reduce((best, entry) => (entry[1] > best[1] ? entry : best));
+    const enemy = this.enemies.find((item) => item.id === id);
+    return { id, name: enemy ? enemy.name : id, count };
+  }
+
   buildStrategyAnalysis(report) {
     const lines = [];
-    if (this.mode === "Co-op" && this.decoyEvents > 0) {
-      lines.push(`Tim berhasil memanfaatkan pengalihan penjaga sebanyak ${this.decoyEvents} kali.`);
+    if (this.mode === "Co-op" && this.diversionSuccessCount > 0) {
+      lines.push(`P2 berhasil mengalihkan penjaga sebanyak ${this.diversionSuccessCount} kali sehingga P1 dapat melintas.`);
     }
     const worst = this.mostCaughtLine();
-    if (worst) {
-      lines.push(`Tim paling sering tertangkap pada garis ke-${worst.id} (${worst.count} kali).`);
-    } else {
-      lines.push("Tim tidak tertangkap sama sekali sepanjang simulasi ini.");
-    }
+    if (worst) lines.push(`P1 paling sering tertangkap pada garis ke-${worst.id} (${worst.count} kali).`);
+    const topEnemy = this.mostActiveEnemy();
+    if (topEnemy) lines.push(`${topEnemy.name} adalah penjaga yang paling sering menangkap (${topEnemy.count} kali).`);
     if (report.total > 0) {
       lines.push(report.accuracy >= 70
         ? "Jawaban kuis menunjukkan pemahaman logika permainan yang baik."
         : "Beberapa jawaban kuis perlu ditinjau kembali untuk memahami logika jika–maka pada permainan.");
     }
-    if (this.collisions > 0) {
-      lines.push("Tim perlu memperbaiki waktu bergerak setelah penjaga berpindah arah atau ritme.");
+    if (this.mode === "Co-op" && this.diversionFailCount > 0 && this.diversionSuccessCount === 0) {
+      lines.push("Strategi pengalihan belum berhasil pada sesi ini; coba ubah waktu atau sisi pendekatan P2.");
     }
+    if (!lines.length) lines.push("Belum cukup data untuk menentukan pola strategi utama.");
     return lines;
+  }
+
+  dominantSuccessText() {
+    if (this.mode === "Co-op" && this.diversionSuccessCount > 0) return "Pengalihan penjaga oleh P2";
+    if (this.collisionsP1 === 0) return "Membaca target penjaga sebelum bergerak";
+    return "Belum ada strategi yang menonjol";
+  }
+
+  dominantImprovementText() {
+    const worst = this.mostCaughtLine();
+    if (worst) return `Waktu bergerak pada garis ke-${worst.id}`;
+    if (this.mode === "Co-op" && this.diversionFailCount > 0) return "Waktu dan sisi pendekatan saat mengalihkan penjaga";
+    return "Belum ada catatan perbaikan khusus";
+  }
+
+  buildLkpdText(report) {
+    const worst = this.mostCaughtLine();
+    const topEnemy = this.mostActiveEnemy();
+    return [
+      `Waktu pergi: ${this.formatDuration(this.outboundDuration ?? 0)}`,
+      `Waktu pulang: ${this.formatDuration(this.returnDuration ?? 0)}`,
+      `Jawaban benar: ${report.correct}/${report.total}`,
+      `Jumlah tertangkap: P1 = ${this.collisionsP1}, P2 = ${this.collisionsP2}`,
+      `Garis paling sering gagal: ${worst ? `Garis ke-${worst.id} (${worst.count} kali)` : "Tidak ada"}`,
+      `Penjaga paling aktif: ${topEnemy ? `${topEnemy.name} (${topEnemy.count} tangkapan)` : "Tidak ada"}`,
+      `Pengalihan berhasil: ${this.diversionSuccessCount}`,
+      `Strategi yang paling berhasil: ${this.dominantSuccessText()}`,
+      `Strategi yang perlu diperbaiki: ${this.dominantImprovementText()}`
+    ].join("\n");
+  }
+
+  copyLkpdText() {
+    const text = this.elements.lkpdText?.textContent || "";
+    if (!text) return;
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => this.setStatus("Ringkasan LKPD disalin ke clipboard."))
+        .catch(() => this.setStatus("Gagal menyalin otomatis. Salin manual dari kotak teks."));
+      return;
+    }
+    try {
+      const helper = document.createElement("textarea");
+      helper.value = text;
+      helper.setAttribute("readonly", "");
+      helper.style.position = "absolute";
+      helper.style.left = "-9999px";
+      document.body.append(helper);
+      helper.select();
+      document.execCommand("copy");
+      helper.remove();
+      this.setStatus("Ringkasan LKPD disalin ke clipboard.");
+    } catch {
+      this.setStatus("Gagal menyalin otomatis. Salin manual dari kotak teks.");
+    }
   }
 
   renderResult() {
     if (!this.elements.resultSection) return;
     const report = this.quiz.getSessionReport();
+    const worst = this.mostCaughtLine();
+    const topEnemy = this.mostActiveEnemy();
     this.elements.resultSection.hidden = false;
     if (this.elements.resultTime) this.elements.resultTime.textContent = this.formatDuration(this.elapsedActiveTime);
+    if (this.elements.resultOutbound) this.elements.resultOutbound.textContent = this.formatDuration(this.outboundDuration ?? 0);
+    if (this.elements.resultReturn) this.elements.resultReturn.textContent = this.formatDuration(this.returnDuration ?? 0);
     if (this.elements.resultCorrect) this.elements.resultCorrect.textContent = `${report.correct}/${report.total}`;
-    if (this.elements.resultCaught) this.elements.resultCaught.textContent = String(this.collisions);
+    if (this.elements.resultScore) this.elements.resultScore.textContent = `${report.accuracy}%`;
+    if (this.elements.resultCaughtP1) this.elements.resultCaughtP1.textContent = String(this.collisionsP1);
+    if (this.elements.resultCaughtP2) this.elements.resultCaughtP2.textContent = String(this.collisionsP2);
     if (this.elements.resultLines) this.elements.resultLines.textContent = String(this.linesCrossed);
+    if (this.elements.resultTopEnemy) this.elements.resultTopEnemy.textContent = topEnemy ? `${topEnemy.name} (${topEnemy.count}×)` : "Tidak ada";
+    if (this.elements.resultWorstLine) this.elements.resultWorstLine.textContent = worst ? `Garis ke-${worst.id} (${worst.count}×)` : "Tidak ada";
+    if (this.elements.resultDiversionSuccess) this.elements.resultDiversionSuccess.textContent = String(this.diversionSuccessCount);
+    if (this.elements.resultDiversionFail) this.elements.resultDiversionFail.textContent = String(this.diversionFailCount);
     if (this.elements.resultStrategy) {
       this.elements.resultStrategy.innerHTML = this.buildStrategyAnalysis(report)
         .map((line) => `<li>${this.escapeHtml(line)}</li>`)
         .join("");
     }
+    if (this.elements.lkpdText) this.elements.lkpdText.textContent = this.buildLkpdText(report);
   }
 
   hideResult() {
@@ -853,7 +1124,8 @@ class GobakSodorGame {
     const modeLabel = this.mode === "Co-op" ? "Mode Dua Pemain" : "Mode Satu Pemain";
     if (this.elements.modeBadge) this.elements.modeBadge.innerHTML = `<i class="fa-solid ${icon}"></i> ${modeLabel}`;
     if (this.elements.gameDescription) {
-      this.elements.gameDescription.textContent = `${MAX_CHANCES} kesempatan · ${this.checkpoints.length * 2} soal (${this.checkpoints.length} pergi + ${this.checkpoints.length} pulang) · ${this.arena.enemies.length} penjaga`;
+      const roleText = this.mode === "Co-op" ? "P1 Pembawa Bendera · P2 Pengalih Penjaga" : "P1 menghadapi penjaga secara mandiri";
+      this.elements.gameDescription.textContent = `${roleText} · ${MAX_CHANCES} kesempatan · ${this.checkpoints.length * 2} soal`;
     }
   }
 
@@ -864,13 +1136,11 @@ class GobakSodorGame {
   getJourneyProgress() {
     if (this.state === GAME_STATES.FINISHED) return 100;
     const routeLength = Math.max(1, this.flag.x - 65);
+    const p1 = this.players[0];
     if (this.flag.carrierId === null) {
-      const furthestX = Math.max(65, ...this.players.map((player) => player.x));
-      return Math.max(0, Math.min(50, ((furthestX - 65) / routeLength) * 50));
+      return Math.max(0, Math.min(50, ((p1.x - 65) / routeLength) * 50));
     }
-    const carrier = this.players.find((player) => player.playerNumber === this.flag.carrierId);
-    if (!carrier) return 50;
-    return Math.max(50, Math.min(100, 50 + ((this.flag.x - carrier.x) / routeLength) * 50));
+    return Math.max(50, Math.min(100, 50 + ((this.flag.x - p1.x) / routeLength) * 50));
   }
 
   updateJourneyHud() {
@@ -879,7 +1149,7 @@ class GobakSodorGame {
     else if (this.state === GAME_STATES.QUIZ) phase = this.activeTrip === "return" ? "Soal perjalanan pulang" : "Soal menuju bendera";
     else if (this.flag.carrierId !== null) phase = "Kembali ke START";
     else if ([GAME_STATES.RUNNING, GAME_STATES.PAUSED].includes(this.state)) phase = "Menuju bendera";
-    else if (this.state === GAME_STATES.CATCH_LIMIT) phase = "Tiga kali tertangkap";
+    else if (this.state === GAME_STATES.CATCH_LIMIT) phase = "P1 tiga kali tertangkap";
     else if (this.state === GAME_STATES.FINISHED) phase = "Simulasi selesai";
 
     if (this.elements.journeyPhase) this.elements.journeyPhase.textContent = phase;
@@ -916,18 +1186,26 @@ class GobakSodorGame {
       this.elements.chances.textContent = this.settings.practiceMode ? "∞ Latihan" : `${this.chances} tersisa`;
       this.elements.chances.closest(".hud-item")?.classList.toggle("danger", !this.settings.practiceMode && this.chances <= 1);
     }
-    if (this.elements.caught) this.elements.caught.textContent = String(this.collisions);
-    if (this.elements.lines) this.elements.lines.textContent = String(this.linesCrossed);
+    if (this.elements.caught) this.elements.caught.textContent = String(this.collisionsP1 + this.collisionsP2);
+    if (this.elements.lines) this.elements.lines.textContent = `${this.linesCrossed}/${this.checkpoints.length * 2 || 6}`;
     if (this.elements.answers) this.elements.answers.textContent = `${this.questionAnsweredCount}/${this.quiz.totalQuestions || 6}`;
     if (this.elements.score) {
       const report = this.quiz.getSessionReport();
       this.elements.score.textContent = `${report.accuracy}%`;
     }
     if (this.elements.flag) {
-      this.elements.flag.textContent = this.flag.carrierId ? `P${this.flag.carrierId} membawa` : "Belum";
+      this.elements.flag.textContent = this.flag.carrierId ? "Diambil" : "Belum";
       this.elements.flag.closest(".hud-item")?.classList.toggle("success", this.flag.carrierId !== null);
     }
+    this.updateFocusPanel();
     this.updateJourneyHud();
+  }
+
+  updateFocusPanel() {
+    if (!this.elements.focusList) return;
+    this.elements.focusList.innerHTML = this.enemies.map((enemy) => (
+      `<li><span>${this.escapeHtml(enemy.name)}</span><strong>${this.escapeHtml(enemy.getTargetShortLabel())}</strong></li>`
+    )).join("");
   }
 
   updateButtons() {
@@ -980,7 +1258,10 @@ class GobakSodorGame {
   showReadyOverlay() {
     this.overlayPrimaryAction = "start";
     const modeLabel = this.mode === "Co-op" ? "Dua Pemain" : "Satu Pemain";
-    this.configureOverlay({ icon: this.mode === "Co-op" ? "fa-people-group" : "fa-person-running", eyebrow: `Mode ${modeLabel}`, title: "Siap memulai simulasi?", text: `Bawa pemain menuju bendera dan kembali ke garis START tanpa kehabisan kesempatan. Maksimal ${MAX_CHANCES} kali tertangkap sebelum memilih untuk melanjutkan atau mengulang.`, primary: "Mulai Simulasi", showSecondary: false });
+    const text = this.mode === "Co-op"
+      ? `P1 membawa bendera, P2 mengalihkan penjaga. Maksimal ${MAX_CHANCES} kali P1 tertangkap sebelum memilih untuk melanjutkan atau mengulang.`
+      : `P1 menghadapi seluruh penjaga secara mandiri. Maksimal ${MAX_CHANCES} kali tertangkap sebelum memilih untuk melanjutkan atau mengulang.`;
+    this.configureOverlay({ icon: this.mode === "Co-op" ? "fa-people-group" : "fa-person-running", eyebrow: `Mode ${modeLabel}`, title: "Siap memulai simulasi?", text, primary: "Mulai Simulasi", showSecondary: false });
   }
 
   showPauseOverlay() {
@@ -989,8 +1270,8 @@ class GobakSodorGame {
     this.configureOverlay({ icon: "fa-pause", eyebrow: "Permainan dijeda", title: "Atur strategi tim.", text: "Posisi, waktu, dan hasil soal tetap tersimpan. Tekan Lanjut atau tombol P.", primary: "Lanjut", showSecondary: true, secondary: "Ulangi Simulasi" });
   }
 
-  showErrorOverlay(detail) {
-    this.configureOverlay({ icon: "fa-triangle-exclamation", eyebrow: "Bank soal tidak tersedia", title: "Simulasi belum dapat dimulai.", text: `${detail} Jalankan folder proyek melalui python -m http.server 8000, lalu buka game.html.`, primary: "Tidak tersedia", showSecondary: false, disablePrimary: true });
+  showErrorOverlay() {
+    this.configureOverlay({ icon: "fa-triangle-exclamation", eyebrow: "Soal pembelajaran belum dapat dimuat", title: "Silakan muat ulang halaman.", text: "Jalankan folder proyek melalui server lokal (mis. python -m http.server 8000), lalu buka game.html kembali.", primary: "Tidak tersedia", showSecondary: false, disablePrimary: true });
   }
 
   configureOverlay({ icon, eyebrow, title, text, primary, showSecondary, secondary = "Ulangi", disablePrimary = false }) {
@@ -1020,6 +1301,9 @@ class GobakSodorGame {
     this.drawFlag(ctx);
     this.drawTeamLink(ctx);
     this.enemies.forEach((enemy) => enemy.draw(ctx, { colorBlind: this.settings.colorBlind }));
+    if (!this.settings.hideTargetIndicators) {
+      this.enemies.forEach((enemy) => enemy.drawTargetIndicator(ctx, this.players));
+    }
     this.players.forEach((player) => player.draw(ctx, { colorBlind: this.settings.colorBlind }));
     this.drawCanvasMessage(ctx);
     if ([GAME_STATES.QUIZ, GAME_STATES.PAUSED, GAME_STATES.CATCH_LIMIT].includes(this.state)) this.drawDimOverlay(ctx);
@@ -1163,7 +1447,7 @@ class GobakSodorGame {
   }
 }
 
-export { GobakSodorGame, GAME_STATES };
+export { GobakSodorGame, GAME_STATES, GAME_VERSION };
 
 document.addEventListener("DOMContentLoaded", () => {
   const game = new GobakSodorGame();

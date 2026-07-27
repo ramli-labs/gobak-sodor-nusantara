@@ -1,27 +1,34 @@
-# Simulasi Strategi Gobak Sodor — Versi 1.4.0
+# Simulasi Strategi Gobak Sodor — Versi 1.5.0
 
 Simulasi pembelajaran interdisipliner untuk kelas VII, Hari 3 — Koding dan
 Kecerdasan Artifisial (KKA). Fokusnya bukan kompetisi atau petualangan membuka
-level, melainkan: **bermain, mengamati pola, menerapkan logika jika–maka,
-mencoba strategi, dan merefleksikan hasil.** Teknologi berfungsi sebagai media
-simulasi dan analisis strategi, bukan pengganti permainan Gobak Sodor nyata
-yang sudah dilakukan pada pembelajaran PJOK.
+level, melainkan: **membaca posisi dan target penjaga, menerapkan logika
+jika–maka, bekerja sama, mencoba strategi, dan merefleksikan hasil.**
+Teknologi berfungsi sebagai media simulasi dan analisis strategi, bukan
+pengganti permainan Gobak Sodor nyata yang sudah dilakukan pada pembelajaran
+PJOK.
 
-## Perubahan versi 1.4.0
+## Perubahan versi 1.5.0
 
-- **Fokus disederhanakan menjadi simulasi, bukan kompetisi.** Leaderboard, penyimpanan skor/nama pemain, peta perjalanan antarpulau, sistem membuka level, streak harian, combo, shield, dan bonus pengali skor **dihapus seluruhnya**. Skor sesi, waktu bermain, dan jumlah tertangkap tetap dicatat karena diperlukan untuk analisis pembelajaran.
-- **Satu arena tunggal** (`js/arena.js` menggantikan `js/map.js`) — tanpa sistem pulau/level, sehingga pola penjaga dan posisi awal selalu konsisten untuk diamati dan diulang.
-- **Layar awal disederhanakan**: judul "Simulasi Strategi Gobak Sodor", tiga blok singkat (Tujuan, Tantangan, Tugas Pengamatan), dan satu tombol utama **"MULAI SIMULASI"** (Mode Dua Pemain, paling menonjol) dengan Mode Satu Pemain sebagai pilihan tambahan. Pemilih tingkat kesulitan dan pemilih set soal guru (sudah tidak dapat diisi sejak portal dihapus) ikut dilepas.
-- **Peran Dua Pemain eksplisit**: Pemain 1 Pembawa Bendera, Pemain 2 Pengalih Penjaga — sesuai instruksi di layar.
-- **Indikator baru** menggantikan HUD lama: Waktu (stopwatch naik, bukan hitung mundur), **Kesempatan** (menggantikan istilah "Nyawa"), Tertangkap, Garis Berhasil Dilewati, Jawaban (x/6), dan Skor Pemahaman.
-- **Batas tiga kali tertangkap**: setelah tertangkap tiga kali, muncul pilihan "Coba Lagi dari Posisi Terakhir" atau "Ulangi Simulasi" — sesi tidak langsung berakhir, dan jawaban salah tidak lagi dihukum dengan mempercepat penjaga.
-- **Umpan balik kuis** kini memakai ikon + teks (✓ Jawaban Tepat / ! Perlu Ditinjau Kembali) agar tidak hanya mengandalkan warna, dengan penjelasan singkat maksimal dua kalimat.
-- **Bank soal berbasis situasi dan logika**, bukan hafalan fakta: enam soal tetap untuk Mode Simulasi Video (`data/questions.json` → `demo`) dan 12 soal (3 per mapel: KKA, PJOK, IPS, Seni Rupa) untuk Mode Latihan Kelas (`bank`) yang diacak dengan kuota kategori setiap sesi.
-- **Halaman hasil baru "Hasil Simulasi Strategi"**: waktu penyelesaian, jawaban benar, jumlah tertangkap, garis berhasil dilewati, Analisis Strategi otomatis berbasis data permainan (tanpa peringkat/skor tertinggi), dan tiga pertanyaan **Refleksi** yang membandingkan permainan digital dengan permainan nyata.
-- **Mode Simulasi Video** (`game.html?demo=1`): urutan enam soal, posisi awal, dan pola penjaga selalu sama; Mode Dua Pemain langsung terpilih; tombol kecil **"Ulangi Adegan"** mengembalikan simulasi ke kondisi awal untuk pengambilan gambar.
-- Cache PWA dinaikkan ke `gsn-v1.4.0`; `js/leaderboard.js`, `js/map.js`, `js/difficulty.js`, `js/gamification.js`, dan `leaderboard.html` dihapus dari repo dan dari precache.
+- **Penjaga mengejar target secara otomatis**, menggantikan pola patroli tetap. Setiap penjaga (`js/enemy.js`) tetap terikat pada garis tugasnya (horizontal/vertikal) tetapi mengejar *proyeksi* posisi pemain pada garis itu, dipilih lewat *threat score* (jarak ke garis, arah gerak, status pembawa bendera, kecepatan gerak) — bukan acak. Target dikunci minimal 1,5 detik dengan histeresis 20% agar tidak bergetar antarpemain, dan bergerak dengan reaction delay ±250–500 ms serta percepatan/perlambatan (bukan lompatan instan).
+- **Peran pemain dipisah ketat**: P1 (Pembawa Bendera) satu-satunya yang dapat memicu checkpoint, mengambil bendera, dan menyelesaikan sesi. P2 (Pengalih Penjaga) dapat menarik target penjaga tetapi tidak dapat mengambil bendera atau memicu checkpoint. Mode Satu Pemain: seluruh penjaga otomatis hanya dapat menargetkan P1.
+- **Indikator target** tampil di atas setiap penjaga ("Target: P1" / "Target: P2" / "Siaga", bentuk chip berbeda per target agar tidak hanya dibedakan warna) beserta panel ringkas **Fokus Penjaga**. Guru dapat menyembunyikannya lewat Aksesibilitas.
+- **Pengalihan penjaga (diversion) hanya dihitung berhasil bila didukung bukti**: penjaga sebelumnya menargetkan P1, berpindah ke P2, dan dalam ≤4 detik P1 melewati checkpoint/mengambil bendera tanpa tertangkap. Jika tidak, dicatat sebagai gagal — tidak pernah diklaim berhasil tanpa data.
+- **Sistem tabrakan rinci**: setiap tangkapan mencatat penjaga, garis tugas, pemain, posisi, waktu, dan fase (pergi/pulang) — pesan di layar menyebut penjaga yang menangkap (mis. "P1 tertangkap Penjaga 2"), bukan sekadar checkpoint terdekat.
+- **Posisi aman terakhir (`lastSafePosition`)** per pemain, diperbarui setiap checkpoint berhasil dilewati; P1 yang tertangkap kembali ke posisi itu (bukan selalu ke START), dengan invulnerability singkat ±1 detik.
+- **Event log pembelajaran** (`js/eventlog.js`) mencatat kejadian penting satu sesi (bukan setiap frame): checkpoint dilewati, bendera diambil, tertangkap, target penjaga berubah, pengalihan dimulai/berhasil/gagal, soal tampil/dijawab, dan sesi selesai — menjadi dasar Hasil Simulasi Strategi dan Data untuk LKPD.
+- **Bank soal diganti menjadi 12 soal tetap** (3 KKA, 3 PJOK, 3 IPS, 3 Seni Rupa) berbasis situasi/logika, bukan hafalan fakta. Mode Latihan Kelas mengambil 6 dari 12 secara acak (kuota ≥2 KKA/≥1 PJOK/≥1 IPS/≥1 Seni Rupa + 1 bebas, Fisher–Yates, posisi pilihan A–D ikut diacak per soal). Mode Simulasi Video memakai urutan 6 soal tetap (`demoOrder`) tanpa acak apa pun. Validator kualitas soal (`validateQuestionBank`) berjalan otomatis dan hanya menulis peringatan ke console, tidak pernah ke siswa.
+- **Bug inisialisasi diperbaiki**: sesi 6 soal sebelumnya sempat terbentuk sebelum bank soal selesai dimuat; urutan kini mengikuti muat → validasi → `quizReady=true` → bentuk sesi → reset → tampilkan overlay siap.
+- **Hasil Simulasi Strategi diperluas**: waktu total/pergi/pulang, jawaban benar, skor pemahaman, tertangkap P1 dan P2 (terpisah), garis dilewati, penjaga paling sering menangkap, garis paling sering gagal, serta jumlah pengalihan berhasil/gagal — plus bagian **Data untuk LKPD** siap salin (tombol "Salin Ringkasan", tanpa backend).
+- **Mode Simulasi Video** (`game.html?demo=1`) kini mendukung pintasan adegan `&scene=start|quiz1|quiz2|flag|return|result` untuk memfilmkan tiap segmen tanpa mengulang seluruh alur; parameter teknis tidak pernah ditampilkan ke siswa.
+- **`leaderboard.html` dibuat ulang sebagai redirect aman** ke `game.html` (bukan 404) untuk tautan/bookmark lama. Local Storage lama (`gsnLeaderboardV1`, `gsnMapProgressV1`, dll.) dibersihkan otomatis sekali lewat migrasi aman di `js/app.js`.
+- Cache PWA dinaikkan ke `gsn-v1.5.0` dan kini mengabaikan string kueri (`ignoreSearch`) agar `game.html?demo=1` tetap dapat dibuka offline.
 
 ## Riwayat versi sebelumnya
+
+### Versi 1.4.0 — Simulasi, bukan kompetisi
+
+Leaderboard, penyimpanan skor/nama pemain, peta perjalanan antarpulau, sistem membuka level, streak harian, combo, shield, dan bonus pengali skor dihapus. Layar awal disederhanakan (Tujuan/Tantangan/Tugas Pengamatan + tombol "MULAI SIMULASI"), HUD diganti (Kesempatan, Tertangkap, Garis Dilewati, Jawaban, Skor Pemahaman), dan ditambahkan halaman Hasil Simulasi Strategi serta Refleksi.
 
 ### Versi 1.3.0 — Repo disederhanakan menjadi situs satu game
 
@@ -73,21 +80,28 @@ Website simulasi edukasi berbasis **HTML5, CSS3, Vanilla JavaScript ES6, Canvas 
 - Tampilan desktop, tablet, dan layar sentuh besar (PID/IFP) — tanpa horizontal scrolling.
 
 ### 2. Gameplay Canvas
-- Mode Satu Pemain dan Dua Pemain (keyboard atau layar sentuh). Dua Pemain: Pemain 1 Pembawa Bendera, Pemain 2 Pengalih Penjaga.
-- Satu arena tetap: pemain, penjaga horizontal/vertikal dengan lima pola ritme (steady, pause, pulse, surge, fakeout), checkpoint, bendera, dan START.
-- Pause, restart, "Ulangi Adegan" (Mode Simulasi Video), fullscreen, dan kontrol sentuh Pemain 1 dan Pemain 2.
-- Maksimal tiga kali tertangkap sebelum muncul pilihan lanjut dari posisi aman atau mengulang simulasi.
+- Mode Satu Pemain dan Dua Pemain (keyboard atau layar sentuh). Dua Pemain: P1 Pembawa Bendera (satu-satunya yang memicu checkpoint/bendera/penyelesaian), P2 Pengalih Penjaga (tidak dapat mengambil bendera/checkpoint, tetapi dapat menarik target penjaga).
+- Satu arena tetap: pemain, penjaga horizontal/vertikal yang mengejar target (lihat "Sistem Penjaga" di bawah), checkpoint, bendera, dan START.
+- Pause, restart, "Ulangi Adegan" (Mode Simulasi Video), fullscreen, dan kontrol sentuh P1 dan P2.
+- Maksimal tiga kali tertangkap P1 sebelum muncul pilihan lanjut dari posisi aman terakhir atau mengulang simulasi. Tertangkap P2 dicatat terpisah dan tidak menghentikan sesi.
 
-### 3. Sistem belajar
-- Enam soal tetap (Mode Simulasi Video) dan 12 soal acak berkuota kategori (Mode Latihan Kelas), masing-masing berbasis situasi permainan, logika jika–maka, dan analisis — bukan hafalan fakta.
-- Empat kategori: KKA, PJOK, IPS, dan Seni Rupa, dengan kalimat penjelasan singkat setelah setiap jawaban.
-- Halaman Hasil Simulasi Strategi: waktu, jawaban benar, jumlah tertangkap, garis dilewati, analisis strategi otomatis, dan refleksi digital vs. nyata.
+### 3. Sistem Penjaga (Target-Chasing AI)
+- Penjaga tetap terikat pada garis tugasnya (horizontal: kiri–kanan; vertikal: atas–bawah) tetapi mengejar proyeksi posisi pemain pada garis itu, bukan patroli tetap.
+- Target dipilih dari *threat score* (kedekatan ke garis, arah gerak menuju garis, status pembawa bendera, kecepatan gerak) — bukan acak — dengan target lock ≥1,5 detik dan histeresis 20% agar tidak bergetar.
+- Reaction delay ±250–500 ms (tetap ±350 ms pada Mode Simulasi Video) dan gerakan memakai percepatan/perlambatan (steering) dengan jarak berhenti agar tidak bergetar di dekat target.
+- Tanpa target dalam radius deteksi, penjaga kembali siaga (goyangan kecil di titik asal, bukan patroli panjang).
+- Indikator "Target: P1/P2/Siaga" tampil di atas tiap penjaga plus panel ringkas "Fokus Penjaga"; dapat disembunyikan lewat Aksesibilitas.
 
-### 4. Aksesibilitas
-- Mode buta warna berbasis pola (bukan warna semata), remap delapan tombol, dan Mode Latihan (sesi tidak berhenti karena batas tertangkap).
+### 4. Sistem belajar
+- 12 soal tetap (3 KKA, 3 PJOK, 3 IPS, 3 Seni Rupa) berbasis situasi permainan, logika jika–maka, dan analisis — bukan hafalan fakta.
+- Mode Latihan Kelas: 6 dari 12 diacak dengan kuota kategori dan posisi pilihan A–D ikut diacak. Mode Simulasi Video: 6 soal urutan tetap, posisi pilihan tidak diacak.
+- Halaman Hasil Simulasi Strategi: waktu total/pergi/pulang, jawaban benar, skor pemahaman, tertangkap P1 & P2, garis dilewati, penjaga paling aktif, garis paling sering gagal, pengalihan berhasil/gagal, Analisis Strategi otomatis berbasis event log, Data untuk LKPD siap salin, dan refleksi digital vs. nyata.
+
+### 5. Aksesibilitas
+- Mode buta warna berbasis pola (bukan warna semata), remap delapan tombol, Mode Latihan (sesi tidak berhenti karena batas tertangkap), dan toggle sembunyikan indikator target penjaga (untuk guru).
 - Target sentuh besar, teks berskala untuk dibaca dari jarak beberapa meter, fokus keyboard pada modal.
 
-### 5. Fitur profesional
+### 6. Fitur profesional
 - **Audio prosedural:** musik latar dan efek suara dibuat melalui Web Audio API tanpa file audio eksternal.
 - **Mute global:** status suara disimpan di Local Storage.
 - **Particle effect dan confetti:** dibuat dengan Canvas tanpa library tambahan.
@@ -104,6 +118,7 @@ gobak-sodor-nusantara/
   game.html
   culture.html
   tutorial.html
+  leaderboard.html
   offline.html
   manifest.json
   service-worker.js
@@ -119,6 +134,7 @@ gobak-sodor-nusantara/
     enemy.js
     quiz.js
     arena.js
+    eventlog.js
     accessibility.js
     culture.js
   data/
@@ -176,10 +192,21 @@ npx serve .
 
 Buka `game.html?demo=1` untuk alur yang konsisten saat pengambilan gambar:
 
-- Urutan enam soal, posisi awal pemain/penjaga, dan pola gerak penjaga selalu sama (tidak ada elemen acak).
+- Urutan enam soal, posisi awal pemain/penjaga, reaction delay, dan pemilihan target penjaga selalu sama (tidak ada elemen acak).
 - Mode Dua Pemain langsung terpilih; opsi Mode Satu Pemain disembunyikan.
 - Tombol kecil **"Ulangi Adegan"** muncul di HUD untuk mengembalikan simulasi ke kondisi awal.
-- Parameter `?demo=1` tidak ditampilkan ke pengguna di layar mana pun.
+- Parameter `?demo=1` dan `&scene=...` tidak ditampilkan ke pengguna di layar mana pun.
+
+Pintasan adegan (tambahkan `&scene=...` setelah `?demo=1`) untuk memfilmkan tiap segmen tanpa mengulang seluruh alur:
+
+| Pintasan | Kondisi yang ditampilkan |
+|---|---|
+| `game.html?demo=1&scene=start` | Layar siap, sebelum countdown |
+| `game.html?demo=1&scene=quiz1` | Modal soal pertama (checkpoint pergi ke-1) |
+| `game.html?demo=1&scene=quiz2` | Modal soal kedua (checkpoint pergi ke-2) |
+| `game.html?demo=1&scene=flag` | P1 tepat di depan bendera |
+| `game.html?demo=1&scene=return` | Bendera sudah diambil, perjalanan pulang |
+| `game.html?demo=1&scene=result` | Halaman Hasil Simulasi Strategi |
 
 ## Menguji PWA dan Offline Mode
 
@@ -210,10 +237,11 @@ Seluruh URL menggunakan path relatif sehingga aman ketika repository diterbitkan
 - `gsn-theme`: tema terang/gelap.
 - `gsn-onboarding-seen-v1`: status onboarding.
 - `gsn-audio-muted-v1`: status mute.
-- `gsnAccessibilityV1`: mode latihan, mode buta warna, dan remap kontrol.
+- `gsnAccessibilityV1`: mode latihan, mode buta warna, sembunyikan indikator target, dan remap kontrol.
 - `gsnTouchControlsV1`: preferensi paksa-tampil kontrol sentuh.
+- `gsn-migration-v2-done`: penanda migrasi sekali jalan yang membersihkan kunci lama (`gsnLeaderboardV1`, `gsnMapProgressV1`, `gsnGamificationV1`, `gsnDifficultyV1`, `gsnPlaytestV1`, dll.) dari perangkat yang pernah memakai versi lama.
 
-Setiap simulasi berdiri sendiri (tanpa riwayat lintas sesi/perangkat) — tidak ada lagi profil belajar, set soal guru, progres pulau, streak, atau data playtest yang disimpan permanen.
+Setiap simulasi berdiri sendiri (tanpa riwayat lintas sesi/perangkat) — tidak ada lagi profil belajar, set soal guru, progres pulau, streak, atau data playtest yang disimpan permanen. `leaderboard.html` tetap ada sebagai halaman pengalihan aman (redirect) ke `game.html` untuk tautan atau bookmark lama.
 
 ## Batasan versi statis
 

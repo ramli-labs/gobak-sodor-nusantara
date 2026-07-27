@@ -8,6 +8,7 @@ export const ACCESSIBILITY_KEY = "gsnAccessibilityV1";
 export const DEFAULT_ACCESSIBILITY = Object.freeze({
   colorBlind: false,
   practiceMode: false,
+  hideTargetIndicators: false,
   controls: {
     p1: { up: "KeyW", left: "KeyA", down: "KeyS", right: "KeyD" },
     p2: { up: "ArrowUp", left: "ArrowLeft", down: "ArrowDown", right: "ArrowRight" }
@@ -43,6 +44,7 @@ export function loadAccessibilitySettings(storage = window.localStorage) {
   const result = {
     colorBlind: Boolean(stored.colorBlind),
     practiceMode: Boolean(stored.practiceMode),
+    hideTargetIndicators: Boolean(stored.hideTargetIndicators),
     controls: { p1: {}, p2: {} }
   };
 
@@ -88,6 +90,8 @@ export function initAccessibilityPanel(root = document) {
   const fill = () => {
     form.querySelector("[name='colorBlind']").checked = settings.colorBlind;
     form.querySelector("[name='practiceMode']").checked = settings.practiceMode;
+    const hideIndicatorsInput = form.querySelector("[name='hideTargetIndicators']");
+    if (hideIndicatorsInput) hideIndicatorsInput.checked = settings.hideTargetIndicators;
     form.querySelectorAll("select[data-control-player]").forEach((select) => {
       const player = select.dataset.controlPlayer;
       const direction = select.dataset.controlDirection;
@@ -106,6 +110,7 @@ export function initAccessibilityPanel(root = document) {
     const candidate = loadAccessibilitySettings();
     candidate.colorBlind = form.querySelector("[name='colorBlind']").checked;
     candidate.practiceMode = form.querySelector("[name='practiceMode']").checked;
+    candidate.hideTargetIndicators = form.querySelector("[name='hideTargetIndicators']")?.checked ?? false;
 
     form.querySelectorAll("select[data-control-player]").forEach((select) => {
       candidate.controls[select.dataset.controlPlayer][select.dataset.controlDirection] = select.value;

@@ -1,13 +1,14 @@
-/* Simulasi Strategi Gobak Sodor v1.4.0 — PWA shell (situs game tunggal).
+/* Simulasi Strategi Gobak Sodor v1.5.0 — PWA shell (situs game tunggal).
    Naikkan versi cache setiap kali aset precache berubah agar pengguna lama
-   menerima konten baru. Cache versi lama (ppn-*, gsn-v1.3.0 dst.) ikut dibersihkan. */
-const CACHE_NAME = "gsn-v1.4.0";
+   menerima konten baru. Cache versi lama (ppn-*, gsn-v1.4.0 dst.) ikut dibersihkan. */
+const CACHE_NAME = "gsn-v1.5.0";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./game.html",
   "./culture.html",
   "./tutorial.html",
+  "./leaderboard.html",
   "./offline.html",
   "./manifest.json",
   "./css/style.css",
@@ -20,6 +21,7 @@ const APP_SHELL = [
   "./js/enemy.js",
   "./js/quiz.js",
   "./js/arena.js",
+  "./js/eventlog.js",
   "./js/accessibility.js",
   "./js/culture.js",
   "./data/questions.json",
@@ -75,14 +77,16 @@ self.addEventListener("fetch", event => {
         }
         return response;
       } catch {
-        return (await caches.match(event.request)) || (await caches.match("./offline.html"));
+        // ignoreSearch: string kueri seperti ?demo=1 atau ?demo=1&scene=quiz1
+        // tetap harus mengenai halaman yang sama di cache, bukan cache miss.
+        return (await caches.match(event.request, { ignoreSearch: true })) || (await caches.match("./offline.html"));
       }
     })());
     return;
   }
 
   event.respondWith((async () => {
-    const cached = await caches.match(event.request);
+    const cached = await caches.match(event.request, { ignoreSearch: true });
     const network = fetch(event.request).then(async response => {
       if (response.ok) {
         const cache = await caches.open(CACHE_NAME);

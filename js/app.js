@@ -5,19 +5,45 @@
 
 const STORAGE_KEYS = {
   theme: "gsn-theme",
-  onboarding: "gsn-onboarding-seen-v1"
+  onboarding: "gsn-onboarding-seen-v1",
+  migration: "gsn-migration-v2-done"
 };
+
+// Kunci Local Storage dari versi lama (leaderboard, peta pulau, kesulitan
+// gamifikasi, dsb.) yang sudah tidak dipakai kode saat ini. Dibersihkan sekali
+// secara aman agar tidak ada data usang yang tertinggal di perangkat siswa.
+const LEGACY_STORAGE_KEYS = [
+  "gsnLeaderboardV1",
+  "gsnLearningProfileV1",
+  "gsnQuestionSetsV1",
+  "gsnActiveQuestionSetV1",
+  "gsnCampaignQuestionHistoryV1",
+  "gsnMapProgressV1",
+  "gsnGamificationV1",
+  "gsnDifficultyV1",
+  "gsnPlaytestV1"
+];
+
+function migrateLegacyStorage() {
+  try {
+    if (localStorage.getItem(STORAGE_KEYS.migration)) return;
+    LEGACY_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+    localStorage.setItem(STORAGE_KEYS.migration, "true");
+  } catch {
+    // Local Storage tidak tersedia (mis. mode privat) — abaikan tanpa error.
+  }
+}
 
 const onboardingSlides = [
   {
-    icon: "fa-people-group",
-    title: "Amati pola, gunakan logika jika-maka",
-    description: "Simulasi ini untuk mengamati pola gerak penjaga dan mencoba strategi—bukan kompetisi. Mainkan Satu Pemain atau Dua Pemain (keyboard maupun layar sentuh)."
+    icon: "fa-crosshairs",
+    title: "Amati target penjaga, gunakan logika jika-maka",
+    description: "Setiap penjaga menampilkan target yang sedang dikejar (P1/P2/Siaga). Simulasi ini untuk mengamati pola dan mencoba strategi—bukan kompetisi. Mainkan Satu Pemain atau Dua Pemain (keyboard maupun layar sentuh)."
   },
   {
     icon: "fa-flag",
-    title: "Ambil bendera dan kembali",
-    description: "Jawab soal saat menembus garis, ambil bendera, lalu jawab soal baru saat kembali ke START. Jawaban salah tidak dihukum berat—cukup ditinjau lagi."
+    title: "P1 membawa bendera, P2 mengalihkan penjaga",
+    description: "Hanya P1 yang dapat memicu checkpoint dan mengambil bendera. P2 dapat menarik target penjaga agar jalur P1 terbuka. Jawaban salah tidak dihukum berat—cukup ditinjau lagi."
   },
   {
     icon: "fa-comments",
@@ -36,6 +62,7 @@ class SiteApp {
   }
 
   init() {
+    migrateLegacyStorage();
     this.cacheElements();
     this.applyStoredTheme();
     this.enhanceNavigationActions();

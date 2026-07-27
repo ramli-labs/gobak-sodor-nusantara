@@ -1,111 +1,239 @@
 /**
- * Kelas Enemy.
- * Penjaga tetap terikat pada garis tugasnya, tetapi ritmenya dapat berupa:
- * steady (konstan), pause (berhenti sesaat), pulse (cepat-lambat),
- * surge (lonjakan kecepatan), dan fakeout (berbalik sebelum batas).
- * Pola gerak bersifat deterministik (berbasis waktu, bukan acak) agar konsisten
- * untuk diamati dan diulang saat pengambilan gambar (Mode Simulasi Video).
+ * Kelas Enemy — penjaga yang mengejar target secara otomatis.
+ *
+ * Penjaga tetap terikat pada satu garis tugas (horizontal atau vertikal) dan
+ * bergerak dengan mengejar PROYEKSI posisi pemain pada garis tersebut:
+ * - Penjaga horizontal mengincar koordinat X target, Y penjaga tetap tetap.
+ * - Penjaga vertikal mengincar koordinat Y target, X penjaga tetap tetap.
+ *
+ * Target dipilih lewat threat score (bukan acak), dikunci minimal 1,5 detik
+ * (anti-jitter/hysteresis), dan gerakannya memakai percepatan/perlambatan
+ * sederhana (steering) dengan reaction delay agar terasa manusiawi dan dapat
+ * diamati siswa. Saat tidak ada target dalam radius deteksi, penjaga kembali
+ * ke perilaku siaga (diam di titik asal dengan goyangan kecil).
  */
+const DETECTION_RADIUS = 260;
+const TARGET_LOCK_SECONDS = 1.5;
+const HYSTERESIS_MULTIPLIER = 1.2;
+const REACTION_DELAY_MIN = 0.25;
+const REACTION_DELAY_MAX = 0.5;
+const REACTION_DELAY_DEMO = 0.35;
+const STOPPING_DISTANCE = 28;
 const RETURN_SPEEDUP = 1.15;
+const STANDBY_WOBBLE_RANGE = 24;
+const STANDBY_WOBBLE_SPEED = 0.6;
+
+const THREAT_WEIGHT = {
+  proximity: 40,
+  crossingIntent: 25,
+  flagCarrier: 20,
+  recentMovement: 15
+};
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
 
 export class Enemy {
   constructor({
+    id,
+    name,
     orientation,
     fixed,
     min,
     max,
     position,
     speed = 150,
-    direction = 1,
     label = "P",
-    behavior = "steady",
-    behaviorInterval = 4,
-    pauseDuration = 0.45,
-    surgeMultiplier = 1.28,
-    phase = 0
+    deterministic = false
   }) {
+    this.id = id || label;
+    this.name = name || label;
     this.orientation = orientation;
     this.fixed = fixed;
     this.min = min;
     this.max = max;
     this.position = position;
-    this.baseSpeed = speed;
-    this.speed = speed;
-    this.direction = direction;
+    this.homePosition = position;
+    this.maxSpeed = speed;
+    this.acceleration = speed * 3;
+    this.velocity = 0;
     this.size = 34;
     this.label = label;
-    this.behavior = behavior;
-    this.behaviorInterval = Math.max(1.8, behaviorInterval);
-    this.pauseDuration = Math.max(0.15, pauseDuration);
-    this.surgeMultiplier = Math.max(1, surgeMultiplier);
-    this.behaviorClock = Math.max(0, phase);
-    this.elapsed = Math.max(0, phase);
-    this.pauseTimer = 0;
-    this.returnMultiplier = 1;
+    this.deterministic = deterministic;
+
     this.returnActive = false;
+    this.returnMultiplier = 1;
+
+    this.clock = 0;
+    this.currentTargetId = null;
+    this.currentTargetScore = 0;
+    this.targetLockUntil = 0;
+    this.lastTargetChange = 0;
+    this.targetReason = "belum ada";
+    this.previousTargetIdForReaction = null;
+    this.reactionDelay = 0;
+    this.pendingReactionUntil = 0;
   }
 
   setReturnPhase(active) {
-    const changed = this.returnActive !== Boolean(active);
     this.returnActive = Boolean(active);
     this.returnMultiplier = this.returnActive ? RETURN_SPEEDUP : 1;
-
-    // Sebagian penjaga bertipe fakeout melakukan tipuan sekali ketika bendera
-    // diambil, sehingga perjalanan pulang tetap menantang untuk diamati.
-    if (changed && this.returnActive && this.behavior === "fakeout") {
-      this.direction *= -1;
-      this.behaviorClock = 0;
-    }
   }
 
-  getBehaviorSpeedMultiplier() {
-    if (this.behavior === "pulse") {
-      return 1 + Math.sin(this.elapsed * 2.1) * 0.16;
+  /** Titik terdekat pada garis tugas penjaga terhadap posisi pemain. */
+  closestPointTo(player) {
+    if (this.orientation === "horizontal") {
+      return { x: clamp(player.x, this.min, this.max), y: this.fixed };
     }
-    if (this.behavior === "surge") {
-      const wave = Math.max(0, Math.sin(this.elapsed * 1.65));
-      return 1 + wave * (this.surgeMultiplier - 1);
-    }
-    return 1;
+    return { x: this.fixed, y: clamp(player.y, this.min, this.max) };
   }
 
-  updateBehavior(deltaTime) {
-    this.elapsed += deltaTime;
-    this.behaviorClock += deltaTime;
-
-    if (this.pauseTimer > 0) {
-      this.pauseTimer = Math.max(0, this.pauseTimer - deltaTime);
-      return true;
-    }
-
-    if (this.behaviorClock < this.behaviorInterval) return false;
-    this.behaviorClock = 0;
-
-    if (this.behavior === "pause") {
-      this.pauseTimer = this.pauseDuration;
-      return true;
-    }
-
-    if (this.behavior === "fakeout") {
-      this.direction *= -1;
-    }
-    return false;
+  distanceToLine(player) {
+    const point = this.closestPointTo(player);
+    return Math.hypot(player.x - point.x, player.y - point.y);
   }
 
-  update(deltaTime) {
-    const paused = this.updateBehavior(deltaTime);
-    if (paused) return;
+  /** Komponen kecepatan pemain yang menuju/melewati garis penjaga (bukan acak, murni data posisi/kecepatan). */
+  crossingIntent(player) {
+    const axisPos = this.orientation === "horizontal" ? player.y : player.x;
+    const axisVelocity = this.orientation === "horizontal" ? player.vy : player.vx;
+    const towardLine = this.fixed - axisPos;
+    if (towardLine === 0 || axisVelocity === 0) return 0;
+    const sameDirection = Math.sign(towardLine) === Math.sign(axisVelocity);
+    if (!sameDirection) return 0;
+    return clamp(Math.abs(axisVelocity) / 260, 0, 1);
+  }
 
-    const movementSpeed = this.speed * this.returnMultiplier * this.getBehaviorSpeedMultiplier();
-    this.position += movementSpeed * this.direction * deltaTime;
+  threatScore(player) {
+    const distance = this.distanceToLine(player);
+    const proximity = clamp(1 - distance / DETECTION_RADIUS, 0, 1) * THREAT_WEIGHT.proximity;
+    const crossing = this.crossingIntent(player) * THREAT_WEIGHT.crossingIntent;
+    const flagCarrier = player.hasFlag ? THREAT_WEIGHT.flagCarrier : 0;
+    const speedMagnitude = Math.hypot(player.vx, player.vy);
+    const recentMovement = clamp(speedMagnitude / 260, 0, 1) * THREAT_WEIGHT.recentMovement;
+    return proximity + crossing + flagCarrier + recentMovement;
+  }
 
-    if (this.position >= this.max) {
-      this.position = this.max;
-      this.direction = -1;
-    } else if (this.position <= this.min) {
-      this.position = this.min;
-      this.direction = 1;
+  pickReactionDelay() {
+    if (this.deterministic) return REACTION_DELAY_DEMO;
+    return REACTION_DELAY_MIN + Math.random() * (REACTION_DELAY_MAX - REACTION_DELAY_MIN);
+  }
+
+  changeTarget(newId, score, reason) {
+    const previousTarget = this.currentTargetId;
+    this.previousTargetIdForReaction = previousTarget;
+    this.currentTargetId = newId;
+    this.currentTargetScore = score;
+    this.targetLockUntil = this.clock + TARGET_LOCK_SECONDS;
+    this.lastTargetChange = this.clock;
+    this.targetReason = reason;
+    this.reactionDelay = this.pickReactionDelay();
+    this.pendingReactionUntil = this.clock + this.reactionDelay;
+    return { previousTarget, newTarget: newId, reason };
+  }
+
+  /**
+   * Evaluasi dan (bila perlu) mengganti target. Mengembalikan info perubahan
+   * target (untuk event log / deteksi pengalihan) atau null bila tidak berubah.
+   */
+  evaluateTarget(players, deltaTime) {
+    this.clock += deltaTime;
+
+    const candidates = players
+      .map((player) => ({ player, distance: this.distanceToLine(player) }))
+      .filter((entry) => entry.distance <= DETECTION_RADIUS)
+      .map((entry) => ({ id: entry.player.playerNumber, score: this.threatScore(entry.player) }));
+
+    if (!candidates.length) {
+      if (this.currentTargetId !== null) return this.changeTarget(null, 0, "tidak-ada-target-dalam-radius");
+      return null;
     }
+
+    const best = candidates.reduce((top, item) => (item.score > top.score ? item : top));
+
+    if (this.currentTargetId === null) {
+      return this.changeTarget(best.id, best.score, "target-pertama-terdeteksi");
+    }
+
+    const currentAsCandidate = candidates.find((item) => item.id === this.currentTargetId);
+    if (!currentAsCandidate) {
+      return this.changeTarget(best.id, best.score, "target-keluar-radius");
+    }
+
+    const lockActive = this.clock < this.targetLockUntil;
+    if (lockActive) {
+      this.currentTargetScore = currentAsCandidate.score;
+      return null;
+    }
+
+    if (best.id !== this.currentTargetId && best.score >= currentAsCandidate.score * HYSTERESIS_MULTIPLIER) {
+      return this.changeTarget(best.id, best.score, "ancaman-lebih-tinggi");
+    }
+
+    this.currentTargetScore = currentAsCandidate.score;
+    return null;
+  }
+
+  /** Target yang sedang dipakai untuk kemudi (dapat tertinggal dari currentTargetId selama reaction delay). */
+  getSteeringTargetId() {
+    return this.clock < this.pendingReactionUntil ? this.previousTargetIdForReaction : this.currentTargetId;
+  }
+
+  getTargetLabel() {
+    if (this.currentTargetId === 1) return "Target: P1";
+    if (this.currentTargetId === 2) return "Target: P2";
+    return "Siaga";
+  }
+
+  getTargetShortLabel() {
+    if (this.currentTargetId === 1) return "P1";
+    if (this.currentTargetId === 2) return "P2";
+    return "Siaga";
+  }
+
+  getTargetPlayer(players) {
+    if (this.currentTargetId === null) return null;
+    return players.find((player) => player.playerNumber === this.currentTargetId) ?? null;
+  }
+
+  standbyPoint() {
+    const wobble = Math.sin(this.clock * STANDBY_WOBBLE_SPEED) * STANDBY_WOBBLE_RANGE;
+    return clamp(this.homePosition + wobble, this.min, this.max);
+  }
+
+  /** Gerak steering: percepatan/perlambatan sederhana menuju proyeksi target, melambat mendekati tujuan (arrive). */
+  steer(deltaTime, players) {
+    const steeringTargetId = this.getSteeringTargetId();
+    const steeringPlayer = steeringTargetId === null ? null : players.find((player) => player.playerNumber === steeringTargetId);
+
+    let goal;
+    if (steeringPlayer) {
+      const point = this.closestPointTo(steeringPlayer);
+      goal = this.orientation === "horizontal" ? point.x : point.y;
+    } else {
+      goal = this.standbyPoint();
+    }
+
+    const distance = goal - this.position;
+    const absDistance = Math.abs(distance);
+    const topSpeed = this.maxSpeed * this.returnMultiplier;
+    const desiredSpeed = absDistance < STOPPING_DISTANCE ? topSpeed * (absDistance / STOPPING_DISTANCE) : topSpeed;
+    const desiredVelocity = absDistance < 0.5 ? 0 : Math.sign(distance) * desiredSpeed;
+
+    const diff = desiredVelocity - this.velocity;
+    const maxStep = this.acceleration * deltaTime;
+    this.velocity = Math.abs(diff) <= maxStep ? desiredVelocity : this.velocity + Math.sign(diff) * maxStep;
+    this.velocity = clamp(this.velocity, -topSpeed, topSpeed);
+
+    this.position = clamp(this.position + this.velocity * deltaTime, this.min, this.max);
+  }
+
+  /** @returns {object|null} info perubahan target untuk event log, atau null bila tidak berubah. */
+  update(deltaTime, players) {
+    const change = this.evaluateTarget(players, deltaTime);
+    this.steer(deltaTime, players);
+    return change;
   }
 
   get x() {
@@ -141,6 +269,59 @@ export class Enemy {
     }
     ctx.stroke();
     ctx.restore();
+  }
+
+  drawTargetIndicator(ctx, players) {
+    const label = this.getTargetLabel();
+    const targetPlayer = this.getTargetPlayer(players);
+
+    if (targetPlayer) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 5]);
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(targetPlayer.x, targetPlayer.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    const half = this.size / 2;
+    const chipY = -half - 20;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.font = "800 10px Poppins, sans-serif";
+    const width = ctx.measureText(label).width + 14;
+
+    ctx.fillStyle = "rgba(17, 31, 51, 0.88)";
+    // Bentuk chip berbeda per jenis target agar tidak hanya dibedakan warna.
+    if (this.currentTargetId === 1) {
+      this.roundRect(ctx, -width / 2, chipY - 9, width, 18, 9);
+    } else if (this.currentTargetId === 2) {
+      this.diamondRect(ctx, -width / 2, chipY - 9, width, 18);
+    } else {
+      ctx.beginPath();
+      ctx.ellipse(0, chipY, width / 2, 9, 0, 0, Math.PI * 2);
+    }
+    ctx.fill();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, 0, chipY + 1);
+    ctx.restore();
+  }
+
+  diamondRect(ctx, x, y, width, height) {
+    const cx = x + width / 2;
+    const cy = y + height / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, y);
+    ctx.lineTo(x + width, cy);
+    ctx.lineTo(cx, y + height);
+    ctx.lineTo(x, cy);
+    ctx.closePath();
   }
 
   draw(ctx, { colorBlind = false } = {}) {
@@ -197,18 +378,6 @@ export class Enemy {
     ctx.textBaseline = "middle";
     ctx.fillText(this.label, 0, -1);
 
-    // Ikon kecil memberi petunjuk ritme tanpa mengandalkan warna.
-    if (this.behavior !== "steady") {
-      const symbols = { pause: "Ⅱ", pulse: "~", surge: "+", fakeout: "↔" };
-      ctx.fillStyle = "#172033";
-      ctx.beginPath();
-      ctx.arc(half - 1, -half + 2, 8, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "800 8px Poppins, sans-serif";
-      ctx.fillText(symbols[this.behavior] || "·", half - 1, -half + 2);
-    }
-
     ctx.restore();
   }
 
@@ -216,11 +385,22 @@ export class Enemy {
     ctx.beginPath();
     for (let index = 0; index < 8; index += 1) {
       const angle = Math.PI / 8 + index * Math.PI / 4;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      if (index === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      const px = Math.cos(angle) * radius;
+      const py = Math.sin(angle) * radius;
+      if (index === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
     }
+    ctx.closePath();
+  }
+
+  roundRect(ctx, x, y, width, height, radius) {
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + width, y, x + width, y + height, r);
+    ctx.arcTo(x + width, y + height, x, y + height, r);
+    ctx.arcTo(x, y + height, x, y, r);
+    ctx.arcTo(x, y, x + width, y, r);
     ctx.closePath();
   }
 }

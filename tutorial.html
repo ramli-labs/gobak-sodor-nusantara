@@ -65,8 +65,8 @@
       <span class="eyebrow"><i class="fa-solid fa-keyboard"></i> Kontrol utama</span>
       <h2>Keyboard atau layar sentuh</h2>
       <ul class="check-list">
-        <li><i class="fa-solid fa-circle-check"></i><span><strong>Pemain 1:</strong> tombol W, A, S, D — atau tombol arah sentuh di kiri bawah arena.</span></li>
-        <li><i class="fa-solid fa-circle-check"></i><span><strong>Pemain 2:</strong> tombol panah — atau tombol arah sentuh di kanan bawah arena (mode Co-op).</span></li>
+        <li><i class="fa-solid fa-circle-check"></i><span><strong>P1 (Pembawa Bendera):</strong> tombol W, A, S, D — atau tombol arah sentuh di kiri bawah arena. Hanya P1 yang memicu checkpoint, mengambil bendera, dan menyelesaikan sesi.</span></li>
+        <li><i class="fa-solid fa-circle-check"></i><span><strong>P2 (Pengalih Penjaga):</strong> tombol panah — atau tombol arah sentuh di kanan bawah arena (Mode Dua Pemain). P2 dapat menarik target penjaga tetapi tidak dapat mengambil bendera.</span></li>
         <li><i class="fa-solid fa-circle-check"></i><span>Di papan tulis interaktif (IFP), dua siswa dapat bermain berdampingan hanya dengan jari.</span></li>
         <li><i class="fa-solid fa-circle-check"></i><span>Tombol keyboard dapat diremap pada tahap aksesibilitas.</span></li>
       </ul>
@@ -86,10 +86,10 @@
   <div class="container">
     <div class="section-heading reveal"><span class="eyebrow"><i class="fa-solid fa-list-ol"></i> Alur utama</span><h2>Cara menyelesaikan satu ronde</h2></div>
     <ol class="steps-list reveal">
-      <li><div><h3>Bergerak menuju checkpoint</h3><p>Gunakan kontrol pemain dan jaga jarak dari jalur gerak penjaga.</p></div></li>
-      <li><div><h3>Jawab tiga soal perjalanan pergi</h3><p>Setiap garis checkpoint membuka soal baru sebelum pemain dapat melanjutkan menuju bendera.</p></div></li>
-      <li><div><h3>Amati pola penjaga</h3><p>Jangan bergerak asal cepat. Cari ritme dan celah aman untuk menyeberang.</p></div></li>
-      <li><div><h3>Ambil bendera</h3><p>Capai sisi tujuan dan sentuh bendera untuk mengaktifkan perjalanan pulang.</p></div></li>
+      <li><div><h3>Bergerak menuju checkpoint</h3><p>Gunakan kontrol P1 dan jaga jarak dari penjaga yang sedang menargetkan P1.</p></div></li>
+      <li><div><h3>Jawab tiga soal perjalanan pergi</h3><p>Setiap garis checkpoint (hanya dipicu P1) membuka soal baru sebelum pemain dapat melanjutkan menuju bendera.</p></div></li>
+      <li><div><h3>Amati target penjaga</h3><p>Chip "Target: P1/P2/Siaga" di atas tiap penjaga menunjukkan siapa yang sedang dikejar. Dalam Mode Dua Pemain, P2 dapat memancing penjaga menjauh agar P1 mendapat jalur terbuka.</p></div></li>
+      <li><div><h3>Ambil bendera</h3><p>Capai sisi tujuan dan sentuh bendera dengan P1 untuk mengaktifkan perjalanan pulang.</p></div></li>
       <li><div><h3>Jawab tiga soal perjalanan pulang</h3><p>Pembawa bendera harus membuka kembali setiap garis dari kanan ke kiri dengan soal yang belum pernah muncul.</p></div></li>
       <li><div><h3>Kembali ke Start</h3><p>Bawa bendera ke garis awal untuk membuka halaman Hasil Simulasi Strategi dan refleksi.</p></div></li>
     </ol>
@@ -125,7 +125,7 @@
     </div>
     <div class="footer-bottom">
       <span>© <span data-current-year></span> Gobak Sodor Nusantara.</span>
-      <span>Versi 1.4.0 — Simulasi Strategi untuk pembelajaran interdisipliner Hari 3 KKA.</span>
+      <span>Versi 1.5.0 — Penjaga mengejar target, peran P1/P2, dan event log pembelajaran.</span>
     </div>
   </div>
 </footer>

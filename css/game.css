@@ -72,6 +72,62 @@
   margin-top: 6px;
 }
 
+.mode-picker-alt small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+/* Panel "Fokus Penjaga" — memperlihatkan target setiap penjaga saat ini
+   agar pola/target penjaga dapat diamati siswa tanpa membaca ulang arena. */
+.focus-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 94%, var(--blue) 6%);
+  font-size: 0.82rem;
+}
+
+.focus-panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.focus-panel ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.focus-panel li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.focus-panel li span {
+  color: var(--muted);
+}
+
+.focus-panel li strong {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+
 .game-mode-status {
   display: flex;
   flex-wrap: wrap;
@@ -653,7 +709,7 @@
 
 .result-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
   margin-bottom: 22px;
 }
@@ -681,6 +737,7 @@
 }
 
 .strategy-analysis,
+.lkpd-panel,
 .reflection-panel {
   margin-top: 20px;
   padding: 18px;
@@ -689,6 +746,7 @@
 }
 
 .strategy-analysis h3,
+.lkpd-panel h3,
 .reflection-panel h3 {
   display: flex;
   align-items: center;
@@ -705,6 +763,20 @@
 
 .strategy-analysis li {
   margin-bottom: 6px;
+}
+
+.lkpd-text {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
 }
 
 .reflection-question {
@@ -744,12 +816,6 @@
   margin-top: 20px;
 }
 
-@media (max-width: 760px) {
-  .result-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 .sr-only {
   position: absolute;
   width: 1px;
@@ -769,10 +835,6 @@
 
   .hud-controls {
     grid-column: 1 / -1;
-  }
-
-  .result-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1151,46 +1213,6 @@
 
   .journey-track > span {
     transition: none;
-  }
-}
-
-.rhythm-legend {
-  grid-column: 1 / -1;
-}
-
-.rhythm-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.rhythm-chips span {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 11px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  color: var(--muted);
-  background: var(--surface-2);
-  font-size: 0.74rem;
-  font-weight: 700;
-}
-
-.rhythm-chips b {
-  display: grid;
-  min-width: 22px;
-  height: 22px;
-  place-items: center;
-  border-radius: 50%;
-  color: #fff;
-  background: var(--red);
-  font-size: 0.72rem;
-}
-
-@media (max-width: 620px) {
-  .rhythm-legend {
-    grid-column: auto;
   }
 }
 

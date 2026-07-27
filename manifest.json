@@ -1,7 +1,7 @@
 {
   "name": "Simulasi Strategi Gobak Sodor",
   "short_name": "Gobak Sodor",
-  "description": "Simulasi pembelajaran interdisipliner Gobak Sodor: amati pola penjaga, gunakan logika jika-maka, dan refleksikan strategi (IPS, PJOK, KKA, Seni Rupa).",
+  "description": "Simulasi pembelajaran interdisipliner Gobak Sodor: amati target penjaga, gunakan logika jika-maka, dan refleksikan strategi (KKA, PJOK, IPS, Seni Rupa).",
   "start_url": "./game.html",
   "scope": "./",
   "display": "standalone",

@@ -2,6 +2,8 @@
  * Kelas Player.
  * Menangani posisi, gerakan, benturan batas arena, dan visual pemain.
  */
+const INVULNERABLE_SECONDS = 1;
+
 export class Player {
   constructor({
     x,
@@ -24,13 +26,24 @@ export class Player {
     this.hasFlag = false;
     this.invulnerableTime = 0;
     this.animationTime = 0;
+    this.vx = 0;
+    this.vy = 0;
+    // Posisi aman terakhir: diperbarui setelah checkpoint berhasil dilewati
+    // atau area aman tercapai, dipakai saat pemain tertangkap (bukan selalu START).
+    this.lastSafeX = x;
+    this.lastSafeY = y;
   }
 
-  reset({ keepFlag = false } = {}) {
-    this.x = this.startX;
-    this.y = this.startY;
+  updateLastSafePosition(x = this.x, y = this.y) {
+    this.lastSafeX = x;
+    this.lastSafeY = y;
+  }
+
+  reset({ keepFlag = false, x, y } = {}) {
+    this.x = x ?? this.lastSafeX;
+    this.y = y ?? this.lastSafeY;
     this.hasFlag = keepFlag;
-    this.invulnerableTime = 1.6;
+    this.invulnerableTime = INVULNERABLE_SECONDS;
   }
 
   update(deltaTime, direction, bounds) {
@@ -44,8 +57,10 @@ export class Player {
       dy /= length;
     }
 
-    this.x += dx * this.speed * deltaTime;
-    this.y += dy * this.speed * deltaTime;
+    this.vx = dx * this.speed;
+    this.vy = dy * this.speed;
+    this.x += this.vx * deltaTime;
+    this.y += this.vy * deltaTime;
     this.x = Math.max(bounds.left + this.radius, Math.min(bounds.right - this.radius, this.x));
     this.y = Math.max(bounds.top + this.radius, Math.min(bounds.bottom - this.radius, this.y));
   }
