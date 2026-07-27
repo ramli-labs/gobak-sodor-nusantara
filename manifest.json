@@ -1,7 +1,7 @@
 {
-  "name": "Gobak Sodor Nusantara",
+  "name": "Simulasi Strategi Gobak Sodor",
   "short_name": "Gobak Sodor",
-  "description": "Game edukasi Gobak Sodor untuk penguatan evaluasi pembelajaran interdisipliner IPS, PJOK, KKA, dan Seni Rupa di SMP.",
+  "description": "Simulasi pembelajaran interdisipliner Gobak Sodor: amati pola penjaga, gunakan logika jika-maka, dan refleksikan strategi (IPS, PJOK, KKA, Seni Rupa).",
   "start_url": "./game.html",
   "scope": "./",
   "display": "standalone",

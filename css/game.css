@@ -3,33 +3,90 @@
   padding-bottom: 30px;
 }
 
-.game-mode-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 24px;
+/* Layar awal: Tujuan / Tantangan / Tugas Pengamatan + tombol mode. */
+.intro-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
   margin-bottom: 22px;
+}
+
+.intro-card {
+  padding: 20px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow-soft);
 }
 
-.game-mode-summary h2,
-.game-mode-summary p {
-  margin: 0;
+.intro-card-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  color: white;
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  font-size: 1.05rem;
 }
 
-.game-mode-summary p {
+.intro-card h2 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+}
+
+.intro-card p {
+  margin: 0;
   color: var(--muted);
 }
 
-.game-mode-actions {
+.mode-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 22px;
+  padding: 26px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+
+.btn-xl {
+  min-height: 64px;
+  padding: 16px 34px;
+  font-size: 1.1rem;
+  border-radius: 18px;
+}
+
+.mode-picker-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.mode-picker-alt {
+  margin-top: 6px;
+}
+
+.game-mode-status {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+@media (max-width: 760px) {
+  .intro-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .game-shell {
@@ -193,16 +250,6 @@
   transform: rotate(-3deg);
 }
 
-.game-overlay.won .game-overlay-icon {
-  color: white;
-  background: var(--green);
-}
-
-.game-overlay.lost .game-overlay-icon {
-  color: white;
-  background: var(--red);
-}
-
 .game-overlay-card small {
   color: #b9d8ff;
   font-weight: 700;
@@ -338,10 +385,6 @@
 .dpad-button[data-move="down"] { grid-column: 2; grid-row: 2; }
 .dpad-button[data-move="right"] { grid-column: 3; grid-row: 2; }
 
-.stage-progress {
-  width: 60%;
-}
-
 @keyframes hud-pulse {
   from { transform: scale(1); }
   to { transform: scale(1.025); }
@@ -368,13 +411,8 @@
 }
 
 @media (max-width: 700px) {
-  .game-mode-summary {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .game-mode-actions .btn {
-    flex: 1;
+  .mode-picker .btn-xl {
+    width: 100%;
   }
 
   .game-hud {
@@ -442,13 +480,7 @@
 }
 
 
-/* Sistem kuis dan rapor — Tahap 3. */
-.hud-item.shield-active {
-  border-color: var(--yellow);
-  background: color-mix(in srgb, var(--surface) 82%, var(--yellow) 18%);
-  animation: shield-pulse 700ms ease infinite alternate;
-}
-
+/* Sistem kuis — soal, pilihan, dan umpan balik. */
 .quiz-layer {
   position: absolute;
   inset: 0;
@@ -480,10 +512,7 @@
   box-shadow: 0 26px 70px rgba(0, 0, 0, 0.4);
 }
 
-.quiz-card-head,
-.report-subject-head,
-.report-heading,
-.score-save-panel {
+.quiz-card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -599,7 +628,8 @@
   width: 100%;
 }
 
-.learning-report {
+/* Hasil Simulasi Strategi — ringkasan, analisis, dan refleksi. */
+.result-section {
   margin-top: 24px;
   padding: 26px;
   border: 1px solid var(--border);
@@ -609,135 +639,116 @@
   scroll-margin-top: calc(var(--header-height) + 20px);
 }
 
-.learning-report[hidden] {
+.result-section[hidden] {
   display: none;
 }
 
-.report-heading {
-  align-items: flex-start;
-  margin-bottom: 20px;
+.result-heading {
+  margin-bottom: 18px;
 }
 
-.report-heading h2,
-.report-heading p {
-  margin: 0;
+.result-heading h2 {
+  margin: 4px 0 0;
 }
 
-.report-heading p {
-  color: var(--muted);
-}
-
-.report-score-ring {
+.result-grid {
   display: grid;
-  place-items: center;
-  flex: 0 0 94px;
-  height: 94px;
-  border: 9px solid color-mix(in srgb, var(--blue) 26%, var(--border));
-  border-radius: 50%;
-  color: var(--blue);
-  background: var(--surface-2);
-  font-size: 1.35rem;
-  font-weight: 800;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
 }
 
-.report-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 11px;
-}
-
-.report-subject {
-  padding: 14px;
+.result-grid article {
+  padding: 16px;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: var(--surface-2);
+  text-align: center;
 }
 
-.report-subject-head {
-  align-items: flex-start;
-  font-size: 0.76rem;
-}
-
-.report-subject-head strong {
-  line-height: 1.25;
-}
-
-.report-subject-head span {
-  color: var(--blue);
-  font-weight: 800;
-}
-
-.subject-progress {
-  height: 8px;
-  margin: 12px 0 8px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--border) 75%, transparent);
-}
-
-.subject-progress span {
+.result-grid span {
   display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--blue);
-}
-
-.report-subject.attempted .subject-progress span {
-  min-width: 4px;
-}
-
-.report-subject small {
+  margin-bottom: 6px;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
-.score-save-panel {
-  align-items: flex-end;
-  flex-wrap: wrap;
+.result-grid strong {
+  font-size: 1.35rem;
+}
+
+.strategy-analysis,
+.reflection-panel {
   margin-top: 20px;
   padding: 18px;
   border-radius: 18px;
-  background: color-mix(in srgb, var(--surface-2) 80%, var(--blue) 20%);
+  background: var(--surface-2);
 }
 
-.score-save-panel h3,
-.score-save-panel p {
-  margin: 0;
-}
-
-.score-save-panel p {
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.score-save-form {
+.strategy-analysis h3,
+.reflection-panel h3 {
   display: flex;
-  gap: 9px;
-  flex: 1 1 420px;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 1rem;
 }
 
-.score-save-form input {
-  width: min(230px, 100%);
-  min-height: 45px;
-  padding: 0 14px;
+.strategy-analysis ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--ink);
+}
+
+.strategy-analysis li {
+  margin-bottom: 6px;
+}
+
+.reflection-question {
+  margin-bottom: 14px;
+}
+
+.reflection-question label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.reflection-question textarea {
+  width: 100%;
+  padding: 11px 13px;
   border: 1px solid var(--border);
   border-radius: 12px;
   color: var(--ink);
   background: var(--surface);
   font: inherit;
+  resize: vertical;
 }
 
-.save-feedback {
-  flex-basis: 100%;
-  margin: 4px 0 0;
-  font-size: 0.8rem;
-  font-weight: 700;
+.reflection-conclusion {
+  margin: 6px 0 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 80%, var(--blue) 20%);
+  font-size: 0.9rem;
 }
 
-.save-feedback.success { color: var(--green); }
-.save-feedback.error { color: var(--red); }
-.save-feedback a { color: var(--blue); text-decoration: underline; }
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+@media (max-width: 760px) {
+  .result-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 .sr-only {
   position: absolute;
@@ -751,11 +762,6 @@
   border: 0;
 }
 
-@keyframes shield-pulse {
-  from { transform: scale(1); }
-  to { transform: scale(1.035); }
-}
-
 @media (max-width: 1120px) {
   .game-hud {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -765,14 +771,13 @@
     grid-column: 1 / -1;
   }
 
-  .report-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .result-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 700px) {
-  .quiz-choices,
-  .report-grid {
+  .quiz-choices {
     grid-template-columns: 1fr;
   }
 
@@ -780,30 +785,10 @@
     padding: 18px;
   }
 
-  .quiz-card-head,
-  .report-heading {
-    align-items: flex-start;
-  }
-
   .quiz-card-head {
+    align-items: flex-start;
     flex-direction: column;
     gap: 8px;
-  }
-
-  .report-score-ring {
-    flex-basis: 76px;
-    height: 76px;
-    border-width: 7px;
-    font-size: 1.05rem;
-  }
-
-  .score-save-form {
-    flex-direction: column;
-  }
-
-  .score-save-form input,
-  .score-save-form .btn {
-    width: 100%;
   }
 }
 
@@ -822,194 +807,11 @@
     font-size: 0.76rem;
   }
 
-  .learning-report {
+  .result-section {
     padding: 19px 14px;
   }
 }
 
-/* Kedalaman gameplay — Tahap 4. */
-.adventure-section {
-  padding-top: 10px;
-}
-
-.adventure-map {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 18px;
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--surface) 92%, var(--blue) 8%), var(--surface));
-  box-shadow: var(--shadow-soft);
-  scrollbar-width: thin;
-}
-
-.island-node {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
-  align-items: center;
-  column-gap: 10px;
-  min-width: 152px;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  color: var(--ink);
-  background: var(--surface);
-  text-align: left;
-  cursor: pointer;
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
-}
-
-.island-node:hover:not(:disabled) {
-  border-color: var(--blue);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-soft);
-}
-
-.island-node > i {
-  grid-row: 1 / 3;
-  color: var(--blue);
-  font-size: 1.25rem;
-}
-
-.island-node strong,
-.island-node small {
-  display: block;
-}
-
-.island-node small {
-  color: var(--muted);
-  font-size: 0.68rem;
-}
-
-.island-node.selected {
-  border-color: var(--blue);
-  background: color-mix(in srgb, var(--surface) 82%, var(--blue) 18%);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 16%, transparent);
-}
-
-.island-node.completed .island-order {
-  color: white;
-  background: var(--green);
-}
-
-.island-node.locked {
-  cursor: not-allowed;
-  filter: grayscale(0.75);
-  opacity: 0.55;
-}
-
-.island-order {
-  position: absolute;
-  display: none;
-}
-
-.map-path {
-  flex: 0 0 auto;
-  color: var(--muted);
-}
-
-.island-fact-card {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 18px;
-  margin-top: 14px;
-  padding: 18px 20px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: var(--surface);
-}
-
-.island-fact-icon {
-  display: grid;
-  place-items: center;
-  width: 54px;
-  height: 54px;
-  border-radius: 17px;
-  color: var(--blue);
-  background: color-mix(in srgb, var(--surface-2) 72%, var(--blue) 28%);
-  font-size: 1.35rem;
-}
-
-.island-fact-card span,
-.island-fact-card h3,
-.island-fact-card p {
-  margin: 0;
-}
-
-.island-fact-card > div:nth-child(2) > span {
-  color: var(--blue);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.island-fact-card p {
-  color: var(--muted);
-  font-size: 0.84rem;
-}
-
-.streak-chip {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: 2px 9px;
-  min-width: 118px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--surface-2) 72%, var(--yellow) 28%);
-}
-
-.streak-chip i {
-  grid-row: 1 / 3;
-  color: #ed7b22;
-  font-size: 1.4rem;
-}
-
-.streak-chip span {
-  color: var(--muted);
-  font-size: 0.65rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.streak-chip strong {
-  font-size: 0.9rem;
-}
-
-.game-setup {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 16px;
-  align-items: stretch;
-  margin-bottom: 22px;
-}
-
-.game-setup .game-mode-summary {
-  margin: 0;
-}
-
-.question-set-picker {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  padding: 20px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-soft);
-}
-
-.question-set-picker label {
-  font-weight: 800;
-}
-
-.question-set-picker select,
 .remap-grid select {
   width: 100%;
   min-height: 44px;
@@ -1019,11 +821,6 @@
   color: var(--ink);
   background: var(--surface-2);
   font: inherit;
-}
-
-.question-set-picker small {
-  color: var(--muted);
-  font-size: 0.72rem;
 }
 
 .mobile-controls {
@@ -1039,42 +836,6 @@
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-}
-
-.round-unlocks {
-  display: grid;
-  gap: 10px;
-  margin: 18px 0 0;
-}
-
-.round-unlocks[hidden] {
-  display: none;
-}
-
-.round-unlocks article {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  padding: 14px 16px;
-  border: 1px solid color-mix(in srgb, var(--yellow) 50%, var(--border));
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--surface-2) 80%, var(--yellow) 20%);
-}
-
-.round-unlocks article > i {
-  margin-top: 2px;
-  color: #d68a00;
-  font-size: 1.25rem;
-}
-
-.round-unlocks strong,
-.round-unlocks span {
-  display: block;
-}
-
-.round-unlocks span {
-  color: var(--muted);
-  font-size: 0.78rem;
 }
 
 .accessibility-panel {
@@ -1166,26 +927,10 @@
 
 .settings-feedback.success { color: var(--green); }
 .settings-feedback.error { color: var(--red); }
-.stage-progress.stage-four { width: 80%; }
 
-.color-blind-mode .island-node.selected,
 .color-blind-mode .hud-item.success {
   outline: 3px dashed currentColor;
   outline-offset: 2px;
-}
-
-@media (max-width: 980px) {
-  .game-setup {
-    grid-template-columns: 1fr;
-  }
-
-  .island-fact-card {
-    grid-template-columns: auto 1fr;
-  }
-
-  .streak-chip {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (max-width: 760px) {
@@ -1200,35 +945,10 @@
 }
 
 @media (max-width: 560px) {
-  .adventure-map {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .map-path {
-    display: none;
-  }
-
-  .island-node {
-    width: 100%;
-  }
-
-  .island-fact-card {
-    grid-template-columns: 1fr;
-  }
-
-  .island-fact-icon {
-    width: 46px;
-    height: 46px;
-  }
-
   .remap-grid fieldset {
     grid-template-columns: 1fr 1fr;
   }
 }
-
-/* Tahap 5 — status final dan polish permainan. */
-.stage-progress.stage-five { width: 100%; }
 
 .game-arena.pulse-success {
   animation: arena-success 420ms ease;
@@ -1256,220 +976,14 @@
   }
 }
 
-/* Revisi gameplay: informasi skor/nyawa dan umpan balik poin. */
-.score-rules {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 0 18px;
-}
-
-.score-rule {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 2px 9px;
-  min-width: 0;
-  padding: 12px 13px;
-  border: 1px solid var(--border);
-  border-radius: 15px;
-  background: var(--surface);
-  box-shadow: var(--shadow-soft);
-}
-
-.score-rule i {
-  grid-row: 1 / 3;
-  width: 26px;
-  text-align: center;
-  color: var(--blue);
-  font-size: 1.05rem;
-}
-
-.score-rule.positive i,
-.score-rule.positive strong {
-  color: var(--green);
-}
-
-.score-rule.negative i,
-.score-rule.negative strong {
-  color: var(--red);
-}
-
-.score-rule-lives i,
-.score-rule-lives strong {
-  color: #e84444;
-}
-
-.score-rule span {
-  overflow: hidden;
-  color: var(--muted);
-  font-size: 0.64rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.score-rule strong {
-  overflow: hidden;
-  font-size: 0.8rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.score-event {
-  position: absolute;
-  top: 18px;
-  left: 50%;
-  z-index: 8;
-  max-width: calc(100% - 30px);
-  padding: 9px 15px;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  color: #fff;
-  background: rgba(23, 32, 51, 0.94);
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
-  font-size: 0.82rem;
-  font-weight: 800;
-  pointer-events: none;
-  opacity: 0;
-  transform: translate(-50%, -14px) scale(0.94);
-  transition: opacity 170ms ease, transform 170ms ease;
-}
-
-.score-event.show {
-  opacity: 1;
-  transform: translate(-50%, 0) scale(1);
-}
-
-.score-event.positive {
-  background: rgba(18, 123, 82, 0.96);
-}
-
-.score-event.negative {
-  background: rgba(190, 48, 48, 0.96);
-}
-
 .hud-item [data-hud-score],
-.hud-item [data-hud-lives] {
+.hud-item [data-hud-chances] {
   font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 1050px) {
-  .score-rules {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 620px) {
-  .score-rules {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .score-rule {
-    padding: 10px;
-  }
-
-  .score-rule strong {
-    font-size: 0.74rem;
-  }
-}
-
 /* ==============================================================
-   Versi 1.2.3 — Tingkat kesulitan, progres perjalanan, countdown,
-   dan catatan playtest untuk balancing.
+   Progres perjalanan dan countdown.
    ============================================================== */
-.difficulty-picker {
-  grid-column: 1 / -1;
-  min-width: 0;
-  margin: 0;
-  padding: 18px 20px 20px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-soft);
-}
-
-.difficulty-picker legend {
-  padding: 0 8px;
-  color: var(--ink);
-  font-weight: 800;
-}
-
-.difficulty-options {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.difficulty-option {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 11px;
-  min-width: 0;
-  padding: 14px;
-  border: 2px solid var(--border);
-  border-radius: 16px;
-  background: var(--surface-2);
-  cursor: pointer;
-  transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
-}
-
-.difficulty-option:hover {
-  border-color: color-mix(in srgb, var(--blue) 65%, var(--border));
-  transform: translateY(-1px);
-}
-
-.difficulty-option.selected,
-.difficulty-option:has(input:checked) {
-  border-color: var(--blue);
-  background: color-mix(in srgb, var(--surface) 86%, var(--blue) 14%);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 38%, transparent);
-}
-
-.difficulty-option input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.difficulty-option:has(input:disabled) {
-  cursor: not-allowed;
-  opacity: 0.58;
-}
-
-.difficulty-icon {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border-radius: 13px;
-  color: var(--blue);
-  background: color-mix(in srgb, var(--surface) 72%, var(--blue) 28%);
-  font-size: 1.05rem;
-}
-
-.difficulty-option strong,
-.difficulty-option small {
-  display: block;
-}
-
-.difficulty-option strong {
-  margin-bottom: 2px;
-  font-size: 0.9rem;
-}
-
-.difficulty-option small {
-  color: var(--muted);
-  font-size: 0.7rem;
-  line-height: 1.45;
-}
-
 .journey-strip {
   display: grid;
   grid-template-columns: minmax(120px, 0.8fr) minmax(260px, 2.5fr) minmax(110px, 0.7fr) minmax(95px, 0.6fr);
@@ -1589,98 +1103,10 @@
   animation: countdown-pop 720ms ease infinite;
 }
 
-.game-countdown span {
-  margin-top: 12px;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 @keyframes countdown-pop {
   0% { transform: scale(0.88); opacity: 0.68; }
   38% { transform: scale(1.06); opacity: 1; }
   100% { transform: scale(0.96); opacity: 0.9; }
-}
-
-.playtest-summary {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 9px;
-  margin-top: 18px;
-}
-
-.playtest-summary:empty {
-  display: none;
-}
-
-.playtest-summary article {
-  min-width: 0;
-  padding: 11px 12px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface-2);
-}
-
-.playtest-summary span,
-.playtest-summary strong {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.playtest-summary span {
-  color: var(--muted);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.playtest-summary strong {
-  margin-top: 3px;
-  font-size: 0.82rem;
-}
-
-.playtest-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 22px;
-  margin-top: 18px;
-  padding: 22px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-soft);
-}
-
-.playtest-panel h3,
-.playtest-panel p {
-  margin: 0;
-}
-
-.playtest-panel p {
-  max-width: 720px;
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.playtest-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 9px;
-  flex-shrink: 0;
-}
-
-.playtest-actions strong {
-  width: 100%;
-  color: var(--muted);
-  font-size: 0.76rem;
-  text-align: right;
 }
 
 @media (max-width: 1050px) {
@@ -1692,17 +1118,9 @@
     grid-column: 1 / -1;
     grid-row: 2;
   }
-
-  .playtest-summary {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 760px) {
-  .difficulty-options {
-    grid-template-columns: 1fr;
-  }
-
   .journey-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1711,33 +1129,12 @@
     grid-column: 1 / -1;
     grid-row: auto;
   }
-
-  .playtest-panel {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .playtest-actions {
-    justify-content: flex-start;
-  }
-
-  .playtest-actions strong {
-    text-align: left;
-  }
 }
 
 @media (max-width: 520px) {
-  .difficulty-picker {
-    padding: 15px;
-  }
-
   .journey-strip {
     grid-template-columns: 1fr 1fr;
     gap: 9px;
-  }
-
-  .playtest-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .game-countdown strong {

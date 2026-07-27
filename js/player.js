@@ -1,6 +1,6 @@
 /**
  * Kelas Player.
- * Menangani posisi, gerakan, benturan batas arena, Shield, dan visual pemain.
+ * Menangani posisi, gerakan, benturan batas arena, dan visual pemain.
  */
 export class Player {
   constructor({
@@ -23,7 +23,6 @@ export class Player {
     this.accent = accent;
     this.hasFlag = false;
     this.invulnerableTime = 0;
-    this.shieldTime = 0;
     this.animationTime = 0;
   }
 
@@ -37,7 +36,6 @@ export class Player {
   update(deltaTime, direction, bounds) {
     this.animationTime += deltaTime;
     this.invulnerableTime = Math.max(0, this.invulnerableTime - deltaTime);
-    this.shieldTime = Math.max(0, this.shieldTime - deltaTime);
 
     let { x: dx, y: dy } = direction;
     const length = Math.hypot(dx, dy);
@@ -56,14 +54,6 @@ export class Player {
     return this.invulnerableTime > 0;
   }
 
-  activateShield(seconds = 5) {
-    this.shieldTime = Math.max(this.shieldTime, seconds);
-  }
-
-  hasShield() {
-    return this.shieldTime > 0;
-  }
-
   getCircle() {
     return { x: this.x, y: this.y, radius: this.radius };
   }
@@ -80,17 +70,6 @@ export class Player {
     ctx.beginPath();
     ctx.ellipse(0, this.radius + 8, this.radius * 0.9, 6, 0, 0, Math.PI * 2);
     ctx.fill();
-
-    if (this.hasShield()) {
-      const pulse = 5 + Math.sin(this.animationTime * 8) * 2;
-      ctx.strokeStyle = "#f7c948";
-      ctx.lineWidth = 5;
-      ctx.setLineDash([8, 5]);
-      ctx.beginPath();
-      ctx.arc(0, 0, this.radius + 11 + pulse, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
 
     ctx.fillStyle = "#ffffff";
     ctx.beginPath();

@@ -3,7 +3,11 @@
  * Penjaga tetap terikat pada garis tugasnya, tetapi ritmenya dapat berupa:
  * steady (konstan), pause (berhenti sesaat), pulse (cepat-lambat),
  * surge (lonjakan kecepatan), dan fakeout (berbalik sebelum batas).
+ * Pola gerak bersifat deterministik (berbasis waktu, bukan acak) agar konsisten
+ * untuk diamati dan diulang saat pengambilan gambar (Mode Simulasi Video).
  */
+const RETURN_SPEEDUP = 1.15;
+
 export class Enemy {
   constructor({
     orientation,
@@ -37,45 +41,30 @@ export class Enemy {
     this.behaviorClock = Math.max(0, phase);
     this.elapsed = Math.max(0, phase);
     this.pauseTimer = 0;
-    this.difficultyMultiplier = 1;
-    this.behaviorIntensity = 1;
     this.returnMultiplier = 1;
     this.returnActive = false;
   }
 
-  configureDifficulty({ speedMultiplier = 1, behaviorIntensity = 1 } = {}) {
-    this.difficultyMultiplier = Math.max(0.6, speedMultiplier);
-    this.behaviorIntensity = Math.max(0.35, behaviorIntensity);
-  }
-
-  setReturnPhase(active, multiplier = 1.15) {
+  setReturnPhase(active) {
     const changed = this.returnActive !== Boolean(active);
     this.returnActive = Boolean(active);
-    this.returnMultiplier = this.returnActive ? Math.max(1, multiplier) : 1;
+    this.returnMultiplier = this.returnActive ? RETURN_SPEEDUP : 1;
 
-    // Pada mode Normal/Ahli, sebagian penjaga melakukan tipuan sekali
-    // ketika bendera diambil. Tetap berada di garis agar adil.
-    if (changed && this.returnActive && this.behavior === "fakeout" && this.behaviorIntensity >= 0.9) {
+    // Sebagian penjaga bertipe fakeout melakukan tipuan sekali ketika bendera
+    // diambil, sehingga perjalanan pulang tetap menantang untuk diamati.
+    if (changed && this.returnActive && this.behavior === "fakeout") {
       this.direction *= -1;
       this.behaviorClock = 0;
     }
   }
 
-  increaseSpeed(multiplier = 1.12, maximumMultiplier = 1.8) {
-    this.speed = Math.min(this.speed * multiplier, this.baseSpeed * maximumMultiplier);
-  }
-
-  resetSpeed() {
-    this.speed = this.baseSpeed;
-  }
-
   getBehaviorSpeedMultiplier() {
     if (this.behavior === "pulse") {
-      return 1 + Math.sin(this.elapsed * (2.1 + this.behaviorIntensity * 0.35)) * 0.16 * this.behaviorIntensity;
+      return 1 + Math.sin(this.elapsed * 2.1) * 0.16;
     }
     if (this.behavior === "surge") {
       const wave = Math.max(0, Math.sin(this.elapsed * 1.65));
-      return 1 + wave * (this.surgeMultiplier - 1) * this.behaviorIntensity;
+      return 1 + wave * (this.surgeMultiplier - 1);
     }
     return 1;
   }
@@ -89,12 +78,11 @@ export class Enemy {
       return true;
     }
 
-    const triggerInterval = this.behaviorInterval / this.behaviorIntensity;
-    if (this.behaviorClock < triggerInterval) return false;
+    if (this.behaviorClock < this.behaviorInterval) return false;
     this.behaviorClock = 0;
 
     if (this.behavior === "pause") {
-      this.pauseTimer = this.pauseDuration * Math.min(1.2, this.behaviorIntensity);
+      this.pauseTimer = this.pauseDuration;
       return true;
     }
 
@@ -108,10 +96,7 @@ export class Enemy {
     const paused = this.updateBehavior(deltaTime);
     if (paused) return;
 
-    const movementSpeed = this.speed
-      * this.difficultyMultiplier
-      * this.returnMultiplier
-      * this.getBehaviorSpeedMultiplier();
+    const movementSpeed = this.speed * this.returnMultiplier * this.getBehaviorSpeedMultiplier();
     this.position += movementSpeed * this.direction * deltaTime;
 
     if (this.position >= this.max) {

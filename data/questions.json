@@ -1,366 +1,240 @@
-[
-  {
-    "id": "IPS01",
-    "category": "IPS",
-    "question": "Di daerah Sunda dan Betawi, permainan gobak sodor lebih dikenal dengan nama ...",
-    "choices": [
-      "Engklek",
-      "Galah Asin atau Galasin",
-      "Benteng-bentengan",
-      "Petak Umpet"
-    ],
-    "answer": 1,
-    "explanation": "Permainan yang sama dikenal dengan nama berbeda di tiap daerah: Gobak Sodor di Jawa, Galah Asin/Galasin di Sunda dan Betawi."
-  },
-  {
-    "id": "IPS02",
-    "category": "IPS",
-    "question": "Dalam perlombaan olahraga tradisional resmi di Indonesia, gobak sodor dipertandingkan dengan nama ...",
-    "choices": [
-      "Sodoran",
-      "Galah Raya",
-      "Hadang",
-      "Adang-adangan Nasional"
-    ],
-    "answer": 2,
-    "explanation": "Nama \"Hadang\" dipakai pada perlombaan olahraga tradisional resmi dengan aturan yang lebih terstandardisasi."
-  },
-  {
-    "id": "IPS03",
-    "category": "IPS",
-    "question": "Satu permainan yang memiliki banyak nama daerah menunjukkan bahwa budaya ...",
-    "choices": [
-      "hanya dimiliki satu daerah tertentu",
-      "tidak dapat berubah sepanjang waktu",
-      "harus memiliki nama yang seragam",
-      "menyebar dan menyesuaikan diri dengan ruang tempat masyarakat hidup"
-    ],
-    "answer": 3,
-    "explanation": "Budaya menyebar antarruang dan berubah seiring waktu; masyarakat tiap daerah menyesuaikan nama serta aturannya."
-  },
-  {
-    "id": "IPS04",
-    "category": "IPS",
-    "question": "Saat regu penjaga membagi tugas menjaga garis masing-masing agar pertahanan kuat, nilai yang paling terlihat adalah ...",
-    "choices": [
-      "gotong royong dan kerja sama",
-      "persaingan antarteman satu regu",
-      "keberuntungan semata",
-      "kemandirian tanpa bantuan orang lain"
-    ],
-    "answer": 0,
-    "explanation": "Kemenangan regu bergantung pada pembagian tugas dan koordinasi, bukan kehebatan satu orang."
-  },
-  {
-    "id": "IPS05",
-    "category": "IPS",
-    "question": "Contoh sikap sportivitas dalam gobak sodor adalah ...",
-    "choices": [
-      "berpura-pura tidak tersentuh agar tetap menang",
-      "mengakui diri tersentuh penjaga walau teman tidak melihat",
-      "memprotes semua keputusan regu penjaga",
-      "berhenti bermain saat regu tertinggal"
-    ],
-    "answer": 1,
-    "explanation": "Sportivitas berarti jujur pada aturan dan menerima hasil permainan dengan lapang dada."
-  },
-  {
-    "id": "IPS06",
-    "category": "IPS",
-    "question": "Gobak sodor disebut warisan budaya karena ...",
-    "choices": [
-      "diciptakan oleh perusahaan game modern",
-      "hanya boleh dimainkan orang dewasa",
-      "diturunkan dari generasi ke generasi dan tetap dimainkan sampai kini",
-      "berasal dari luar negeri dan baru dikenal"
-    ],
-    "answer": 2,
-    "explanation": "Permainan tradisional diwariskan turun-temurun dan menjadi bagian identitas budaya masyarakat Indonesia."
-  },
-  {
-    "id": "IPS07",
-    "category": "IPS",
-    "question": "Dahulu gobak sodor dimainkan di tanah lapang kampung; kini juga dimainkan di halaman sekolah bahkan lewat game digital. Perubahan ini menggambarkan ...",
-    "choices": [
-      "kehidupan manusia yang berubah dalam ruang dan waktu",
-      "hilangnya seluruh nilai permainan tradisional",
-      "larangan bermain di ruang terbuka",
-      "permainan yang tidak lagi membutuhkan teman"
-    ],
-    "answer": 0,
-    "explanation": "Ruang dan bentuk permainan berubah mengikuti zaman, tetapi nilainya tetap dapat dijaga dan diterapkan."
-  },
-  {
-    "id": "PJK01",
-    "category": "PJOK",
-    "question": "Waktu paling tepat untuk menembus garis penjaga adalah ketika ...",
-    "choices": [
-      "penjaga sedang menghadap ke arah kita",
-      "penjaga berdiri tepat di depan kita",
-      "kita merasa lelah dan ingin cepat selesai",
-      "penjaga bergerak menjauhi jalur yang akan kita lewati"
-    ],
-    "answer": 3,
-    "explanation": "Memilih waktu bergerak saat penjaga menjauh memberi celah paling aman untuk melintas."
-  },
-  {
-    "id": "PJK02",
-    "category": "PJOK",
-    "question": "Sikap tubuh yang baik saat menunggu celah untuk berlari adalah ...",
-    "choices": [
-      "berdiri tegak kaku dengan kaki rapat",
-      "badan sedikit condong, lutut ditekuk, siap bergerak ke segala arah",
-      "duduk santai di dekat garis",
-      "membelakangi penjaga agar tidak terlihat"
-    ],
-    "answer": 1,
-    "explanation": "Posisi siap dengan lutut ditekuk membuat tubuh cepat bereaksi dan mudah mengubah arah gerak."
-  },
-  {
-    "id": "PJK03",
-    "category": "PJOK",
-    "question": "Dalam permainan beregu, tugas pemain \"pemancing\" adalah ...",
-    "choices": [
-      "berlari paling depan tanpa rencana",
-      "menjaga garis belakang milik lawan",
-      "menarik perhatian penjaga agar teman pembawa misi bisa lolos",
-      "berdiri diam sampai permainan selesai"
-    ],
-    "answer": 2,
-    "explanation": "Mengalihkan posisi penjaga adalah strategi tim: satu pemain memancing, pemain lain menembus pertahanan."
-  },
-  {
-    "id": "PJK04",
-    "category": "PJOK",
-    "question": "Gerak tipuan (mengecoh) berguna untuk ...",
-    "choices": [
-      "membuat penjaga bergerak ke arah yang salah sebelum kita melintas",
-      "menambah waktu istirahat",
-      "membuat kita berlari lebih lambat",
-      "menggantikan kerja sama tim"
-    ],
-    "answer": 0,
-    "explanation": "Tipuan arah memaksa penjaga salah langkah sehingga celah untuk melintas terbuka lebih lebar."
-  },
-  {
-    "id": "PJK05",
-    "category": "PJOK",
-    "question": "Saat perjalanan pulang penjaga bergerak lebih cepat. Strategi yang paling aman adalah ...",
-    "choices": [
-      "menerobos semua garis sekaligus tanpa melihat penjaga",
-      "berlari mundur sepanjang permainan",
-      "berhenti total di tengah lapangan",
-      "melewati satu garis pada satu waktu sambil menunggu ritme penjaga"
-    ],
-    "answer": 3,
-    "explanation": "Situasi gerak yang lebih menantang butuh kesabaran: amati ritme, lalu lewati garis satu per satu."
-  },
-  {
-    "id": "PJK06",
-    "category": "PJOK",
-    "question": "Unsur kebugaran jasmani yang paling dominan dilatih dalam gobak sodor adalah ...",
-    "choices": [
-      "kekuatan otot lengan",
-      "kelincahan mengubah arah gerak dengan cepat",
-      "keseimbangan berdiri satu kaki",
-      "daya apung di air"
-    ],
-    "answer": 1,
-    "explanation": "Pemain terus berlari, berhenti, dan berbelok cepat untuk menghindari penjaga—itulah latihan kelincahan."
-  },
-  {
-    "id": "PJK07",
-    "category": "PJOK",
-    "question": "Agar tidak tersentuh saat melintasi garis, pelintas sebaiknya ...",
-    "choices": [
-      "berjalan pelan tepat di samping penjaga",
-      "melintas sambil menutup mata",
-      "melewati titik yang paling jauh dari jangkauan tangan penjaga",
-      "menunggu penjaga menyentuh terlebih dahulu"
-    ],
-    "answer": 2,
-    "explanation": "Mengatur posisi lintasan sejauh mungkin dari penjaga memperkecil risiko tersentuh."
-  },
-  {
-    "id": "KKA01",
-    "category": "KKA",
-    "question": "Mengamati penjaga yang bergerak bolak-balik secara teratur lalu menebak posisinya berikutnya adalah contoh ...",
-    "choices": [
-      "menghafal tanpa berpikir",
-      "pengenalan pola",
-      "abstraksi warna",
-      "kompresi data"
-    ],
-    "answer": 1,
-    "explanation": "Pengenalan pola: dari gerakan yang berulang kita dapat memprediksi posisi penjaga selanjutnya."
-  },
-  {
-    "id": "KKA02",
-    "category": "KKA",
-    "question": "Memecah tantangan besar \"membawa bendera pulang\" menjadi langkah kecil—amati ritme, cari celah, tentukan waktu lari—disebut ...",
-    "choices": [
-      "duplikasi",
-      "kompilasi",
-      "dekomposisi",
-      "enkripsi"
-    ],
-    "answer": 2,
-    "explanation": "Dekomposisi adalah memecah masalah besar menjadi bagian-bagian kecil yang lebih mudah diselesaikan."
-  },
-  {
-    "id": "KKA03",
-    "category": "KKA",
-    "question": "\"Tunggu penjaga bergerak ke atas, hitung dua detik, lalu lari lurus ke petak berikutnya.\" Urutan langkah yang jelas seperti ini disebut ...",
-    "choices": [
-      "algoritma",
-      "variabel",
-      "perangkat keras",
-      "basis data"
-    ],
-    "answer": 0,
-    "explanation": "Algoritma adalah urutan langkah yang jelas dan berurutan untuk menyelesaikan suatu masalah."
-  },
-  {
-    "id": "KKA04",
-    "category": "KKA",
-    "question": "Pada legenda ritme game ini, penjaga berikon \"Ⅱ\" kadang berhenti sejenak. Keputusan paling logis adalah ...",
-    "choices": [
-      "melintas saat penjaga bergerak paling cepat",
-      "mengabaikan ikon karena tidak penting",
-      "menunggu sampai permainan berakhir",
-      "melintas tepat saat penjaga sedang berhenti"
-    ],
-    "answer": 3,
-    "explanation": "Membaca simbol pada legenda lalu memakainya untuk mengambil keputusan adalah inti berpikir komputasional."
-  },
-  {
-    "id": "KKA05",
-    "category": "KKA",
-    "question": "Penjaga berikon \"↔\" suka berbalik arah tiba-tiba (tipuan). Prediksi yang paling aman adalah ...",
-    "choices": [
-      "langsung percaya pada gerakan pertamanya",
-      "menunggu arah geraknya benar-benar pasti sebelum melintas",
-      "menganggap ia tidak akan pernah berbalik",
-      "melintas tanpa melihat penjaga"
-    ],
-    "answer": 1,
-    "explanation": "Data yang bisa menipu perlu diverifikasi dulu—jangan mengambil keputusan dari satu pengamatan saja."
-  },
-  {
-    "id": "KKA06",
-    "category": "KKA",
-    "question": "Penjaga berikon \"~\" bergerak cepat lalu melambat bergantian. Waktu terbaik melintas adalah ...",
-    "choices": [
-      "saat fase geraknya sedang cepat",
-      "kapan saja karena hasilnya sama",
-      "saat fase geraknya sedang lambat",
-      "saat kita sedang tidak melihatnya"
-    ],
-    "answer": 2,
-    "explanation": "Setelah pola cepat–lambat dikenali, langkah aman ditentukan pada fase yang paling menguntungkan."
-  },
-  {
-    "id": "KKA07",
-    "category": "KKA",
-    "question": "Kamu selalu tertangkap di garis kedua. Cara berpikir komputasional untuk memperbaikinya adalah ...",
-    "choices": [
-      "mengevaluasi polanya, mengubah satu strategi, lalu mengujinya lagi",
-      "menyerah dan tidak mencoba lagi",
-      "mengulang cara yang sama terus-menerus",
-      "menyalahkan penjaga yang terlalu hebat"
-    ],
-    "answer": 0,
-    "explanation": "Uji coba, evaluasi, lalu perbaikan (debugging) juga berlaku saat memecahkan masalah sehari-hari."
-  },
-  {
-    "id": "SEN01",
-    "category": "Seni Rupa",
-    "question": "Bahan yang paling mudah didapat untuk menggambar garis lapangan gobak sodor di lantai semen halaman sekolah adalah ...",
-    "choices": [
-      "cat minyak",
-      "spidol permanen",
-      "kapur tulis",
-      "pewarna kain"
-    ],
-    "answer": 2,
-    "explanation": "Kapur murah, mudah didapat, mudah dihapus, dan aman—contoh memanfaatkan potensi bahan di lingkungan sekitar."
-  },
-  {
-    "id": "SEN02",
-    "category": "Seni Rupa",
-    "question": "Elemen seni rupa yang paling dominan membentuk lapangan gobak sodor adalah ...",
-    "choices": [
-      "garis",
-      "gelap terang",
-      "tekstur kasar",
-      "ruang tiga dimensi"
-    ],
-    "answer": 0,
-    "explanation": "Garis horizontal dan vertikal membagi lapangan menjadi petak-petak sekaligus menjadi jalur para penjaga."
-  },
-  {
-    "id": "SEN03",
-    "category": "Seni Rupa",
-    "question": "Untuk membuat garis lapangan di halaman berumput, bahan sekitar yang paling tepat adalah ...",
-    "choices": [
-      "cat tembok yang disiram ke rumput",
-      "tali rafia yang dibentangkan atau taburan kapur",
-      "paku besi yang ditanam di tanah",
-      "pecahan kaca sebagai pembatas"
-    ],
-    "answer": 1,
-    "explanation": "Bahan penanda dipilih yang aman bagi pemain dan tidak merusak lingkungan tempat bermain."
-  },
-  {
-    "id": "SEN04",
-    "category": "Seni Rupa",
-    "question": "Bentuk dasar lapangan gobak sodor adalah ...",
-    "choices": [
-      "lingkaran besar tanpa pembatas",
-      "segitiga dengan satu garis tengah",
-      "bentuk bebas tanpa aturan",
-      "persegi panjang yang dibagi menjadi petak-petak"
-    ],
-    "answer": 3,
-    "explanation": "Lapangan berupa persegi panjang berpetak; jumlah petak dapat disesuaikan dengan luas tempat dan jumlah pemain."
-  },
-  {
-    "id": "SEN05",
-    "category": "Seni Rupa",
-    "question": "Memilih warna mencolok yang berbeda untuk penanda dua regu bertujuan agar ...",
-    "choices": [
-      "lapangan terlihat lebih mahal",
-      "pemain tiap regu mudah dibedakan dari kejauhan",
-      "permainan menjadi lebih sulit",
-      "warna cepat pudar terkena sinar matahari"
-    ],
-    "answer": 1,
-    "explanation": "Kontras warna adalah prinsip visual yang membantu mata membedakan objek dengan cepat."
-  },
-  {
-    "id": "SEN06",
-    "category": "Seni Rupa",
-    "question": "Saat memilih alat dan bahan dari lingkungan sekitar untuk membuat perlengkapan permainan, pertimbangan utamanya adalah ...",
-    "choices": [
-      "harganya paling mahal agar terlihat bagus",
-      "berasal dari luar negeri",
-      "mudah didapat, aman digunakan, dan tidak merusak lingkungan",
-      "sekali pakai lalu dibuang sembarangan"
-    ],
-    "answer": 2,
-    "explanation": "Berkarya dengan bahan sekitar melatih kepekaan mengenali potensi lingkungan secara bertanggung jawab."
-  },
-  {
-    "id": "SEN07",
-    "category": "Seni Rupa",
-    "question": "Batu pipih, sandal, atau ranting yang diletakkan di sudut lapangan tradisional biasanya berfungsi sebagai ...",
-    "choices": [
-      "penanda batas atau titik penting lapangan",
-      "hiasan yang tidak boleh disentuh",
-      "senjata untuk regu penjaga",
-      "hadiah bagi pemenang"
-    ],
-    "answer": 0,
-    "explanation": "Benda sederhana di sekitar dapat diolah menjadi penanda visual—bukti kreativitas memanfaatkan bahan yang ada."
-  }
-]
+{
+  "demo": [
+    {
+      "id": "DEMO01",
+      "category": "KKA",
+      "question": "Untuk mengurai permainan Gobak Sodor menjadi sebuah masalah, komponen apa yang perlu dikenali terlebih dahulu?",
+      "choices": [
+        "Warna pemain, musik, dan bentuk tombol.",
+        "Tujuan, aturan, rintangan, dan pilihan gerak.",
+        "Nama pemain, skor tertinggi, dan hadiah.",
+        "Ukuran layar, volume suara, dan jenis perangkat."
+      ],
+      "answer": 1,
+      "explanation": "Pemecahan masalah dimulai dengan mengenali tujuan, aturan, rintangan, dan pilihan tindakan yang tersedia."
+    },
+    {
+      "id": "DEMO02",
+      "category": "KKA",
+      "question": "Jika penjaga bergerak menuju sisi kiri arena, maka tindakan yang paling logis bagi pembawa bendera adalah ...",
+      "choices": [
+        "Bergerak ke kiri mengikuti penjaga.",
+        "Berhenti tanpa mengamati jalur lain.",
+        "Memanfaatkan jalur kanan ketika sudah terbuka.",
+        "Kembali ke START tanpa mencoba strategi."
+      ],
+      "answer": 2,
+      "explanation": "Posisi penjaga dapat digunakan sebagai kondisi. Jika penjaga berpindah ke kiri, maka peluang jalur kanan menjadi lebih terbuka."
+    },
+    {
+      "id": "DEMO03",
+      "category": "PJOK",
+      "question": "Pemain 2 berhasil menarik perhatian penjaga. Apa tindakan berikutnya yang paling efektif?",
+      "choices": [
+        "Pemain 1 segera bergerak melalui jalur yang kosong.",
+        "Kedua pemain bergerak ke arah penjaga.",
+        "Pemain 1 tetap diam sampai waktu habis.",
+        "Pemain 2 kembali dan menghalangi Pemain 1."
+      ],
+      "answer": 0,
+      "explanation": "Kerja sama efektif terjadi ketika pengalih penjaga menciptakan ruang dan pembawa bendera memanfaatkan ruang tersebut."
+    },
+    {
+      "id": "DEMO04",
+      "category": "KKA",
+      "question": "Pemain tertangkap dua kali pada garis yang sama. Data apa yang perlu dianalisis sebelum mencoba kembali?",
+      "choices": [
+        "Posisi penjaga, waktu bergerak, dan jalur yang digunakan.",
+        "Nama pemain dan warna karakter.",
+        "Jumlah penonton di sekitar permainan.",
+        "Bentuk tombol pada layar permainan."
+      ],
+      "answer": 0,
+      "explanation": "Posisi, waktu, dan jalur gerak dapat digunakan untuk menemukan penyebab kegagalan dan memperbaiki strategi berikutnya."
+    },
+    {
+      "id": "DEMO05",
+      "category": "IPS",
+      "question": "Nilai sosial yang paling terlihat ketika dua pemain menyusun strategi bersama adalah ...",
+      "choices": [
+        "Persaingan individu tanpa komunikasi.",
+        "Kerja sama, komunikasi, dan kepatuhan pada aturan.",
+        "Keinginan mendapatkan nilai tertinggi sendiri.",
+        "Kebebasan bergerak tanpa memperhatikan tim."
+      ],
+      "answer": 1,
+      "explanation": "Gobak Sodor melatih pemain untuk berkomunikasi, bekerja sama, dan menjalankan peran sesuai aturan permainan."
+    },
+    {
+      "id": "DEMO06",
+      "category": "Seni Rupa",
+      "question": "Jika miniatur Gobak Sodor menggambarkan lingkungan perkotaan, tampilan permukaan lapangan yang paling sesuai adalah ...",
+      "choices": [
+        "Pasir pantai dengan perahu nelayan.",
+        "Tanah berlumpur dengan saluran irigasi.",
+        "Beton atau paving dengan unsur taman kota.",
+        "Rumput luas dengan sawah dan lumbung."
+      ],
+      "answer": 2,
+      "explanation": "Pemilihan warna, bahan, dan unsur visual perlu disesuaikan dengan lingkungan yang digambarkan."
+    }
+  ],
+  "bank": [
+    {
+      "id": "BANK-KKA-01",
+      "category": "KKA",
+      "question": "Penjaga berikon \"+\" bergerak dengan kecepatan yang naik lalu turun mengikuti gelombang. Waktu paling aman untuk melintas adalah ...",
+      "choices": [
+        "Saat kecepatannya sedang berada di titik paling rendah.",
+        "Saat kecepatannya sedang berada di titik paling tinggi.",
+        "Kapan saja karena kecepatannya selalu sama.",
+        "Tepat saat penjaga berbalik arah."
+      ],
+      "answer": 0,
+      "explanation": "Mengenali pola naik-turun kecepatan membantu menentukan titik teraman untuk bergerak."
+    },
+    {
+      "id": "BANK-KKA-02",
+      "category": "KKA",
+      "question": "Agar teman satu tim bisa mengikuti strategi yang sama persis, instruksi gerak sebaiknya ditulis sebagai ...",
+      "choices": [
+        "Kesan umum tanpa urutan yang jelas.",
+        "Langkah-langkah berurutan yang jelas dan tidak ambigu.",
+        "Satu kata kunci yang harus ditebak sendiri.",
+        "Gambar bebas tanpa keterangan tambahan."
+      ],
+      "answer": 1,
+      "explanation": "Instruksi yang berurutan dan jelas adalah ciri utama sebuah algoritma yang dapat diikuti orang lain."
+    },
+    {
+      "id": "BANK-KKA-03",
+      "category": "KKA",
+      "question": "Ikon \"Ⅱ\" dan \"~\" pada penjaga menunjukkan dua pola gerak yang berbeda. Manfaat mengenali kedua ikon ini adalah ...",
+      "choices": [
+        "Membuat tampilan permainan lebih ramai.",
+        "Membantu memprediksi kapan penjaga berhenti atau melambat.",
+        "Menentukan skor akhir permainan.",
+        "Mengganti warna penjaga secara otomatis."
+      ],
+      "answer": 1,
+      "explanation": "Simbol pola gerak adalah data visual yang dapat dibaca untuk memprediksi perilaku penjaga berikutnya."
+    },
+    {
+      "id": "BANK-PJOK-01",
+      "category": "PJOK",
+      "question": "Dua penjaga berpatroli pada jalur yang berbeda. Jalur paling aman untuk melintas berada di ...",
+      "choices": [
+        "Titik yang paling jauh dari kedua jalur penjaga.",
+        "Tepat di antara kedua penjaga yang sedang mendekat.",
+        "Titik yang paling dekat dengan salah satu penjaga.",
+        "Sudut arena yang tidak terlihat oleh pemain lain."
+      ],
+      "answer": 0,
+      "explanation": "Memilih celah terjauh dari jangkauan penjaga memperbesar peluang melintas dengan aman."
+    },
+    {
+      "id": "BANK-PJOK-02",
+      "category": "PJOK",
+      "question": "Agar rencana pengalihan penjaga berjalan lancar, kedua pemain sebaiknya ...",
+      "choices": [
+        "Bergerak sendiri-sendiri tanpa memberi tanda.",
+        "Menyepakati sinyal atau waktu bergerak sebelum mencoba.",
+        "Menunggu penjaga yang menentukan giliran gerak.",
+        "Bertukar peran setiap detik tanpa rencana."
+      ],
+      "answer": 1,
+      "explanation": "Komunikasi dan kesepakatan waktu bergerak membuat strategi tim lebih terarah dan mudah dievaluasi."
+    },
+    {
+      "id": "BANK-PJOK-03",
+      "category": "PJOK",
+      "question": "Setelah tersentuh penjaga dan kembali ke posisi aman, langkah yang paling tepat sebelum mencoba lagi adalah ...",
+      "choices": [
+        "Mengulang gerakan yang sama persis tanpa berpikir.",
+        "Mengamati ritme penjaga sebentar sebelum bergerak lagi.",
+        "Langsung berlari secepat mungkin ke segala arah.",
+        "Berhenti bermain sampai sesi berakhir."
+      ],
+      "answer": 1,
+      "explanation": "Mengamati ulang ritme penjaga sebelum mencoba lagi membantu menghindari kesalahan yang sama."
+    },
+    {
+      "id": "BANK-IPS-01",
+      "category": "IPS",
+      "question": "Pembagian peran Pembawa Bendera dan Pengalih Penjaga menunjukkan konsep sosial berupa ...",
+      "choices": [
+        "Pembagian tugas dalam kelompok untuk mencapai tujuan bersama.",
+        "Persaingan untuk menjadi yang paling menonjol.",
+        "Aturan yang hanya menguntungkan satu pemain.",
+        "Kegiatan yang dapat dilakukan tanpa kerja sama."
+      ],
+      "answer": 0,
+      "explanation": "Pembagian peran adalah bentuk sederhana dari kerja sama dan pembagian tugas dalam kehidupan bermasyarakat."
+    },
+    {
+      "id": "BANK-IPS-02",
+      "category": "IPS",
+      "question": "Dibandingkan bermain sendiri-sendiri, strategi tim yang terkoordinasi biasanya menghasilkan ...",
+      "choices": [
+        "Peluang keberhasilan yang lebih rendah.",
+        "Peluang keberhasilan yang lebih tinggi karena saling melengkapi.",
+        "Hasil yang sama saja tanpa perbedaan.",
+        "Kebingungan karena terlalu banyak aturan."
+      ],
+      "answer": 1,
+      "explanation": "Koordinasi tim memungkinkan kekurangan satu pemain ditutupi oleh peran pemain lain."
+    },
+    {
+      "id": "BANK-IPS-03",
+      "category": "IPS",
+      "question": "Batas jumlah kesempatan sebelum harus mengulang simulasi berfungsi seperti ...",
+      "choices": [
+        "Hukuman yang tidak berkaitan dengan aturan.",
+        "Kesepakatan bersama agar permainan tetap adil dan berjalan teratur.",
+        "Cara untuk menghentikan permainan secepat mungkin.",
+        "Aturan yang boleh diabaikan oleh siapa saja."
+      ],
+      "answer": 1,
+      "explanation": "Aturan bersama, termasuk batas kesempatan, menjaga permainan tetap adil dan teratur bagi semua pemain."
+    },
+    {
+      "id": "BANK-SR-01",
+      "category": "Seni Rupa",
+      "question": "Memberi warna yang kontras pada penanda dua pemain bertujuan agar ...",
+      "choices": [
+        "Lapangan terlihat lebih ramai.",
+        "Posisi masing-masing pemain mudah dibedakan dengan cepat.",
+        "Penjaga menjadi lebih sulit terlihat.",
+        "Warna cepat pudar terkena sinar matahari."
+      ],
+      "answer": 1,
+      "explanation": "Kontras warna adalah prinsip visual yang membantu mata membedakan objek secara cepat."
+    },
+    {
+      "id": "BANK-SR-02",
+      "category": "Seni Rupa",
+      "question": "Ikon ritme penjaga seperti Ⅱ, ~, +, dan ↔ berfungsi sebagai ...",
+      "choices": [
+        "Simbol visual yang mewakili pola gerak tertentu.",
+        "Hiasan tambahan tanpa makna khusus.",
+        "Pengganti warna latar arena.",
+        "Penanda batas akhir permainan."
+      ],
+      "answer": 0,
+      "explanation": "Simbol atau ikon adalah cara visual untuk menyampaikan informasi tanpa bergantung pada warna semata."
+    },
+    {
+      "id": "BANK-SR-03",
+      "category": "Seni Rupa",
+      "question": "Saat membuat maket lapangan Gobak Sodor berskala kecil untuk proyek kelas, hal yang paling penting dijaga adalah ...",
+      "choices": [
+        "Perbandingan ukuran antar-bagian lapangan tetap proporsional.",
+        "Warna maket harus sama persis dengan aslinya.",
+        "Ukuran maket harus sebesar lapangan sungguhan.",
+        "Bahan maket harus barang baru yang mahal."
+      ],
+      "answer": 0,
+      "explanation": "Menjaga proporsi ukuran adalah prinsip dasar seni rupa saat membuat model atau maket suatu ruang."
+    }
+  ]
+}

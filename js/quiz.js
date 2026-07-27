@@ -1,53 +1,37 @@
 /**
- * Sistem soal adaptif Gobak Sodor Nusantara.
- * - Memuat bank soal empat mapel (IPS, PJOK, KKA, Seni Rupa) dari JSON.
- * - Membaca set soal buatan guru dari Local Storage.
- * - Memilih kategori berdasarkan kelemahan belajar yang tersimpan.
- * - Mencatat hasil sesi dan membuat rapor per mata pelajaran.
+ * Sistem soal Simulasi Strategi Gobak Sodor.
+ * - Mode Simulasi Video: enam soal tetap (data/questions.json → "demo"), urutan tidak berubah.
+ * - Mode Latihan Kelas: enam soal diambil acak dari bank (≥12 soal) dengan kuota kategori,
+ *   tanpa pengulangan dalam satu sesi.
+ * Setiap sesi berdiri sendiri (tanpa riwayat lintas sesi/pulau) sehingga tetap sederhana.
  */
 
-export const PROFILE_KEY = "gsnLearningProfileV1";
-export const QUESTION_SETS_KEY = "gsnQuestionSetsV1";
-export const ACTIVE_QUESTION_SET_KEY = "gsnActiveQuestionSetV1";
-export const CAMPAIGN_QUESTION_HISTORY_KEY = "gsnCampaignQuestionHistoryV1";
-export const MIN_PLAYABLE_QUESTIONS = 6;
-// Minimal 6 soal per mapel agar satu perjalanan dapat menyentuh keempat TP.
-export const MIN_BASE_QUESTIONS = 24;
-export const CATEGORIES = ["IPS", "PJOK", "KKA", "Seni Rupa"];
+export const CATEGORIES = ["KKA", "PJOK", "IPS", "Seni Rupa"];
+export const QUESTIONS_PER_SESSION = 6;
+export const MIN_CATEGORY_QUOTA = { KKA: 2, PJOK: 1, IPS: 1, "Seni Rupa": 1 };
 
-function emptyCategoryStats() {
-  return Object.fromEntries(CATEGORIES.map((category) => [category, { correct: 0, total: 0 }]));
-}
-
-function safeParse(value, fallback) {
-  try {
-    return JSON.parse(value) ?? fallback;
-  } catch {
-    return fallback;
+function shuffle(list) {
+  const array = [...list];
+  for (let i = array.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
+  return array;
 }
 
-function getStorage() {
-  return typeof window !== "undefined" ? window.localStorage : null;
-}
-
-function getSessionStorage() {
-  return typeof window !== "undefined" ? window.sessionStorage : null;
+function takeRandom(pool, count) {
+  const shuffled = shuffle(pool);
+  return shuffled.slice(0, Math.min(count, shuffled.length));
 }
 
 export class QuizSystem {
-  constructor({ source = "data/questions.json", storage = getStorage(), sessionStorage = getSessionStorage() } = {}) {
+  constructor({ source = "data/questions.json" } = {}) {
     this.source = source;
-    this.storage = storage;
-    this.sessionStorage = sessionStorage;
-    this.baseQuestions = [];
-    this.questions = [];
-    this.questionSets = [];
-    this.activeSetId = "default";
-    this.usedQuestionIds = new Set();
-    this.questionCycle = 1;
-    this.sessionStats = emptyCategoryStats();
-    this.profile = this.loadProfile();
+    this.demoQuestions = [];
+    this.bankQuestions = [];
+    this.sessionQuestions = [];
+    this.cursor = 0;
+    this.sessionStats = { correct: 0, total: 0 };
     this.currentQuestion = null;
   }
 
@@ -55,25 +39,23 @@ export class QuizSystem {
     const response = await fetch(this.source, { cache: "no-store" });
     if (!response.ok) throw new Error(`Bank soal gagal dimuat (${response.status}).`);
 
-    const questions = await response.json();
-    this.validateQuestions(questions, { minimum: MIN_BASE_QUESTIONS });
-    this.baseQuestions = questions;
-    this.reloadQuestionSets();
+    const data = await response.json();
+    if (!data || typeof data !== "object") throw new Error("Format bank soal tidak valid.");
 
-    const preferred = this.storage?.getItem(ACTIVE_QUESTION_SET_KEY) || "default";
-    // Simpan kembali pilihan aktual agar set lama yang sudah tidak layak dimainkan
-    // otomatis kembali ke bank soal bawaan.
-    this.setActiveSet(preferred, { persist: true });
-    return this.questions.length;
+    this.validateQuestionList(data.demo, { minimum: QUESTIONS_PER_SESSION, label: "demo" });
+    this.validateQuestionList(data.bank, { minimum: Object.keys(MIN_CATEGORY_QUOTA).length * 3, label: "bank" });
+    this.demoQuestions = data.demo.slice(0, QUESTIONS_PER_SESSION);
+    this.bankQuestions = data.bank;
+    return { demo: this.demoQuestions.length, bank: this.bankQuestions.length };
   }
 
-  validateQuestions(questions, { minimum = 1 } = {}) {
-    if (!Array.isArray(questions) || questions.length < minimum) {
-      throw new Error(`Bank soal harus berupa array dengan minimal ${minimum} soal.`);
+  validateQuestionList(list, { minimum = 1, label = "soal" } = {}) {
+    if (!Array.isArray(list) || list.length < minimum) {
+      throw new Error(`Bank soal "${label}" harus berupa array dengan minimal ${minimum} soal.`);
     }
 
     const ids = new Set();
-    questions.forEach((question, index) => {
+    list.forEach((question, index) => {
       const valid = question
         && typeof question.id === "string"
         && question.id.trim().length > 0
@@ -88,198 +70,73 @@ export class QuizSystem {
         && question.answer < question.choices.length
         && (question.explanation === undefined || typeof question.explanation === "string");
 
-      if (!valid) throw new Error(`Format soal ke-${index + 1} tidak valid.`);
-      if (ids.has(question.id)) throw new Error(`ID soal ganda: ${question.id}.`);
+      if (!valid) throw new Error(`Format soal "${label}" ke-${index + 1} tidak valid.`);
+      if (ids.has(question.id)) throw new Error(`ID soal ganda pada "${label}": ${question.id}.`);
       ids.add(question.id);
     });
   }
 
-  reloadQuestionSets() {
-    const stored = safeParse(this.storage?.getItem(QUESTION_SETS_KEY), []);
-    this.questionSets = Array.isArray(stored)
-      ? stored.filter((set) => {
-          try {
-            return set && typeof set.id === "string" && typeof set.name === "string"
-              && (this.validateQuestions(set.questions, { minimum: 1 }) || true);
-          } catch {
-            return false;
-          }
-        })
-      : [];
-    return this.getAvailableSets();
-  }
+  buildRandomSession() {
+    const pools = Object.fromEntries(CATEGORIES.map((category) => [
+      category,
+      this.bankQuestions.filter((question) => question.category === category)
+    ]));
 
-  getAvailableSets() {
-    return [
-      { id: "default", name: `Bank Soal 4 Mapel (${this.baseQuestions.length} soal)`, count: this.baseQuestions.length, builtIn: true },
-      ...this.questionSets
-        .filter((set) => set.questions.length >= MIN_PLAYABLE_QUESTIONS)
-        .map((set) => ({ id: set.id, name: set.name, count: set.questions.length, builtIn: false }))
-    ];
-  }
-
-  setActiveSet(setId = "default", { persist = true } = {}) {
-    const selected = this.questionSets.find((set) => (
-      set.id === setId && set.questions.length >= MIN_PLAYABLE_QUESTIONS
-    ));
-    this.activeSetId = selected ? selected.id : "default";
-    this.questions = selected ? selected.questions.map((question) => ({ ...question })) : [...this.baseQuestions];
-    this.usedQuestionIds = this.loadCampaignQuestionHistory(this.activeSetId);
-    this.questionCycle = 1;
-    this.resetSession({ preserveUsed: true });
-    if (persist && this.storage) this.storage.setItem(ACTIVE_QUESTION_SET_KEY, this.activeSetId);
-    return this.getActiveSetInfo();
-  }
-
-  getActiveSetInfo() {
-    return this.getAvailableSets().find((set) => set.id === this.activeSetId) ?? this.getAvailableSets()[0];
-  }
-
-  loadCampaignQuestionHistory(setId = this.activeSetId) {
-    // Riwayat utama disimpan di Local Storage agar soal tidak kembali muncul
-    // setelah siswa menutup tab atau melanjutkan pulau pada hari berikutnya.
-    const persistent = safeParse(this.storage?.getItem(CAMPAIGN_QUESTION_HISTORY_KEY), {});
-    // Migrasi riwayat versi 1.2.2 yang sebelumnya hanya berada di Session Storage.
-    const legacy = safeParse(this.sessionStorage?.getItem(CAMPAIGN_QUESTION_HISTORY_KEY), {});
-    const validIds = new Set(this.questions.map((question) => question.id));
-    const combined = [
-      ...(Array.isArray(persistent[setId]) ? persistent[setId] : []),
-      ...(Array.isArray(legacy[setId]) ? legacy[setId] : [])
-    ];
-    const used = [...new Set(combined)].filter((id) => validIds.has(id));
-    if (this.storage) {
-      persistent[setId] = used;
-      this.storage.setItem(CAMPAIGN_QUESTION_HISTORY_KEY, JSON.stringify(persistent));
-    }
-    this.sessionStorage?.removeItem(CAMPAIGN_QUESTION_HISTORY_KEY);
-    return new Set(used);
-  }
-
-  saveCampaignQuestionHistory() {
-    if (!this.storage) return;
-    const stored = safeParse(this.storage.getItem(CAMPAIGN_QUESTION_HISTORY_KEY), {});
-    stored[this.activeSetId] = [...this.usedQuestionIds];
-    this.storage.setItem(CAMPAIGN_QUESTION_HISTORY_KEY, JSON.stringify(stored));
-  }
-
-  resetSession({ preserveUsed = true } = {}) {
-    if (!preserveUsed) {
-      this.usedQuestionIds.clear();
-      this.questionCycle = 1;
-      this.saveCampaignQuestionHistory();
-    }
-    this.sessionStats = emptyCategoryStats();
-    this.currentQuestion = null;
-  }
-
-  getQuestionPoolStatus() {
-    const total = this.questions.length;
-    const used = Math.min(this.usedQuestionIds.size, total);
-    return { total, used, remaining: Math.max(0, total - used), cycle: this.questionCycle };
-  }
-
-  loadProfile() {
-    const stored = safeParse(this.storage?.getItem(PROFILE_KEY), {});
-    const stats = emptyCategoryStats();
+    const selected = [];
+    const selectedIds = new Set();
 
     CATEGORIES.forEach((category) => {
-      const item = stored[category];
-      if (!item) return;
-      stats[category] = {
-        correct: Math.max(0, Number(item.correct) || 0),
-        total: Math.max(0, Number(item.total) || 0)
-      };
+      const quota = MIN_CATEGORY_QUOTA[category] ?? 0;
+      takeRandom(pools[category], quota).forEach((question) => {
+        selected.push(question);
+        selectedIds.add(question.id);
+      });
     });
-    return stats;
+
+    const remainingPool = this.bankQuestions.filter((question) => !selectedIds.has(question.id));
+    const extraNeeded = QUESTIONS_PER_SESSION - selected.length;
+    if (extraNeeded > 0) selected.push(...takeRandom(remainingPool, extraNeeded));
+
+    return shuffle(selected).slice(0, QUESTIONS_PER_SESSION);
   }
 
-  saveProfile() {
-    this.storage?.setItem(PROFILE_KEY, JSON.stringify(this.profile));
+  startSession({ demo = false } = {}) {
+    this.sessionQuestions = demo ? [...this.demoQuestions] : this.buildRandomSession();
+    this.cursor = 0;
+    this.sessionStats = { correct: 0, total: 0 };
+    this.currentQuestion = null;
+    return this.sessionQuestions.length;
   }
 
-  getCategoryWeight(category) {
-    const stats = this.profile[category] ?? { correct: 0, total: 0 };
-    if (stats.total === 0) return 2.2;
-    const errorRate = 1 - stats.correct / stats.total;
-    const lowSampleBoost = Math.max(0, (5 - stats.total) * 0.12);
-    return 1 + errorRate * 3 + lowSampleBoost;
+  get totalQuestions() {
+    return this.sessionQuestions.length;
   }
 
-  weightedCategoryChoice(availableCategories) {
-    const weighted = availableCategories.map((category) => ({ category, weight: this.getCategoryWeight(category) }));
-    const totalWeight = weighted.reduce((sum, item) => sum + item.weight, 0);
-    let cursor = Math.random() * totalWeight;
-    for (const item of weighted) {
-      cursor -= item.weight;
-      if (cursor <= 0) return item.category;
-    }
-    return weighted.at(-1)?.category ?? CATEGORIES[0];
+  hasNext() {
+    return this.cursor < this.sessionQuestions.length;
   }
 
   getNextQuestion() {
-    if (!this.questions.length) throw new Error("Bank soal belum dimuat.");
-
-    let available = this.questions.filter((question) => !this.usedQuestionIds.has(question.id));
-    if (!available.length) {
-      // Pengulangan baru diizinkan setelah seluruh soal dalam set pernah muncul.
-      this.usedQuestionIds.clear();
-      this.questionCycle += 1;
-      this.saveCampaignQuestionHistory();
-      available = [...this.questions];
-    }
-
-    const categories = [...new Set(available.map((question) => question.category))];
-    // Dahulukan mapel yang belum muncul pada ronde ini agar satu perjalanan
-    // (6 soal) mengusahakan campuran keempat mapel.
-    const unseen = categories.filter((category) => (this.sessionStats[category]?.total ?? 0) === 0);
-    const selectedCategory = this.weightedCategoryChoice(unseen.length ? unseen : categories);
-    const categoryQuestions = available.filter((question) => question.category === selectedCategory);
-    const question = categoryQuestions[Math.floor(Math.random() * categoryQuestions.length)];
-
-    this.usedQuestionIds.add(question.id);
-    this.saveCampaignQuestionHistory();
+    if (!this.hasNext()) throw new Error("Seluruh soal pada sesi ini sudah muncul.");
+    const question = this.sessionQuestions[this.cursor];
+    this.cursor += 1;
     this.currentQuestion = question;
     return question;
   }
 
   answer(choiceIndex) {
     if (!this.currentQuestion) throw new Error("Tidak ada soal aktif.");
-
     const question = this.currentQuestion;
     const isCorrect = choiceIndex === question.answer;
-    const category = question.category;
-    this.sessionStats[category].total += 1;
-    this.profile[category].total += 1;
-    if (isCorrect) {
-      this.sessionStats[category].correct += 1;
-      this.profile[category].correct += 1;
-    }
-    this.saveProfile();
+    this.sessionStats.total += 1;
+    if (isCorrect) this.sessionStats.correct += 1;
     // Cegah satu soal tercatat dua kali jika terjadi double-click sangat cepat.
     this.currentQuestion = null;
-
     return { isCorrect, correctIndex: question.answer, selectedIndex: choiceIndex, question };
   }
 
   getSessionReport() {
-    const categories = CATEGORIES.map((category) => {
-      const stats = this.sessionStats[category];
-      const accuracy = stats.total ? Math.round((stats.correct / stats.total) * 100) : null;
-      return { category, ...stats, accuracy };
-    });
-
-    const totals = categories.reduce((result, item) => {
-      result.correct += item.correct;
-      result.total += item.total;
-      return result;
-    }, { correct: 0, total: 0 });
-
-    return {
-      categories,
-      correct: totals.correct,
-      total: totals.total,
-      accuracy: totals.total ? Math.round((totals.correct / totals.total) * 100) : 0,
-      set: this.getActiveSetInfo()
-    };
+    const { correct, total } = this.sessionStats;
+    return { correct, total, accuracy: total ? Math.round((correct / total) * 100) : 0 };
   }
 }

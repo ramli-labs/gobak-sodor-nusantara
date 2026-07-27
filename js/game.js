@@ -1,30 +1,26 @@
 /**
- * Gobak Sodor Nusantara — Versi 1.3.0 Interdisipliner.
- * Gameplay Solo/Co-op (keyboard + sentuh dua pemain), peta Nusantara,
- * soal empat mapel, aksesibilitas, streak harian, achievement, rapor,
- * dan leaderboard lokal. Dioptimalkan untuk layar sentuh besar (IFP).
+ * Simulasi Strategi Gobak Sodor — Versi 1.4.0.
+ * Simulasi pembelajaran interdisipliner (Hari 3 KKA): bermain, mengamati pola
+ * penjaga, menerapkan logika jika–maka, mencoba strategi, dan merefleksikan hasil.
+ * Satu arena tunggal, tanpa peta pulau/level, tanpa leaderboard, tanpa combo/shield.
  */
 import { Player } from "./player.js";
 import { Enemy } from "./enemy.js";
 import { QuizSystem } from "./quiz.js";
-import { LEVELS, MapProgress, getLevel } from "./map.js";
+import { ARENA } from "./arena.js";
 import {
   initAccessibilityPanel,
   loadAccessibilitySettings,
   keyLabel
 } from "./accessibility.js";
-import { ACHIEVEMENTS, GamificationSystem } from "./gamification.js";
-import { DifficultySettings } from "./difficulty.js";
 
 const GAME_WIDTH = 960;
 const GAME_HEIGHT = 560;
-const MAX_BONUS_TIME = 130;
 const START_ZONE_WIDTH = 108;
-const LEADERBOARD_KEY = "gsnLeaderboardV1";
-const PLAYTEST_KEY = "gsnPlaytestV1";
+const PLAYER_SPEED = 230;
+const MAX_CHANCES = 3;
 const TOUCH_CONTROLS_KEY = "gsnTouchControlsV1";
-const GAME_VERSION = "1.3.0";
-const MAX_PLAYTEST_RECORDS = 120;
+const GAME_VERSION = "1.4.0";
 
 const GAME_STATES = Object.freeze({
   LOADING: "loading",
@@ -33,8 +29,8 @@ const GAME_STATES = Object.freeze({
   RUNNING: "running",
   QUIZ: "quiz",
   PAUSED: "paused",
-  WON: "won",
-  LOST: "lost",
+  CATCH_LIMIT: "catch-limit",
+  FINISHED: "finished",
   ERROR: "error"
 });
 
@@ -42,12 +38,16 @@ function isFormControl(target) {
   return target instanceof HTMLElement && Boolean(target.closest("input, textarea, select, button"));
 }
 
+function isDemoMode() {
+  return new URLSearchParams(location.search).get("demo") === "1";
+}
+
 class InputController {
   constructor(settings) {
     this.settings = settings;
     this.keyboard = new Set();
-    // Satu set arah sentuh per pemain agar Co-op dapat dimainkan
-    // berdua di layar sentuh besar (IFP) tanpa keyboard.
+    // Satu set arah sentuh per pemain agar Co-op dapat dimainkan berdua
+    // di layar sentuh besar (IFP/PID) tanpa keyboard.
     this.touch = { p1: new Set(), p2: new Set() };
   }
 
@@ -127,29 +127,22 @@ class GobakSodorGame {
     this.settings = loadAccessibilitySettings();
     this.input = new InputController(this.settings);
     this.quiz = new QuizSystem();
-    this.mapProgress = new MapProgress();
-    this.gamification = new GamificationSystem();
-    this.difficultySettings = new DifficultySettings();
-    this.difficulty = this.difficultySettings.getSelected();
-    this.level = this.mapProgress.getSelected();
-    this.mode = "Solo";
+    this.arena = ARENA;
+    this.demoMode = isDemoMode();
+    this.mode = this.demoMode ? "Co-op" : "Solo";
     this.quizReady = false;
     this.state = GAME_STATES.LOADING;
     this.lastTime = 0;
-    this.roundTime = this.level.roundTime;
-    this.remainingTime = this.roundTime;
-    this.lives = this.level.livesSolo;
-    this.maxLives = this.level.livesSolo;
-    this.score = 0;
-    this.combo = 0;
-    this.maxCombo = 0;
-    this.collisions = 0;
-    this.questionAnsweredCount = 0;
     this.elapsedActiveTime = 0;
+    this.chances = MAX_CHANCES;
+    this.catchesSinceContinue = 0;
+    this.collisions = 0;
+    this.linesCrossed = 0;
+    this.questionAnsweredCount = 0;
+    this.decoyEvents = 0;
+    this.catchesByCheckpoint = {};
     this.returnStartedAt = null;
     this.returnDuration = null;
-    this.playtestRecorded = false;
-    this.returnGateNoticeAt = 0;
     this.countdownRemaining = 0;
     this.lastCountdownNumber = null;
     this.messageTimer = 0;
@@ -159,17 +152,11 @@ class GobakSodorGame {
     this.players = [];
     this.enemies = [];
     this.checkpoints = [];
-    this.activeCheckpoint = null;
     this.quizAnswered = false;
     this.activeTrip = "outbound";
     this.overlayPrimaryAction = "start";
     this.overlaySecondaryAction = "restart";
     this.roundId = "";
-    this.roundSaved = false;
-    this.roundResult = "";
-    this.roundUnlocks = [];
-    this.pendingUnlocks = [];
-    this.newIsland = null;
 
     this.elements = {
       overlay: document.querySelector("[data-game-overlay]"),
@@ -181,39 +168,26 @@ class GobakSodorGame {
       secondaryButton: document.querySelector("[data-overlay-secondary]"),
       pauseButton: document.querySelector("[data-pause-game]"),
       restartButton: document.querySelector("[data-restart-game]"),
+      sceneRestartButton: document.querySelector("[data-restart-scene]"),
       fullscreenButton: document.querySelector("[data-fullscreen-game]"),
       arena: document.querySelector("[data-game-arena]"),
       timer: document.querySelector("[data-hud-time]"),
-      lives: document.querySelector("[data-hud-lives]"),
+      chances: document.querySelector("[data-hud-chances]"),
+      caught: document.querySelector("[data-hud-caught]"),
+      lines: document.querySelector("[data-hud-lines]"),
+      answers: document.querySelector("[data-hud-answers]"),
       score: document.querySelector("[data-hud-score]"),
-      scoreEvent: document.querySelector("[data-score-event]"),
+      flag: document.querySelector("[data-hud-flag]"),
       countdown: document.querySelector("[data-game-countdown]"),
       countdownValue: document.querySelector("[data-countdown-value]"),
-      countdownLabel: document.querySelector("[data-countdown-label]"),
-      ruleLives: document.querySelector("[data-rule-lives]"),
-      ruleFinish: document.querySelector("[data-rule-finish]"),
-      questionSetHelp: document.querySelector("#question-set-help"),
-      difficultyInputs: [...document.querySelectorAll("[data-difficulty]")],
-      combo: document.querySelector("[data-hud-combo]"),
-      shield: document.querySelector("[data-hud-shield]"),
-      flag: document.querySelector("[data-hud-flag]"),
-      level: document.querySelector("[data-hud-level]"),
       journeyPhase: document.querySelector("[data-hud-phase]"),
-      journeyQuestions: document.querySelector("[data-hud-question-progress]"),
-      journeyDifficulty: document.querySelector("[data-hud-difficulty]"),
       journeyBar: document.querySelector("[data-journey-progress-bar]"),
       status: document.querySelector("[data-game-status]"),
+      soloOption: document.querySelector("[data-solo-option]"),
       soloButton: document.querySelector("[data-start-solo]"),
       coopButton: document.querySelector("[data-start-coop]"),
       modeBadge: document.querySelector("[data-mode-badge]"),
-      gameTitle: document.querySelector("[data-game-title]"),
       gameDescription: document.querySelector("[data-game-description]"),
-      adventureMap: document.querySelector("[data-adventure-map]"),
-      levelRegion: document.querySelector("[data-level-region]"),
-      levelTitle: document.querySelector("[data-level-title]"),
-      levelFact: document.querySelector("[data-level-fact]"),
-      currentStreak: document.querySelector("[data-current-streak]"),
-      questionSet: document.querySelector("[data-question-set]"),
       p1Controls: document.querySelector("[data-p1-controls]"),
       p2Controls: document.querySelector("[data-p2-controls]"),
       gameShell: document.querySelector(".game-shell"),
@@ -226,17 +200,14 @@ class GobakSodorGame {
       quizChoices: document.querySelector("[data-quiz-choices]"),
       quizFeedback: document.querySelector("[data-quiz-feedback]"),
       quizContinue: document.querySelector("[data-quiz-continue]"),
-      report: document.querySelector("[data-learning-report]"),
-      reportSummary: document.querySelector("[data-report-summary]"),
-      reportAccuracy: document.querySelector("[data-report-accuracy]"),
-      reportGrid: document.querySelector("[data-report-grid]"),
-      roundUnlocks: document.querySelector("[data-round-unlocks]"),
-      playtestSummary: document.querySelector("[data-playtest-summary]"),
-      playtestCount: document.querySelector("[data-playtest-count]"),
-      exportPlaytest: document.querySelector("[data-export-playtest]"),
-      resetPlaytest: document.querySelector("[data-reset-playtest]"),
-      scoreForm: document.querySelector("[data-score-form]"),
-      saveFeedback: document.querySelector("[data-save-feedback]")
+      resultSection: document.querySelector("[data-result-section]"),
+      resultTime: document.querySelector("[data-result-time]"),
+      resultCorrect: document.querySelector("[data-result-correct]"),
+      resultCaught: document.querySelector("[data-result-caught]"),
+      resultLines: document.querySelector("[data-result-lines]"),
+      resultStrategy: document.querySelector("[data-result-strategy]"),
+      resultRestart: document.querySelector("[data-result-restart]"),
+      resultHome: document.querySelector("[data-result-home]")
     };
   }
 
@@ -246,10 +217,7 @@ class GobakSodorGame {
     this.input.init();
     initAccessibilityPanel();
     this.bindControls();
-    this.renderMap();
-    this.syncDifficultyInputs();
-    this.updatePlaytestCount();
-    this.updateSetupText();
+    this.applyDemoModeUi();
     this.updateControlLabels();
     this.resetGame();
     this.showLoadingOverlay();
@@ -258,10 +226,9 @@ class GobakSodorGame {
     try {
       await this.quiz.load();
       this.quizReady = true;
-      this.populateQuestionSets();
       this.state = GAME_STATES.READY;
       this.showReadyOverlay();
-      this.setStatus(`${this.quiz.questions.length} soal siap dari set “${this.quiz.getActiveSetInfo().name}”.`);
+      this.setStatus("Bank soal siap. Amati pola penjaga, lalu mulai simulasi.");
       this.updateButtons();
     } catch (error) {
       console.error(error);
@@ -270,6 +237,12 @@ class GobakSodorGame {
       this.setStatus("Bank soal gagal dimuat. Jalankan proyek melalui server lokal.");
       this.updateButtons();
     }
+  }
+
+  applyDemoModeUi() {
+    if (!this.demoMode) return;
+    if (this.elements.soloOption) this.elements.soloOption.hidden = true;
+    if (this.elements.sceneRestartButton) this.elements.sceneRestartButton.hidden = false;
   }
 
   configureCanvas() {
@@ -285,45 +258,11 @@ class GobakSodorGame {
     this.elements.secondaryButton?.addEventListener("click", () => this.handleOverlayAction(this.overlaySecondaryAction));
     this.elements.pauseButton?.addEventListener("click", () => this.togglePause());
     this.elements.restartButton?.addEventListener("click", () => this.resetAndStart());
+    this.elements.sceneRestartButton?.addEventListener("click", () => this.resetAndStart());
     this.elements.soloButton?.addEventListener("click", () => this.chooseModeAndStart("Solo"));
     this.elements.coopButton?.addEventListener("click", () => this.chooseModeAndStart("Co-op"));
-
-    this.elements.difficultyInputs.forEach((input) => {
-      input.addEventListener("change", () => {
-        if (!input.checked || [GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state)) return;
-        this.difficulty = this.difficultySettings.select(input.value);
-        this.resetGame();
-        this.showReadyOverlay();
-        this.syncDifficultyInputs();
-        this.setStatus(`Kesulitan ${this.difficulty.label} dipilih.`);
-      });
-    });
-    this.elements.exportPlaytest?.addEventListener("click", () => this.exportPlaytestData());
-    this.elements.resetPlaytest?.addEventListener("click", () => this.resetPlaytestData());
     this.elements.touchToggle?.addEventListener("click", () => this.toggleTouchControls());
     this.applyTouchPreference(localStorage.getItem(TOUCH_CONTROLS_KEY) === "1");
-
-    this.elements.adventureMap?.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-level-id]");
-      if (!button || button.disabled || [GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state)) return;
-      if (this.mapProgress.select(button.dataset.levelId)) {
-        this.level = getLevel(button.dataset.levelId);
-        this.resetGame();
-        this.showReadyOverlay();
-        this.renderMap();
-        this.updateSetupText();
-        this.setStatus(`${this.level.title} · ${this.level.name} dipilih.`);
-      }
-    });
-
-    this.elements.questionSet?.addEventListener("change", () => {
-      if ([GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state)) return;
-      const info = this.quiz.setActiveSet(this.elements.questionSet.value);
-      this.updateQuestionPoolInfo();
-      this.resetGame();
-      this.showReadyOverlay();
-      this.setStatus(`Set soal “${info.name}” aktif untuk ronde berikutnya.`);
-    });
 
     this.elements.quizChoices?.addEventListener("click", (event) => {
       const button = event.target.closest("[data-choice-index]");
@@ -331,7 +270,9 @@ class GobakSodorGame {
       this.submitQuizAnswer(Number(button.dataset.choiceIndex));
     });
     this.elements.quizContinue?.addEventListener("click", () => this.closeQuiz());
-    this.elements.scoreForm?.addEventListener("submit", (event) => this.saveScore(event));
+
+    this.elements.resultRestart?.addEventListener("click", () => this.resetAndStart());
+    this.elements.resultHome?.addEventListener("click", () => this.returnToStart());
 
     this.elements.fullscreenButton?.addEventListener("click", async () => {
       try {
@@ -348,24 +289,11 @@ class GobakSodorGame {
       document.documentElement.classList.toggle("color-blind-mode", this.settings.colorBlind);
       this.updateControlLabels();
       this.updateHud();
-      this.updateSetupText();
-    });
-
-    window.addEventListener("gsn:question-sets-change", () => {
-      this.quiz.reloadQuestionSets();
-      this.populateQuestionSets();
     });
 
     window.addEventListener("gsn:audio-change", (event) => {
       if (event.detail?.muted) window.gsnAudio?.stopMusic();
       else if (this.state === GAME_STATES.RUNNING) window.gsnAudio?.startMusic();
-    });
-
-    window.addEventListener("storage", (event) => {
-      if (["gsnQuestionSetsV1", "gsnActiveQuestionSetV1"].includes(event.key)) {
-        this.quiz.reloadQuestionSets();
-        this.populateQuestionSets();
-      }
     });
 
     window.addEventListener("keydown", (event) => {
@@ -374,7 +302,7 @@ class GobakSodorGame {
         event.preventDefault();
         this.togglePause();
       }
-      if (event.code === "Enter" && [GAME_STATES.READY, GAME_STATES.WON, GAME_STATES.LOST].includes(this.state)) {
+      if (event.code === "Enter" && this.state === GAME_STATES.READY) {
         this.resetAndStart();
       }
     });
@@ -400,7 +328,7 @@ class GobakSodorGame {
 
   chooseModeAndStart(mode) {
     if (!this.quizReady) return;
-    this.mode = mode;
+    this.mode = this.demoMode ? "Co-op" : mode;
     this.resetGame();
     this.updateSetupText();
     this.elements.arena?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -411,74 +339,51 @@ class GobakSodorGame {
     if (action === "start") this.start();
     if (action === "resume") this.resume();
     if (action === "restart") this.resetAndStart();
-    if (action === "report") this.openReport();
+    if (action === "resume-safe") this.resumeAfterCatchLimit();
+    if (action === "view-result") this.scrollToResult();
   }
 
   resetGame() {
-    this.level = this.mapProgress.getSelected();
-    this.difficulty = this.difficultySettings.getSelected();
     this.state = this.quizReady ? GAME_STATES.READY : GAME_STATES.LOADING;
-    const baseLives = this.mode === "Co-op" ? this.level.livesCoop : this.level.livesSolo;
-    const minimumLives = this.mode === "Co-op" ? 3 : 2;
-    this.roundTime = Math.round(this.level.roundTime * this.difficulty.timeMultiplier);
-    this.remainingTime = this.roundTime;
-    this.maxLives = Math.max(minimumLives, baseLives + this.difficulty.livesOffset);
-    this.lives = this.maxLives;
-    this.score = 0;
-    this.combo = 0;
-    this.maxCombo = 0;
+    this.chances = MAX_CHANCES;
+    this.catchesSinceContinue = 0;
     this.collisions = 0;
+    this.linesCrossed = 0;
     this.questionAnsweredCount = 0;
+    this.decoyEvents = 0;
+    this.catchesByCheckpoint = {};
     this.elapsedActiveTime = 0;
     this.returnStartedAt = null;
     this.returnDuration = null;
-    this.playtestRecorded = false;
-    this.returnGateNoticeAt = 0;
     this.countdownRemaining = 0;
     this.lastCountdownNumber = null;
     this.message = "";
     this.messageTimer = 0;
     this.flag.carrierId = null;
-    this.activeCheckpoint = null;
     this.quizAnswered = false;
     this.activeTrip = "outbound";
-    this.roundSaved = false;
-    this.roundResult = "";
-    this.roundUnlocks = [];
-    this.newIsland = null;
     this.roundId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    // Statistik rapor direset per ronde, tetapi riwayat soal dipertahankan antar-pulau.
-    this.quiz.resetSession({ preserveUsed: true });
+    this.quiz.startSession({ demo: this.demoMode });
     this.input.clear();
-    window.clearTimeout(this.scoreEventTimer);
-    this.elements.scoreEvent?.classList.remove("show", "positive", "negative");
 
-    this.checkpoints = this.level.checkpoints.map((x, index) => ({
+    this.checkpoints = this.arena.checkpoints.map((x, index) => ({
       id: index + 1,
       x,
       outboundAsked: false,
       returnAsked: false
     }));
-    this.players = [new Player({ x: 65, y: this.mode === "Co-op" ? 225 : GAME_HEIGHT / 2, speed: this.difficulty.playerSpeed, playerNumber: 1, color: "#2775d8", accent: "#153c78" })];
+    this.players = [new Player({ x: 65, y: this.mode === "Co-op" ? 225 : GAME_HEIGHT / 2, speed: PLAYER_SPEED, playerNumber: 1, color: "#2775d8", accent: "#153c78" })];
     if (this.mode === "Co-op") {
-      this.players.push(new Player({ x: 65, y: 335, speed: this.difficulty.playerSpeed, playerNumber: 2, color: "#1fa678", accent: "#0d523d" }));
+      this.players.push(new Player({ x: 65, y: 335, speed: PLAYER_SPEED, playerNumber: 2, color: "#1fa678", accent: "#0d523d" }));
     }
-    this.enemies = this.level.enemies.map((config) => {
-      const enemy = new Enemy(config);
-      enemy.configureDifficulty({
-        speedMultiplier: this.difficulty.enemySpeedMultiplier,
-        behaviorIntensity: this.difficulty.behaviorIntensity
-      });
-      return enemy;
-    });
+    this.enemies = this.arena.enemies.map((config) => new Enemy(config));
 
     this.hideQuiz();
     this.hideCountdown();
-    this.hideReport();
-    this.clearSaveFeedback();
+    this.hideResult();
     this.updateSetupText();
     this.updateHud();
-    this.setStatus(this.quizReady ? `Siap bermain ${this.mode} di ${this.level.name}.` : "Memuat bank soal...");
+    this.setStatus(this.quizReady ? `Siap memulai simulasi ${this.mode === "Co-op" ? "Dua Pemain" : "Satu Pemain"}.` : "Memuat bank soal...");
   }
 
   start() {
@@ -487,11 +392,7 @@ class GobakSodorGame {
       return;
     }
     if ([GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ].includes(this.state)) return;
-    if ([GAME_STATES.WON, GAME_STATES.LOST].includes(this.state)) this.resetGame();
-
-    const dailyUnlocks = this.gamification.touchDailyStreak();
-    this.pendingUnlocks = [...new Set([...this.pendingUnlocks, ...dailyUnlocks])];
-    this.updateStreakDisplay();
+    if (this.state === GAME_STATES.FINISHED) this.resetGame();
     this.beginCountdown();
   }
 
@@ -502,9 +403,8 @@ class GobakSodorGame {
     this.lastTime = performance.now();
     window.gsnAudio?.stopMusic();
     this.hideOverlay();
-    this.hideReport();
     this.showCountdown();
-    this.setStatus(`${this.mode} · ${this.difficulty.label}: bersiap di ${this.level.name}.`);
+    this.setStatus(`${this.mode === "Co-op" ? "Dua Pemain" : "Satu Pemain"}: bersiap di garis START.`);
     this.updateButtons();
     this.updateHud();
     this.canvas.focus();
@@ -516,7 +416,6 @@ class GobakSodorGame {
     if (number > 0 && number !== this.lastCountdownNumber) {
       this.lastCountdownNumber = number;
       if (this.elements.countdownValue) this.elements.countdownValue.textContent = String(number);
-      if (this.elements.countdownLabel) this.elements.countdownLabel.textContent = number === 1 ? "Siap!" : "Bersiap";
       window.gsnAudio?.play("click");
     }
     if (this.countdownRemaining <= 0) this.beginRunning();
@@ -529,8 +428,8 @@ class GobakSodorGame {
     window.gsnAudio?.startMusic();
     window.gsnAudio?.play("start");
     window.gsnEffects?.burst(window.innerWidth / 2, Math.min(window.innerHeight * 0.42, 360), { count: 28, speed: 4 });
-    this.setMessage(this.mode === "Co-op" ? "Bagi peran—perjalanan pulang lebih cepat!" : "Ambil bendera, lalu hadapi ritme pulang yang lebih cepat!", 3);
-    this.setStatus(`${this.mode} dimulai di ${this.level.name}. Timer berjalan.`);
+    this.setMessage(this.mode === "Co-op" ? "Amati pola penjaga, lalu bagi peran untuk mencapai bendera." : "Amati pola penjaga dan cari waktu yang tepat untuk bergerak.", 3);
+    this.setStatus(`Simulasi dimulai. Amati pola penjaga sebelum bergerak.`);
     this.updateButtons();
     this.updateHud();
   }
@@ -539,7 +438,6 @@ class GobakSodorGame {
     this.elements.countdown?.classList.add("show");
     this.elements.countdown?.setAttribute("aria-hidden", "false");
     if (this.elements.countdownValue) this.elements.countdownValue.textContent = "3";
-    if (this.elements.countdownLabel) this.elements.countdownLabel.textContent = "Bersiap";
   }
 
   hideCountdown() {
@@ -551,6 +449,12 @@ class GobakSodorGame {
     if (!this.quizReady) return;
     this.resetGame();
     this.start();
+  }
+
+  returnToStart() {
+    this.resetGame();
+    this.showReadyOverlay();
+    document.querySelector(".game-intro")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   pause() {
@@ -580,6 +484,19 @@ class GobakSodorGame {
     else if (this.state === GAME_STATES.PAUSED) this.resume();
   }
 
+  resumeAfterCatchLimit() {
+    this.catchesSinceContinue = 0;
+    this.chances = MAX_CHANCES;
+    this.hideOverlay();
+    this.state = GAME_STATES.RUNNING;
+    this.lastTime = performance.now();
+    this.setMessage("Lanjutkan dari posisi aman. Amati ritme penjaga lebih cermat.", 2.6);
+    this.setStatus("Simulasi dilanjutkan dari posisi aman terakhir.");
+    this.updateButtons();
+    this.updateHud();
+    this.canvas.focus();
+  }
+
   loop(currentTime) {
     const deltaTime = Math.min((currentTime - this.lastTime) / 1000 || 0, 0.05);
     this.lastTime = currentTime;
@@ -591,12 +508,7 @@ class GobakSodorGame {
 
   update(deltaTime) {
     this.elapsedActiveTime += deltaTime;
-    this.remainingTime = Math.max(0, this.remainingTime - deltaTime);
     this.messageTimer = Math.max(0, this.messageTimer - deltaTime);
-    if (this.remainingTime <= 0) {
-      this.finish(false, "Waktu habis sebelum bendera kembali ke Start.");
-      return;
-    }
 
     const bounds = { left: 24, right: GAME_WIDTH - 24, top: 40, bottom: GAME_HEIGHT - 40 };
     const previousPositions = this.players.map((player) => player.x);
@@ -610,8 +522,23 @@ class GobakSodorGame {
     }
     this.checkFlagCollection();
     this.checkEnemyCollisions();
-    this.checkWinCondition();
+    // checkEnemyCollisions dapat memindahkan state ke CATCH_LIMIT (menampilkan
+    // modal pilihan); hentikan pemrosesan frame ini agar tidak tertimpa hasil.
+    if (this.state === GAME_STATES.RUNNING) this.checkWinCondition();
     this.updateHud();
+  }
+
+  nearestCheckpointId(x) {
+    let closest = this.checkpoints[0];
+    let minDistance = Infinity;
+    this.checkpoints.forEach((checkpoint) => {
+      const distance = Math.abs(checkpoint.x - x);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = checkpoint;
+      }
+    });
+    return closest?.id ?? 1;
   }
 
   checkCheckpoint(previousPositions) {
@@ -627,6 +554,7 @@ class GobakSodorGame {
         if (!checkpoint) continue;
         checkpoint.outboundAsked = true;
         player.x = checkpoint.x - player.radius - 7;
+        this.linesCrossed += 1;
         this.openQuiz(checkpoint, player, "outbound");
         return true;
       }
@@ -646,6 +574,7 @@ class GobakSodorGame {
 
     checkpoint.returnAsked = true;
     carrier.x = checkpoint.x + carrier.radius + 7;
+    this.linesCrossed += 1;
     this.openQuiz(checkpoint, carrier, "return");
     return true;
   }
@@ -653,11 +582,9 @@ class GobakSodorGame {
   openQuiz(checkpoint, triggerPlayer, trip = "outbound") {
     this.state = GAME_STATES.QUIZ;
     this.input.clear();
-    this.activeCheckpoint = checkpoint;
     this.activeTrip = trip;
     this.quizAnswered = false;
     const question = this.quiz.getNextQuestion();
-    this.updateQuestionPoolInfo();
     const tripLabel = trip === "return" ? "Perjalanan pulang" : "Perjalanan pergi";
     const tripNumber = trip === "return"
       ? this.checkpoints.length - checkpoint.id + 1
@@ -682,8 +609,8 @@ class GobakSodorGame {
     this.elements.quizLayer.setAttribute("aria-hidden", "false");
     this.elements.quizChoices.querySelector("button")?.focus();
     window.gsnAudio?.play("checkpoint");
-    this.effectAtGamePoint(checkpoint.x, triggerPlayer.y, { count: 20, colors: [this.level.colors.accent, "#ffffff", "#f7c948"], speed: 4 });
-    this.setStatus(`${tripLabel}, checkpoint ${checkpoint.id}: soal ${question.category}. Timer berhenti sementara.`);
+    this.effectAtGamePoint(checkpoint.x, triggerPlayer.y, { count: 20, colors: [this.arena.colors.accent, "#ffffff", "#f7c948"], speed: 4 });
+    this.setStatus(`${tripLabel}, garis ${checkpoint.id}: soal ${question.category}. Permainan berhenti sementara.`);
     this.updateButtons();
   }
 
@@ -697,29 +624,21 @@ class GobakSodorGame {
       if (index === result.selectedIndex && !result.isCorrect) button.classList.add("wrong");
     });
 
-    // Kalimat penjelasan singkat memperkuat nilai edukatif tiap soal.
+    // Kalimat penjelasan singkat memperkuat nilai edukatif tiap soal, maksimal dua kalimat.
     const explanation = typeof result.question.explanation === "string" && result.question.explanation.trim()
       ? ` ${result.question.explanation.trim()}`
       : "";
     if (result.isCorrect) {
-      this.changeScore(100, "Jawaban benar");
-      this.combo += 1;
-      this.maxCombo = Math.max(this.maxCombo, this.combo);
-      this.remainingTime = Math.min(MAX_BONUS_TIME, this.remainingTime + this.difficulty.quizTimeBonus);
-      this.players.forEach((player) => player.activateShield(this.difficulty.shieldDuration));
       window.gsnAudio?.play("correct");
       this.pulseArena("success");
-      window.gsnEffects?.burst(window.innerWidth / 2, window.innerHeight / 2, { count: 42, colors: ["#2ca66f", "#f7c948", "#ffffff"], speed: 6 });
-      this.elements.quizFeedback.textContent = `Benar!${explanation} +100 poin, +${this.difficulty.quizTimeBonus} detik, Combo x${this.combo}, dan Shield tim selama ${this.difficulty.shieldDuration} detik.`;
+      window.gsnEffects?.burst(window.innerWidth / 2, window.innerHeight / 2, { count: 32, colors: ["#2ca66f", "#f7c948", "#ffffff"], speed: 5 });
+      this.elements.quizFeedback.innerHTML = `<i class="fa-solid fa-check" aria-hidden="true"></i> <strong>Jawaban Tepat</strong> —${explanation}`;
       this.elements.quizFeedback.className = "quiz-feedback correct";
     } else {
-      this.changeScore(-10, "Jawaban salah");
-      this.combo = 0;
-      this.enemies.forEach((enemy) => enemy.increaseSpeed(this.difficulty.wrongSpeedMultiplier));
       window.gsnAudio?.play("wrong");
       this.pulseArena("danger");
-      window.gsnEffects?.burst(window.innerWidth / 2, window.innerHeight / 2, { count: 22, colors: ["#e84444", "#172033"], speed: 4, gravity: 0.24 });
-      this.elements.quizFeedback.textContent = `Belum tepat. Jawaban benar: ${result.question.choices[result.correctIndex]}.${explanation} Penjaga menjadi lebih cepat.`;
+      window.gsnEffects?.burst(window.innerWidth / 2, window.innerHeight / 2, { count: 18, colors: ["#e84444", "#172033"], speed: 3.5, gravity: 0.24 });
+      this.elements.quizFeedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <strong>Perlu Ditinjau Kembali</strong> — Jawaban tepat: ${this.escapeHtml(result.question.choices[result.correctIndex])}.${explanation}`;
       this.elements.quizFeedback.className = "quiz-feedback wrong";
     }
     this.questionAnsweredCount += 1;
@@ -733,9 +652,7 @@ class GobakSodorGame {
     this.hideQuiz();
     this.state = GAME_STATES.RUNNING;
     this.lastTime = performance.now();
-    const shieldActive = this.players.some((player) => player.hasShield());
-    if (shieldActive) window.gsnAudio?.play("shield");
-    this.setMessage(shieldActive ? "Shield tim aktif—gunakan kesempatan ini!" : "Checkpoint terbuka. Tetap waspada!", 2.4);
+    this.setMessage("Jalur terbuka. Tetap amati ritme penjaga.", 2.2);
     this.setStatus(this.activeTrip === "return" ? "Jalur pulang terbuka. Lanjut menuju START." : "Jalur pergi terbuka. Lanjut menuju bendera.");
     this.updateButtons();
     this.canvas.focus();
@@ -746,24 +663,6 @@ class GobakSodorGame {
     this.elements.quizLayer?.setAttribute("aria-hidden", "true");
   }
 
-  changeScore(amount, reason = "Perubahan skor") {
-    const previous = this.score;
-    this.score = Math.max(0, this.score + amount);
-    const actualChange = this.score - previous;
-    if (!actualChange) return;
-
-    if (this.elements.scoreEvent) {
-      const positive = actualChange > 0;
-      this.elements.scoreEvent.textContent = `${positive ? "+" : ""}${actualChange.toLocaleString("id-ID")} poin · ${reason}`;
-      this.elements.scoreEvent.className = `score-event show ${positive ? "positive" : "negative"}`;
-      window.clearTimeout(this.scoreEventTimer);
-      this.scoreEventTimer = window.setTimeout(() => {
-        this.elements.scoreEvent?.classList.remove("show");
-      }, 1550);
-    }
-    this.updateHud();
-  }
-
   checkFlagCollection() {
     if (this.flag.carrierId !== null) return;
     const collector = this.players.find((player) => this.circleCollision(player.getCircle(), this.flag));
@@ -772,7 +671,7 @@ class GobakSodorGame {
     const missingOutbound = this.checkpoints.filter((checkpoint) => !checkpoint.outboundAsked).length;
     if (missingOutbound > 0) {
       if (this.messageTimer <= 0) {
-        this.setMessage(`Masih ada ${missingOutbound} checkpoint pergi. Kembali dan jawab soalnya.`, 2.4);
+        this.setMessage(`Masih ada ${missingOutbound} garis pergi yang belum dilewati.`, 2.4);
         this.setStatus("Bendera belum dapat diambil sebelum seluruh soal perjalanan pergi selesai.");
       }
       return;
@@ -782,51 +681,43 @@ class GobakSodorGame {
     collector.hasFlag = true;
     this.returnStartedAt = this.elapsedActiveTime;
     this.setEnemyReturnPhase(true);
-    this.changeScore(250, "Bendera diambil");
     window.gsnAudio?.play("flag");
-    this.effectAtGamePoint(collector.x, collector.y, { count: 44, colors: [this.level.colors.accent, "#f7c948", "#ffffff"], speed: 6 });
-    const returnIncrease = Math.round((this.difficulty.returnSpeedMultiplier - 1) * 100);
-    this.setMessage(`P${collector.playerNumber} membawa bendera—penjaga +${returnIncrease}%! Kembali ke START!`, 3);
-    this.setStatus(`Bendera diambil Pemain ${collector.playerNumber}. Perjalanan pulang kini ${returnIncrease}% lebih cepat.`);
+    this.effectAtGamePoint(collector.x, collector.y, { count: 40, colors: [this.arena.colors.accent, "#f7c948", "#ffffff"], speed: 6 });
+    this.setMessage(`P${collector.playerNumber} membawa bendera — penjaga bergerak lebih cepat. Kembali ke START!`, 3);
+    this.setStatus(`Bendera diambil Pemain ${collector.playerNumber}. Perjalanan pulang kini lebih menantang.`);
   }
 
   checkEnemyCollisions() {
     for (const player of this.players) {
-      if (player.isInvulnerable() || player.hasShield()) continue;
+      if (player.isInvulnerable()) continue;
       const hit = this.enemies.some((enemy) => this.circleRectCollision(player.getCircle(), enemy.getRect()));
       if (!hit) continue;
 
       this.collisions += 1;
-      this.combo = 0;
+      this.catchesSinceContinue += 1;
+      this.chances = Math.max(0, MAX_CHANCES - this.catchesSinceContinue);
+      const lineId = this.nearestCheckpointId(player.x);
+      this.catchesByCheckpoint[lineId] = (this.catchesByCheckpoint[lineId] || 0) + 1;
+
       window.gsnAudio?.play("collision");
       this.pulseArena("danger");
-      this.effectAtGamePoint(player.x, player.y, { count: 30, colors: ["#e84444", "#f7c948", "#172033"], speed: 5, gravity: 0.22 });
+      this.effectAtGamePoint(player.x, player.y, { count: 26, colors: ["#e84444", "#f7c948", "#172033"], speed: 5, gravity: 0.22 });
       const wasCarrier = this.flag.carrierId === player.playerNumber;
       if (wasCarrier) this.dropFlag();
 
       const carrier = this.players.find((candidate) => candidate.playerNumber === this.flag.carrierId);
-      const teamworkSave = this.mode === "Co-op" && !wasCarrier && Boolean(carrier);
-      if (teamworkSave) carrier.activateShield(1.5);
+      const decoyEvent = this.mode === "Co-op" && !wasCarrier && Boolean(carrier);
+      if (decoyEvent) this.decoyEvents += 1;
 
       player.reset({ keepFlag: false });
-      if (!this.settings.practiceMode) {
-        this.lives -= 1;
-        this.changeScore(-50, "Tertangkap penjaga");
-      }
+      this.setMessage("Perhatikan kembali ritme dan posisi penjaga.", 2.4);
 
-      if (!this.settings.practiceMode && this.lives <= 0) {
-        this.finish(false, "Semua nyawa tim habis. Amati ritme penjaga lalu coba lagi.");
+      if (!this.settings.practiceMode && this.catchesSinceContinue >= MAX_CHANCES) {
+        this.showCatchLimitOverlay();
         return;
       }
 
-      if (teamworkSave) {
-        this.setMessage(`Pemain ${player.playerNumber} mengalihkan penjaga—pembawa bendera mendapat Shield!`, 2.8);
-      } else if (wasCarrier) {
-        this.setMessage("Pembawa tertangkap! Bendera kembali ke tujuan.", 2.5);
-      } else {
-        this.setMessage(this.settings.practiceMode ? "Mode Latihan: tidak ada nyawa berkurang." : `Pemain ${player.playerNumber} tertangkap!`, 2.3);
-      }
-      this.setStatus(this.settings.practiceMode ? "Tersentuh penjaga tanpa penalti nyawa." : `Sisa nyawa tim ${this.lives}.`);
+      this.setStatus(this.settings.practiceMode ? "Mode Latihan: sesi tetap berlanjut tanpa batas tertangkap." : `Kesempatan tersisa ${this.chances}.`);
     }
   }
 
@@ -838,6 +729,24 @@ class GobakSodorGame {
     this.setEnemyReturnPhase(false);
   }
 
+  showCatchLimitOverlay() {
+    this.state = GAME_STATES.CATCH_LIMIT;
+    this.input.clear();
+    this.overlayPrimaryAction = "resume-safe";
+    this.overlaySecondaryAction = "restart";
+    this.configureOverlay({
+      icon: "fa-arrows-rotate",
+      eyebrow: "Sudah tiga kali tertangkap",
+      title: "Lanjutkan atau ulangi dari awal?",
+      text: "Amati kembali posisi dan ritme penjaga sebelum mencoba lagi.",
+      primary: "Coba Lagi dari Posisi Terakhir",
+      showSecondary: true,
+      secondary: "Ulangi Simulasi"
+    });
+    this.setStatus("Tiga kali tertangkap. Pilih untuk melanjutkan atau mengulang simulasi.");
+    this.updateButtons();
+  }
+
   checkWinCondition() {
     if (this.flag.carrierId === null) return;
     const carrier = this.players.find((player) => player.playerNumber === this.flag.carrierId);
@@ -846,331 +755,90 @@ class GobakSodorGame {
     if (!insideStart) return;
 
     const missingReturn = this.checkpoints.filter((checkpoint) => !checkpoint.returnAsked).length;
-    if (missingReturn > 0) {
-      const now = performance.now();
-      if (now - this.returnGateNoticeAt > 1600) {
-        this.returnGateNoticeAt = now;
-        this.setMessage(`Belum selesai: jawab ${missingReturn} soal perjalanan pulang.`, 2.2);
-        this.setStatus("START belum terbuka sebelum seluruh soal perjalanan pulang dijawab.");
-      }
-      return;
-    }
+    if (missingReturn > 0) return;
 
     if (this.returnStartedAt !== null) this.returnDuration = Math.max(0, this.elapsedActiveTime - this.returnStartedAt);
-    const modeBonus = this.mode === "Co-op" ? 300 : 0;
-    const lifeBonus = this.settings.practiceMode ? 0 : this.lives * 100;
-    const rawFinishBonus = 1000 + Math.floor(this.remainingTime * 10) + lifeBonus + this.maxCombo * 25 + modeBonus;
-    const finishBonus = Math.round(rawFinishBonus * this.difficulty.finishScoreMultiplier);
-    this.changeScore(finishBonus, `Bendera kembali · bonus ${this.difficulty.label}`);
-    this.finish(true, `Bendera kembali melalui Pemain ${carrier.playerNumber}${this.settings.practiceMode ? " dalam Mode Latihan" : ` dengan ${this.lives} nyawa tim tersisa`}.`);
+    this.finish();
   }
 
-  finish(won, detail) {
-    if ([GAME_STATES.WON, GAME_STATES.LOST].includes(this.state)) return;
-    this.state = won ? GAME_STATES.WON : GAME_STATES.LOST;
+  finish() {
+    if (this.state === GAME_STATES.FINISHED) return;
+    this.state = GAME_STATES.FINISHED;
     if (this.returnStartedAt !== null && this.returnDuration === null) {
       this.returnDuration = Math.max(0, this.elapsedActiveTime - this.returnStartedAt);
     }
-    this.roundResult = won ? "Menang" : "Belum menang";
     this.input.clear();
 
-    const report = this.quiz.getSessionReport();
-    const wasCompleted = this.mapProgress.data.completed.includes(this.level.id);
-    if (won) {
-      this.mapProgress.complete(this.level.id);
-      if (!wasCompleted) this.newIsland = this.mapProgress.getNewlyUnlockedAfter(this.level.id);
-    }
-    const roundAchievementUnlocks = this.gamification.recordRound({
-      won,
-      levelId: this.level.id,
-      mode: this.mode,
-      remainingTime: this.remainingTime,
-      collisions: this.collisions,
-      correct: report.correct,
-      total: report.total
-    });
-    this.roundUnlocks = [...new Set([...this.pendingUnlocks, ...roundAchievementUnlocks])];
-    this.pendingUnlocks = [];
-    this.recordPlaytest(won, report);
-
     window.gsnAudio?.stopMusic();
-    window.gsnAudio?.play(won ? "win" : "lose");
-    if (won) window.gsnEffects?.confetti({ count: 150 });
-    else window.gsnEffects?.burst(window.innerWidth / 2, Math.min(window.innerHeight * 0.45, 390), { count: 34, colors: ["#e84444", "#2775d8", "#172033"], speed: 5 });
-    if (this.roundUnlocks.length) window.setTimeout(() => window.gsnAudio?.play("achievement"), 520);
+    window.gsnAudio?.play("win");
+    window.gsnEffects?.confetti({ count: 90 });
 
-    this.renderMap();
-    this.updateStreakDisplay();
     this.updateHud();
-    this.renderReport();
-    this.showResultOverlay(won, detail);
-    this.setStatus(won ? `Menang di ${this.level.name}. Skor akhir ${this.score}.` : `Ronde selesai. ${detail}`);
+    this.renderResult();
+    this.overlayPrimaryAction = "view-result";
+    this.configureOverlay({
+      icon: "fa-flag-checkered",
+      eyebrow: "Simulasi selesai",
+      title: "Bendera berhasil dibawa pulang!",
+      text: "Lihat hasil, analisis strategi, dan pertanyaan refleksi di bawah.",
+      primary: "Lihat Hasil",
+      showSecondary: false
+    });
+    this.setStatus(`Simulasi selesai dalam ${this.formatDuration(this.elapsedActiveTime)}.`);
     this.updateButtons();
-
-    // Event ringkasan ronde untuk integrasi eksternal (tidak ada listener bawaan;
-    // seluruh data tetap tersimpan lokal di perangkat).
-    window.dispatchEvent(new CustomEvent("gsn:game-finished", { detail: {
-      gameSlug: "gobak-sodor",
-      score: this.score,
-      accuracy: report.accuracy,
-      result: won ? "won" : "lost",
-      mode: this.mode,
-      difficulty: this.difficulty.label,
-      levelId: this.level.id,
-      durationSeconds: Number(this.elapsedActiveTime.toFixed(2)),
-      correctCount: report.correct,
-      questionCount: report.total,
-      assignmentId: new URLSearchParams(location.search).get("assignment") || null,
-      metadata: {
-        collisions: this.collisions,
-        livesRemaining: this.settings.practiceMode ? null : Math.max(0, this.lives),
-        practiceMode: this.settings.practiceMode,
-        questionSet: report.set.name,
-        gameVersion: GAME_VERSION,
-        clientSessionId: this.roundId
-      }
-    }}));
   }
 
-  renderReport() {
-    const report = this.quiz.getSessionReport();
-    this.elements.report.hidden = false;
-    this.elements.reportAccuracy.textContent = `${report.accuracy}%`;
-    this.elements.reportSummary.textContent = `${report.correct}/${report.total} benar · Combo terbaik x${this.maxCombo} · ${this.mode} · ${this.difficulty.label} · ${report.set.name}.`;
-    this.renderPlaytestSummary(report);
-    this.elements.reportGrid.innerHTML = report.categories.map((item) => {
-      const accuracy = item.accuracy ?? 0;
-      const label = item.total ? `${item.correct}/${item.total} benar` : "Belum muncul";
-      return `<article class="report-subject ${item.total ? "attempted" : ""}"><div class="report-subject-head"><strong>${item.category}</strong><span>${item.accuracy ?? "—"}${item.accuracy === null ? "" : "%"}</span></div><div class="subject-progress" role="progressbar" aria-label="Akurasi ${item.category}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${accuracy}"><span style="width:${accuracy}%"></span></div><small>${label}</small></article>`;
-    }).join("");
-    this.renderRoundUnlocks();
-  }
-
-  renderRoundUnlocks() {
-    if (!this.elements.roundUnlocks) return;
-    const achievementItems = this.roundUnlocks.map((id) => ACHIEVEMENTS.find((item) => item.id === id)).filter(Boolean);
-    const pieces = [];
-    if (this.state === GAME_STATES.WON) {
-      pieces.push(`<article><i class="fa-solid fa-landmark"></i><div><strong>Fakta ${this.level.name}</strong><span>${this.escapeHtml(this.level.fact)}</span></div></article>`);
-    }
-    if (this.newIsland) {
-      pieces.push(`<article><i class="fa-solid fa-lock-open"></i><div><strong>${this.newIsland.name} terbuka!</strong><span>Petualangan ${this.newIsland.title} kini dapat dipilih pada peta.</span></div></article>`);
-    }
-    achievementItems.forEach((item) => {
-      pieces.push(`<article><i class="fa-solid ${item.icon}"></i><div><strong>Achievement: ${item.name}</strong><span>${item.description}</span></div></article>`);
-    });
-    this.elements.roundUnlocks.hidden = pieces.length === 0;
-    this.elements.roundUnlocks.innerHTML = pieces.join("");
-  }
-
-  openReport() {
+  scrollToResult() {
     this.hideOverlay();
-    this.elements.report.hidden = false;
-    this.elements.report.scrollIntoView({ behavior: "smooth", block: "start" });
+    this.elements.resultSection?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  hideReport() {
-    if (this.elements.report) this.elements.report.hidden = true;
-    if (this.elements.roundUnlocks) {
-      this.elements.roundUnlocks.hidden = true;
-      this.elements.roundUnlocks.innerHTML = "";
+  mostCaughtLine() {
+    const entries = Object.entries(this.catchesByCheckpoint);
+    if (!entries.length) return null;
+    const [id, count] = entries.reduce((best, entry) => (entry[1] > best[1] ? entry : best));
+    return { id: Number(id), count };
+  }
+
+  buildStrategyAnalysis(report) {
+    const lines = [];
+    if (this.mode === "Co-op" && this.decoyEvents > 0) {
+      lines.push(`Tim berhasil memanfaatkan pengalihan penjaga sebanyak ${this.decoyEvents} kali.`);
     }
+    const worst = this.mostCaughtLine();
+    if (worst) {
+      lines.push(`Tim paling sering tertangkap pada garis ke-${worst.id} (${worst.count} kali).`);
+    } else {
+      lines.push("Tim tidak tertangkap sama sekali sepanjang simulasi ini.");
+    }
+    if (report.total > 0) {
+      lines.push(report.accuracy >= 70
+        ? "Jawaban kuis menunjukkan pemahaman logika permainan yang baik."
+        : "Beberapa jawaban kuis perlu ditinjau kembali untuk memahami logika jika–maka pada permainan.");
+    }
+    if (this.collisions > 0) {
+      lines.push("Tim perlu memperbaiki waktu bergerak setelah penjaga berpindah arah atau ritme.");
+    }
+    return lines;
   }
 
-  saveScore(event) {
-    event.preventDefault();
-    if (![GAME_STATES.WON, GAME_STATES.LOST].includes(this.state)) return;
-    if (this.roundSaved) return this.setSaveFeedback("Skor ronde ini sudah tersimpan.", "success");
-
-    const formData = new FormData(this.elements.scoreForm);
-    const name = String(formData.get("playerName") || "").trim().replace(/\s+/g, " ").slice(0, 20);
-    if (name.length < 2) return this.setSaveFeedback("Nama harus terdiri dari minimal 2 karakter.", "error");
-
+  renderResult() {
+    if (!this.elements.resultSection) return;
     const report = this.quiz.getSessionReport();
-    const current = this.readLeaderboard();
-    current.push({
-      id: this.roundId,
-      name,
-      score: this.score,
-      date: new Date().toISOString(),
-      level: this.level.name,
-      levelId: this.level.id,
-      mode: this.mode,
-      difficulty: this.difficulty.label,
-      difficultyId: this.difficulty.id,
-      practice: this.settings.practiceMode,
-      result: this.roundResult,
-      accuracy: report.accuracy,
-      correct: report.correct,
-      total: report.total,
-      maxCombo: this.maxCombo,
-      collisions: this.collisions,
-      questionSet: report.set.name
-    });
-    const sorted = current.sort((a, b) => {
-        if (Boolean(a.practice) !== Boolean(b.practice)) return a.practice ? 1 : -1;
-        return b.score - a.score || new Date(b.date) - new Date(a.date);
-      }).slice(0, 50);
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(sorted));
-    this.roundSaved = true;
-    this.elements.scoreForm.querySelector("button[type='submit']").disabled = true;
-    this.setSaveFeedback(`Skor ${this.score.toLocaleString("id-ID")} atas nama ${name} berhasil disimpan.`, "success", true);
-  }
-
-  readPlaytestData() {
-    try {
-      const data = JSON.parse(localStorage.getItem(PLAYTEST_KEY) || "[]");
-      return Array.isArray(data) ? data : [];
-    } catch {
-      return [];
+    this.elements.resultSection.hidden = false;
+    if (this.elements.resultTime) this.elements.resultTime.textContent = this.formatDuration(this.elapsedActiveTime);
+    if (this.elements.resultCorrect) this.elements.resultCorrect.textContent = `${report.correct}/${report.total}`;
+    if (this.elements.resultCaught) this.elements.resultCaught.textContent = String(this.collisions);
+    if (this.elements.resultLines) this.elements.resultLines.textContent = String(this.linesCrossed);
+    if (this.elements.resultStrategy) {
+      this.elements.resultStrategy.innerHTML = this.buildStrategyAnalysis(report)
+        .map((line) => `<li>${this.escapeHtml(line)}</li>`)
+        .join("");
     }
   }
 
-  recordPlaytest(won, report) {
-    if (this.playtestRecorded) return;
-    const records = this.readPlaytestData();
-    records.push({
-      id: this.roundId,
-      date: new Date().toISOString(),
-      gameVersion: GAME_VERSION,
-      levelId: this.level.id,
-      level: this.level.name,
-      difficultyId: this.difficulty.id,
-      difficulty: this.difficulty.label,
-      mode: this.mode,
-      practice: this.settings.practiceMode,
-      won,
-      score: this.score,
-      accuracy: report.accuracy,
-      correct: report.correct,
-      totalQuestions: report.total,
-      questionsAnswered: this.questionAnsweredCount,
-      collisions: this.collisions,
-      livesRemaining: this.settings.practiceMode ? null : Math.max(0, this.lives),
-      activeSeconds: Number(this.elapsedActiveTime.toFixed(2)),
-      returnSeconds: this.returnDuration === null ? null : Number(this.returnDuration.toFixed(2)),
-      roundTime: this.roundTime,
-      enemyCount: this.enemies.length
-    });
-    localStorage.setItem(PLAYTEST_KEY, JSON.stringify(records.slice(-MAX_PLAYTEST_RECORDS)));
-    this.playtestRecorded = true;
-    this.updatePlaytestCount();
-  }
-
-  renderPlaytestSummary(report) {
-    if (!this.elements.playtestSummary) return;
-    const returnText = this.returnDuration === null ? "Belum sampai pulang" : `${this.returnDuration.toFixed(1)} detik`;
-    const livesText = this.settings.practiceMode ? "Mode Latihan" : `${Math.max(0, this.lives)}/${this.maxLives}`;
-    this.elements.playtestSummary.innerHTML = `
-      <article><span>Kesulitan</span><strong>${this.difficulty.label}</strong></article>
-      <article><span>Durasi aktif</span><strong>${this.elapsedActiveTime.toFixed(1)} dtk</strong></article>
-      <article><span>Perjalanan pulang</span><strong>${returnText}</strong></article>
-      <article><span>Tertangkap</span><strong>${this.collisions} kali</strong></article>
-      <article><span>Nyawa tersisa</span><strong>${livesText}</strong></article>
-      <article><span>Akurasi</span><strong>${report.accuracy}%</strong></article>`;
-  }
-
-  updatePlaytestCount() {
-    const count = this.readPlaytestData().length;
-    if (this.elements.playtestCount) this.elements.playtestCount.textContent = `${count} ronde tersimpan`;
-    if (this.elements.exportPlaytest) this.elements.exportPlaytest.disabled = count === 0;
-    if (this.elements.resetPlaytest) this.elements.resetPlaytest.disabled = count === 0;
-  }
-
-  exportPlaytestData() {
-    const data = this.readPlaytestData();
-    if (!data.length) return this.setStatus("Belum ada data playtest untuk diekspor.");
-    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), gameVersion: GAME_VERSION, records: data }, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `gobak-sodor-playtest-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.append(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    this.setStatus(`${data.length} data ronde berhasil diekspor.`);
-  }
-
-  resetPlaytestData() {
-    const count = this.readPlaytestData().length;
-    if (!count) return;
-    if (!window.confirm(`Hapus ${count} catatan playtest pada perangkat ini?`)) return;
-    localStorage.removeItem(PLAYTEST_KEY);
-    this.updatePlaytestCount();
-    this.setStatus("Data playtest lokal telah dihapus.");
-  }
-
-  readLeaderboard() {
-    try {
-      const data = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
-      return Array.isArray(data) ? data : [];
-    } catch {
-      return [];
-    }
-  }
-
-  clearSaveFeedback() {
-    if (!this.elements.saveFeedback) return;
-    this.elements.saveFeedback.textContent = "";
-    this.elements.saveFeedback.className = "save-feedback";
-    const button = this.elements.scoreForm?.querySelector("button[type='submit']");
-    if (button) button.disabled = false;
-    this.elements.scoreForm?.reset();
-  }
-
-  setSaveFeedback(message, type = "", includeLink = false) {
-    if (!this.elements.saveFeedback) return;
-    this.elements.saveFeedback.className = `save-feedback ${type}`.trim();
-    this.elements.saveFeedback.textContent = message;
-    if (includeLink) {
-      this.elements.saveFeedback.append(" ");
-      const link = document.createElement("a");
-      link.href = "leaderboard.html";
-      link.textContent = "Lihat leaderboard";
-      this.elements.saveFeedback.append(link);
-    }
-  }
-
-  renderMap() {
-    if (!this.elements.adventureMap) return;
-    this.elements.adventureMap.innerHTML = LEVELS.map((level) => {
-      const unlocked = this.mapProgress.isUnlocked(level.id);
-      const completed = this.mapProgress.data.completed.includes(level.id);
-      const selected = this.level.id === level.id;
-      return `<button class="island-node ${selected ? "selected" : ""} ${completed ? "completed" : ""} ${!unlocked ? "locked" : ""}" type="button" data-level-id="${level.id}" ${!unlocked ? "disabled" : ""} aria-pressed="${selected}"><span class="island-order">${completed ? "✓" : level.order}</span><i class="fa-solid ${unlocked ? "fa-location-dot" : "fa-lock"}"></i><strong>${level.name}</strong><small>${level.title}</small></button>`;
-    }).join('<span class="map-path" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>');
-    this.updateLevelFact();
-  }
-
-  updateLevelFact() {
-    if (this.elements.levelRegion) this.elements.levelRegion.textContent = this.level.region;
-    if (this.elements.levelTitle) this.elements.levelTitle.textContent = `${this.level.title} · ${this.level.name}`;
-    if (this.elements.levelFact) this.elements.levelFact.textContent = this.level.fact;
-    this.updateStreakDisplay();
-  }
-
-  updateStreakDisplay() {
-    const summary = this.gamification.getSummary();
-    if (this.elements.currentStreak) this.elements.currentStreak.textContent = `${summary.streak} hari`;
-  }
-
-  populateQuestionSets() {
-    if (!this.elements.questionSet) return;
-    const sets = this.quiz.getAvailableSets();
-    this.elements.questionSet.innerHTML = sets.map((set) => `<option value="${set.id}">${this.escapeHtml(set.name)} · ${set.count} soal</option>`).join("");
-    this.elements.questionSet.value = this.quiz.activeSetId;
-    this.updateQuestionPoolInfo();
-  }
-
-  updateQuestionPoolInfo() {
-    if (!this.elements.questionSetHelp || !this.quizReady) return;
-    const pool = this.quiz.getQuestionPoolStatus();
-    const minimumForFullJourney = this.level.checkpoints.length * 2 * LEVELS.length;
-    const warning = pool.total < minimumForFullJourney
-      ? ` Set ini berisi ${pool.total} soal; pengulangan baru mungkin terjadi setelah seluruh soal habis.`
-      : "";
-    this.elements.questionSetHelp.textContent = `${pool.remaining} dari ${pool.total} soal belum muncul dalam perjalanan tab ini.${warning}`;
+  hideResult() {
+    if (this.elements.resultSection) this.elements.resultSection.hidden = true;
   }
 
   updateControlLabels() {
@@ -1182,32 +850,19 @@ class GobakSodorGame {
   updateSetupText() {
     if (this.elements.p2TouchZone) this.elements.p2TouchZone.hidden = this.mode !== "Co-op";
     const icon = this.mode === "Co-op" ? "fa-user-group" : "fa-user";
-    if (this.elements.modeBadge) this.elements.modeBadge.innerHTML = `<i class="fa-solid ${icon}"></i> ${this.mode} · ${this.difficulty.label}${this.settings.practiceMode ? " · Latihan" : ""}`;
-    if (this.elements.gameTitle) this.elements.gameTitle.textContent = `${this.level.title} · ${this.level.name}`;
+    const modeLabel = this.mode === "Co-op" ? "Mode Dua Pemain" : "Mode Satu Pemain";
+    if (this.elements.modeBadge) this.elements.modeBadge.innerHTML = `<i class="fa-solid ${icon}"></i> ${modeLabel}`;
     if (this.elements.gameDescription) {
-      const lives = this.settings.practiceMode ? "nyawa tanpa batas" : `${this.maxLives} nyawa tim`;
-      const checkpointCount = this.checkpoints.length || this.level.checkpoints.length;
-      this.elements.gameDescription.textContent = `${this.difficulty.label} · ${lives} · ${this.roundTime} detik · ${this.level.enemies.length} penjaga · ${checkpointCount * 2} soal`;
+      this.elements.gameDescription.textContent = `${MAX_CHANCES} kesempatan · ${this.checkpoints.length * 2} soal (${this.checkpoints.length} pergi + ${this.checkpoints.length} pulang) · ${this.arena.enemies.length} penjaga`;
     }
-  }
-
-  syncDifficultyInputs() {
-    this.elements.difficultyInputs.forEach((input) => {
-      input.checked = input.value === this.difficulty.id;
-      input.closest(".difficulty-option")?.classList.toggle("selected", input.checked);
-    });
   }
 
   setEnemyReturnPhase(active) {
-    this.enemies.forEach((enemy) => enemy.setReturnPhase(active, this.difficulty.returnSpeedMultiplier));
-    if (active) {
-      const increase = Math.round((this.difficulty.returnSpeedMultiplier - 1) * 100);
-      this.setMessage(`Bendera diambil—ritme pulang naik ${increase}%!`, 2.8);
-    }
+    this.enemies.forEach((enemy) => enemy.setReturnPhase(active));
   }
 
   getJourneyProgress() {
-    if (this.state === GAME_STATES.WON) return 100;
+    if (this.state === GAME_STATES.FINISHED) return 100;
     const routeLength = Math.max(1, this.flag.x - 65);
     if (this.flag.carrierId === null) {
       const furthestX = Math.max(65, ...this.players.map((player) => player.x));
@@ -1224,12 +879,10 @@ class GobakSodorGame {
     else if (this.state === GAME_STATES.QUIZ) phase = this.activeTrip === "return" ? "Soal perjalanan pulang" : "Soal menuju bendera";
     else if (this.flag.carrierId !== null) phase = "Kembali ke START";
     else if ([GAME_STATES.RUNNING, GAME_STATES.PAUSED].includes(this.state)) phase = "Menuju bendera";
-    else if (this.state === GAME_STATES.WON) phase = "Bendera kembali";
-    else if (this.state === GAME_STATES.LOST) phase = "Ronde selesai";
+    else if (this.state === GAME_STATES.CATCH_LIMIT) phase = "Tiga kali tertangkap";
+    else if (this.state === GAME_STATES.FINISHED) phase = "Simulasi selesai";
 
     if (this.elements.journeyPhase) this.elements.journeyPhase.textContent = phase;
-    if (this.elements.journeyQuestions) this.elements.journeyQuestions.textContent = `${this.questionAnsweredCount}/${this.checkpoints.length * 2} soal`;
-    if (this.elements.journeyDifficulty) this.elements.journeyDifficulty.textContent = this.difficulty.label;
     if (this.elements.journeyBar) {
       const progress = Number(this.getJourneyProgress().toFixed(1));
       const track = this.elements.journeyBar.parentElement;
@@ -1250,35 +903,30 @@ class GobakSodorGame {
     return Math.hypot(circle.x - nearestX, circle.y - nearestY) <= circle.radius;
   }
 
+  formatDuration(seconds) {
+    const totalSeconds = Math.floor(seconds);
+    const minutes = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  }
+
   updateHud() {
-    if (this.elements.timer) {
-      const totalSeconds = Math.ceil(this.remainingTime);
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      this.elements.timer.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-      this.elements.timer.closest(".hud-item")?.classList.toggle("danger", totalSeconds <= 15);
+    if (this.elements.timer) this.elements.timer.textContent = this.formatDuration(this.elapsedActiveTime);
+    if (this.elements.chances) {
+      this.elements.chances.textContent = this.settings.practiceMode ? "∞ Latihan" : `${this.chances} tersisa`;
+      this.elements.chances.closest(".hud-item")?.classList.toggle("danger", !this.settings.practiceMode && this.chances <= 1);
     }
-    if (this.elements.lives) {
-      this.elements.lives.textContent = this.settings.practiceMode ? "∞ Latihan" : `${Math.max(0, this.lives)} / ${this.maxLives} ♥`;
-      this.elements.lives.closest(".hud-item")?.classList.toggle("danger", !this.settings.practiceMode && this.lives <= 1);
-    }
-    if (this.elements.ruleLives) this.elements.ruleLives.textContent = this.settings.practiceMode ? "Tanpa batas" : `${this.maxLives} nyawa`;
-    if (this.elements.ruleFinish) this.elements.ruleFinish.textContent = `Bonus akhir ×${this.difficulty.finishScoreMultiplier.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    if (this.elements.score) this.elements.score.textContent = `${this.score.toLocaleString("id-ID")} poin`;
-    if (this.elements.combo) {
-      this.elements.combo.textContent = `x${this.combo}`;
-      this.elements.combo.closest(".hud-item")?.classList.toggle("success", this.combo >= 2);
-    }
-    if (this.elements.shield) {
-      const activePlayers = this.players.filter((player) => player.hasShield());
-      this.elements.shield.textContent = activePlayers.length ? activePlayers.map((player) => `P${player.playerNumber} ${player.shieldTime.toFixed(1)}s`).join(" · ") : "Nonaktif";
-      this.elements.shield.closest(".hud-item")?.classList.toggle("shield-active", activePlayers.length > 0);
+    if (this.elements.caught) this.elements.caught.textContent = String(this.collisions);
+    if (this.elements.lines) this.elements.lines.textContent = String(this.linesCrossed);
+    if (this.elements.answers) this.elements.answers.textContent = `${this.questionAnsweredCount}/${this.quiz.totalQuestions || 6}`;
+    if (this.elements.score) {
+      const report = this.quiz.getSessionReport();
+      this.elements.score.textContent = `${report.accuracy}%`;
     }
     if (this.elements.flag) {
       this.elements.flag.textContent = this.flag.carrierId ? `P${this.flag.carrierId} membawa` : "Belum";
       this.elements.flag.closest(".hud-item")?.classList.toggle("success", this.flag.carrierId !== null);
     }
-    if (this.elements.level) this.elements.level.textContent = this.level.name;
     this.updateJourneyHud();
   }
 
@@ -1291,12 +939,7 @@ class GobakSodorGame {
     const locked = !this.quizReady;
     if (this.elements.soloButton) this.elements.soloButton.disabled = locked;
     if (this.elements.coopButton) this.elements.coopButton.disabled = locked;
-    const activeRound = [GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state);
-    if (this.elements.questionSet) this.elements.questionSet.disabled = locked || activeRound;
     if (this.elements.restartButton) this.elements.restartButton.disabled = locked;
-    this.elements.difficultyInputs.forEach((input) => {
-      input.disabled = locked || [GAME_STATES.COUNTDOWN, GAME_STATES.RUNNING, GAME_STATES.QUIZ, GAME_STATES.PAUSED].includes(this.state);
-    });
   }
 
   effectAtGamePoint(x, y, options = {}) {
@@ -1331,34 +974,28 @@ class GobakSodorGame {
 
   showLoadingOverlay() {
     this.overlayPrimaryAction = "start";
-    this.configureOverlay({ icon: "fa-spinner fa-spin", eyebrow: "Menyiapkan permainan", title: "Memuat bank soal dan peta...", text: "Sistem memeriksa soal bawaan serta set buatan guru pada perangkat ini.", primary: "Memuat...", showSecondary: false, disablePrimary: true });
+    this.configureOverlay({ icon: "fa-spinner fa-spin", eyebrow: "Menyiapkan simulasi", title: "Memuat bank soal...", text: "Sistem memeriksa soal simulasi pada perangkat ini.", primary: "Memuat...", showSecondary: false, disablePrimary: true });
   }
 
   showReadyOverlay() {
     this.overlayPrimaryAction = "start";
-    this.configureOverlay({ icon: this.mode === "Co-op" ? "fa-people-group" : "fa-person-running", eyebrow: `${this.level.title} · ${this.level.name} · ${this.difficulty.label}`, title: `Siap bermain ${this.mode}?`, text: this.mode === "Co-op" ? `P1 dan P2 berbagi ${this.maxLives} nyawa. Saat pulang, penjaga bergerak ${Math.round((this.difficulty.returnSpeedMultiplier - 1) * 100)}% lebih cepat.` : `Jawab enam soal, ambil bendera, lalu kembali. Kesulitan ${this.difficulty.label}: ${this.roundTime} detik dan ${this.maxLives} nyawa.`, primary: `Mulai ${this.mode}`, showSecondary: false });
+    const modeLabel = this.mode === "Co-op" ? "Dua Pemain" : "Satu Pemain";
+    this.configureOverlay({ icon: this.mode === "Co-op" ? "fa-people-group" : "fa-person-running", eyebrow: `Mode ${modeLabel}`, title: "Siap memulai simulasi?", text: `Bawa pemain menuju bendera dan kembali ke garis START tanpa kehabisan kesempatan. Maksimal ${MAX_CHANCES} kali tertangkap sebelum memilih untuk melanjutkan atau mengulang.`, primary: "Mulai Simulasi", showSecondary: false });
   }
 
   showPauseOverlay() {
     this.overlayPrimaryAction = "resume";
     this.overlaySecondaryAction = "restart";
-    this.configureOverlay({ icon: "fa-pause", eyebrow: "Permainan dijeda", title: "Atur strategi tim.", text: "Posisi, waktu, skor, dan hasil soal tetap tersimpan. Tekan Lanjut atau tombol P.", primary: "Lanjut", showSecondary: true, secondary: "Ulangi Ronde" });
-  }
-
-  showResultOverlay(won, detail) {
-    const report = this.quiz.getSessionReport();
-    this.overlayPrimaryAction = "report";
-    this.overlaySecondaryAction = "restart";
-    this.configureOverlay({ icon: won ? "fa-trophy" : "fa-chart-line", eyebrow: won ? `${this.level.name} selesai` : "Ronde belajar selesai", title: won ? "Bendera berhasil dibawa pulang!" : "Gunakan rapor untuk mencoba lebih kuat.", text: `${detail} ${this.difficulty.label} · Skor ${this.score.toLocaleString("id-ID")} · Akurasi ${report.accuracy}%.`, primary: "Lihat Rapor", showSecondary: true, secondary: "Main Lagi", result: won ? "won" : "lost" });
+    this.configureOverlay({ icon: "fa-pause", eyebrow: "Permainan dijeda", title: "Atur strategi tim.", text: "Posisi, waktu, dan hasil soal tetap tersimpan. Tekan Lanjut atau tombol P.", primary: "Lanjut", showSecondary: true, secondary: "Ulangi Simulasi" });
   }
 
   showErrorOverlay(detail) {
-    this.configureOverlay({ icon: "fa-triangle-exclamation", eyebrow: "Bank soal tidak tersedia", title: "Permainan belum dapat dimulai.", text: `${detail} Jalankan folder proyek melalui python -m http.server 8000, lalu buka game.html.`, primary: "Tidak tersedia", showSecondary: false, result: "lost", disablePrimary: true });
+    this.configureOverlay({ icon: "fa-triangle-exclamation", eyebrow: "Bank soal tidak tersedia", title: "Simulasi belum dapat dimulai.", text: `${detail} Jalankan folder proyek melalui python -m http.server 8000, lalu buka game.html.`, primary: "Tidak tersedia", showSecondary: false, disablePrimary: true });
   }
 
-  configureOverlay({ icon, eyebrow, title, text, primary, showSecondary, secondary = "Ulangi", result = "", disablePrimary = false }) {
+  configureOverlay({ icon, eyebrow, title, text, primary, showSecondary, secondary = "Ulangi", disablePrimary = false }) {
     if (!this.elements.overlay) return;
-    this.elements.overlay.className = `game-overlay show ${result}`.trim();
+    this.elements.overlay.className = "game-overlay show";
     this.elements.overlay.setAttribute("aria-hidden", "false");
     if (this.elements.overlayIcon) this.elements.overlayIcon.className = `fa-solid ${icon}`;
     if (this.elements.overlayEyebrow) this.elements.overlayEyebrow.textContent = eyebrow;
@@ -1385,10 +1022,18 @@ class GobakSodorGame {
     this.enemies.forEach((enemy) => enemy.draw(ctx, { colorBlind: this.settings.colorBlind }));
     this.players.forEach((player) => player.draw(ctx, { colorBlind: this.settings.colorBlind }));
     this.drawCanvasMessage(ctx);
+    if ([GAME_STATES.QUIZ, GAME_STATES.PAUSED, GAME_STATES.CATCH_LIMIT].includes(this.state)) this.drawDimOverlay(ctx);
+  }
+
+  drawDimOverlay(ctx) {
+    ctx.save();
+    ctx.fillStyle = "rgba(7, 20, 34, 0.32)";
+    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    ctx.restore();
   }
 
   drawArena(ctx) {
-    const { start, end, accent, line } = this.level.colors;
+    const { start, end, accent, line } = this.arena.colors;
     const gradient = ctx.createLinearGradient(0, 0, GAME_WIDTH, GAME_HEIGHT);
     gradient.addColorStop(0, start);
     gradient.addColorStop(1, end);
@@ -1399,12 +1044,11 @@ class GobakSodorGame {
     ctx.globalAlpha = 0.1;
     ctx.strokeStyle = line;
     ctx.lineWidth = 2;
-    const spacing = 58 + this.level.order * 5;
+    const spacing = 64;
     for (let x = 18; x < GAME_WIDTH; x += spacing) {
       for (let y = 16; y < GAME_HEIGHT; y += spacing) {
         ctx.beginPath();
-        if (this.level.order % 2 === 0) ctx.rect(x - 10, y - 10, 20, 20);
-        else ctx.ellipse(x, y, 13, 24, Math.PI / 4, 0, Math.PI * 2);
+        ctx.rect(x - 10, y - 10, 20, 20);
         ctx.stroke();
       }
     }
@@ -1416,7 +1060,7 @@ class GobakSodorGame {
     ctx.lineWidth = 4;
     ctx.globalAlpha = 0.76;
     [190, 370].forEach((y) => { ctx.beginPath(); ctx.moveTo(24, y); ctx.lineTo(GAME_WIDTH - 24, y); ctx.stroke(); });
-    this.level.checkpoints.forEach((x) => { ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, GAME_HEIGHT - 40); ctx.stroke(); });
+    this.arena.checkpoints.forEach((x) => { ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, GAME_HEIGHT - 40); ctx.stroke(); });
     ctx.globalAlpha = 1;
 
     ctx.fillStyle = "rgba(39, 117, 216, 0.34)";
@@ -1431,11 +1075,6 @@ class GobakSodorGame {
     ctx.fillStyle = line;
     ctx.font = "700 12px Poppins, sans-serif";
     ctx.fillText("TUJUAN", 886, 68);
-
-    ctx.fillStyle = "rgba(255,255,255,0.86)";
-    ctx.font = "800 13px Poppins, sans-serif";
-    ctx.textAlign = "right";
-    ctx.fillText(`${this.level.title.toUpperCase()} · ${this.level.name.toUpperCase()}`, 925, 528);
   }
 
   drawCheckpoints(ctx) {
@@ -1447,7 +1086,7 @@ class GobakSodorGame {
         { x: 11, done: checkpoint.returnAsked, symbol: "←" }
       ];
       states.forEach((state) => {
-        ctx.fillStyle = state.done ? "#1ec28b" : this.level.colors.accent;
+        ctx.fillStyle = state.done ? "#1ec28b" : this.arena.colors.accent;
         ctx.beginPath(); ctx.arc(state.x, 0, 13, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = "#172033";
         ctx.font = "800 13px Poppins, sans-serif";
@@ -1463,12 +1102,12 @@ class GobakSodorGame {
     if (this.flag.carrierId !== null) return;
     const { x, y } = this.flag;
     ctx.save();
-    ctx.fillStyle = `${this.level.colors.accent}48`;
+    ctx.fillStyle = `${this.arena.colors.accent}48`;
     ctx.beginPath(); ctx.arc(x, y, 42 + Math.sin(performance.now() / 250) * 4, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = "#fffdf8";
     ctx.lineWidth = 6;
     ctx.beginPath(); ctx.moveTo(x - 6, y + 34); ctx.lineTo(x - 6, y - 35); ctx.stroke();
-    ctx.fillStyle = this.level.colors.accent;
+    ctx.fillStyle = this.arena.colors.accent;
     ctx.beginPath(); ctx.moveTo(x - 3, y - 34); ctx.lineTo(x + 31, y - 23); ctx.lineTo(x - 3, y - 10); ctx.closePath(); ctx.fill();
     ctx.fillStyle = "#172033";
     ctx.font = "800 12px Poppins, sans-serif";

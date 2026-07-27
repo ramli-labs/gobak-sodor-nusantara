@@ -11,18 +11,18 @@ const STORAGE_KEYS = {
 const onboardingSlides = [
   {
     icon: "fa-people-group",
-    title: "Belajar lewat kerja sama",
-    description: "Gobak Sodor mengajarkan strategi, komunikasi, dan gotong royong. Mainkan Solo untuk latihan atau Co-op dalam satu keyboard."
+    title: "Amati pola, gunakan logika jika-maka",
+    description: "Simulasi ini untuk mengamati pola gerak penjaga dan mencoba strategi—bukan kompetisi. Mainkan Satu Pemain atau Dua Pemain (keyboard maupun layar sentuh)."
   },
   {
     icon: "fa-flag",
     title: "Ambil bendera dan kembali",
-    description: "Jawab soal saat menembus checkpoint, ambil bendera, lalu jawab soal baru saat kembali ke area mulai sebelum waktu habis."
+    description: "Jawab soal saat menembus garis, ambil bendera, lalu jawab soal baru saat kembali ke START. Jawaban salah tidak dihukum berat—cukup ditinjau lagi."
   },
   {
-    icon: "fa-wifi",
-    title: "Siap dipakai online maupun offline",
-    description: "Pasang sebagai aplikasi, mainkan setelah aset tersimpan, dan tunjukkan kaitan kurikulumnya di halaman Budaya."
+    icon: "fa-comments",
+    title: "Refleksikan hasilnya",
+    description: "Setelah simulasi selesai, bandingkan hasilnya dengan permainan Gobak Sodor nyata yang sudah dilakukan di kelas PJOK."
   }
 ];
 
@@ -254,7 +254,7 @@ class SiteApp {
     if (this.elements.prevButton) this.elements.prevButton.hidden = this.currentSlide === 0;
     if (this.elements.nextButton) {
       this.elements.nextButton.innerHTML = this.currentSlide === onboardingSlides.length - 1
-        ? 'Mulai Jelajah <i class="fa-solid fa-arrow-right"></i>'
+        ? 'Mulai Simulasi <i class="fa-solid fa-arrow-right"></i>'
         : 'Lanjut <i class="fa-solid fa-arrow-right"></i>';
     }
   }

@@ -1,14 +1,13 @@
-/* Gobak Sodor Nusantara v1.3.0 — PWA shell (situs game tunggal).
+/* Simulasi Strategi Gobak Sodor v1.4.0 — PWA shell (situs game tunggal).
    Naikkan versi cache setiap kali aset precache berubah agar pengguna lama
-   menerima konten baru. Cache portal lama (ppn-*) ikut dibersihkan. */
-const CACHE_NAME = "gsn-v1.3.0";
+   menerima konten baru. Cache versi lama (ppn-*, gsn-v1.3.0 dst.) ikut dibersihkan. */
+const CACHE_NAME = "gsn-v1.4.0";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./game.html",
   "./culture.html",
   "./tutorial.html",
-  "./leaderboard.html",
   "./offline.html",
   "./manifest.json",
   "./css/style.css",
@@ -20,11 +19,8 @@ const APP_SHELL = [
   "./js/player.js",
   "./js/enemy.js",
   "./js/quiz.js",
-  "./js/map.js",
+  "./js/arena.js",
   "./js/accessibility.js",
-  "./js/gamification.js",
-  "./js/difficulty.js",
-  "./js/leaderboard.js",
   "./js/culture.js",
   "./data/questions.json",
   "./assets/img/icon-32.png",

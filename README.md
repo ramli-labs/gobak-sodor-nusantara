@@ -1,14 +1,31 @@
-# Gobak Sodor Nusantara — Versi 1.3.0 (Interdisipliner)
+# Simulasi Strategi Gobak Sodor — Versi 1.4.0
 
-## Perubahan versi 1.3.0
+Simulasi pembelajaran interdisipliner untuk kelas VII, Hari 3 — Koding dan
+Kecerdasan Artifisial (KKA). Fokusnya bukan kompetisi atau petualangan membuka
+level, melainkan: **bermain, mengamati pola, menerapkan logika jika–maka,
+mencoba strategi, dan merefleksikan hasil.** Teknologi berfungsi sebagai media
+simulasi dan analisis strategi, bukan pengganti permainan Gobak Sodor nyata
+yang sudah dilakukan pada pembelajaran PJOK.
 
-- **Repo disederhanakan menjadi situs satu game.** Portal Permainan Nusantara (beranda portal, login/akun Supabase, dashboard guru/siswa/admin, editor soal, dan game Jelajah Nusantara) dihapus; seluruh berkas Gobak Sodor kini berada di root repo dan situs langsung membuka game. Game difokuskan sebagai simulasi penguatan evaluasi TP interdisipliner di kelas, tanpa akun dan tanpa server — semua data tersimpan lokal di perangkat.
-- Bank soal diganti menjadi **empat mata pelajaran: IPS, PJOK, KKA (Koding & Kecerdasan Artifisial), dan Seni Rupa** (7 soal per mapel, total 28), seluruhnya bertema gobak sodor dan selaras Tujuan Pembelajaran SMP.
-- Setiap soal kini memiliki **kalimat penjelasan** yang tampil setelah dijawab; badge mapel tampil pada kartu soal.
-- **Kontrol sentuh dua pemain**: zona arah P1 di kiri dan P2 di kanan bawah arena, sehingga mode Co-op dapat dimainkan berdua di layar sentuh besar (IFP) tanpa keyboard. Tombol paksa-tampil kontrol sentuh tersedia di HUD.
-- Target sentuh diperbesar (≥64px) dan tipografi soal membesar pada layar lebar agar terbaca dari belakang kelas.
-- Tautan "Mode Guru" dilepas dari navigasi game; pemetaan kaitan kurikulum kini ada di halaman **Budaya** (`culture.html#kurikulum`).
-- Halaman **Beranda dihapus** (dialihkan ke halaman Bermain) karena game difokuskan sebagai simulasi penguatan evaluasi TP interdisipliner di kelas; panduan pertama kali kini muncul di halaman Bermain.
+## Perubahan versi 1.4.0
+
+- **Fokus disederhanakan menjadi simulasi, bukan kompetisi.** Leaderboard, penyimpanan skor/nama pemain, peta perjalanan antarpulau, sistem membuka level, streak harian, combo, shield, dan bonus pengali skor **dihapus seluruhnya**. Skor sesi, waktu bermain, dan jumlah tertangkap tetap dicatat karena diperlukan untuk analisis pembelajaran.
+- **Satu arena tunggal** (`js/arena.js` menggantikan `js/map.js`) — tanpa sistem pulau/level, sehingga pola penjaga dan posisi awal selalu konsisten untuk diamati dan diulang.
+- **Layar awal disederhanakan**: judul "Simulasi Strategi Gobak Sodor", tiga blok singkat (Tujuan, Tantangan, Tugas Pengamatan), dan satu tombol utama **"MULAI SIMULASI"** (Mode Dua Pemain, paling menonjol) dengan Mode Satu Pemain sebagai pilihan tambahan. Pemilih tingkat kesulitan dan pemilih set soal guru (sudah tidak dapat diisi sejak portal dihapus) ikut dilepas.
+- **Peran Dua Pemain eksplisit**: Pemain 1 Pembawa Bendera, Pemain 2 Pengalih Penjaga — sesuai instruksi di layar.
+- **Indikator baru** menggantikan HUD lama: Waktu (stopwatch naik, bukan hitung mundur), **Kesempatan** (menggantikan istilah "Nyawa"), Tertangkap, Garis Berhasil Dilewati, Jawaban (x/6), dan Skor Pemahaman.
+- **Batas tiga kali tertangkap**: setelah tertangkap tiga kali, muncul pilihan "Coba Lagi dari Posisi Terakhir" atau "Ulangi Simulasi" — sesi tidak langsung berakhir, dan jawaban salah tidak lagi dihukum dengan mempercepat penjaga.
+- **Umpan balik kuis** kini memakai ikon + teks (✓ Jawaban Tepat / ! Perlu Ditinjau Kembali) agar tidak hanya mengandalkan warna, dengan penjelasan singkat maksimal dua kalimat.
+- **Bank soal berbasis situasi dan logika**, bukan hafalan fakta: enam soal tetap untuk Mode Simulasi Video (`data/questions.json` → `demo`) dan 12 soal (3 per mapel: KKA, PJOK, IPS, Seni Rupa) untuk Mode Latihan Kelas (`bank`) yang diacak dengan kuota kategori setiap sesi.
+- **Halaman hasil baru "Hasil Simulasi Strategi"**: waktu penyelesaian, jawaban benar, jumlah tertangkap, garis berhasil dilewati, Analisis Strategi otomatis berbasis data permainan (tanpa peringkat/skor tertinggi), dan tiga pertanyaan **Refleksi** yang membandingkan permainan digital dengan permainan nyata.
+- **Mode Simulasi Video** (`game.html?demo=1`): urutan enam soal, posisi awal, dan pola penjaga selalu sama; Mode Dua Pemain langsung terpilih; tombol kecil **"Ulangi Adegan"** mengembalikan simulasi ke kondisi awal untuk pengambilan gambar.
+- Cache PWA dinaikkan ke `gsn-v1.4.0`; `js/leaderboard.js`, `js/map.js`, `js/difficulty.js`, `js/gamification.js`, dan `leaderboard.html` dihapus dari repo dan dari precache.
+
+## Riwayat versi sebelumnya
+
+### Versi 1.3.0 — Repo disederhanakan menjadi situs satu game
+
+Portal Permainan Nusantara (beranda portal, login/akun Supabase, dashboard guru/siswa/admin, editor soal, dan game Jelajah Nusantara) dihapus; seluruh berkas Gobak Sodor dipindah ke root repo. Bank soal diganti menjadi empat mata pelajaran (IPS, PJOK, KKA, Seni Rupa), kontrol sentuh dua pemain ditambahkan untuk layar sentuh besar (IFP), dan halaman Beranda dialihkan ke halaman Bermain.
 
 ## Perbaikan final versi 1.2.3
 
@@ -46,30 +63,29 @@
 - HUD nyawa dan poin numerik serta rincian perolehan skor.
 
 
-Website game edukasi berbasis **HTML5, CSS3, Vanilla JavaScript ES6, Canvas API, Web Audio API, dan Progressive Web App** tanpa framework atau proses build. Versi ini menyelesaikan seluruh tahap pengembangan dari fondasi hingga versi profesional yang siap dipamerkan dan di-host di GitHub Pages.
+Website simulasi edukasi berbasis **HTML5, CSS3, Vanilla JavaScript ES6, Canvas API, Web Audio API, dan Progressive Web App** tanpa framework atau proses build, sehingga tetap ringan untuk GitHub Pages.
 
 ## Fitur utama
 
 ### 1. Fondasi dan antarmuka
-- Empat halaman utama: Bermain (sekaligus pintu masuk), Budaya, Cara Main, dan Leaderboard. Beranda lama dialihkan ke halaman Bermain.
-- Navigasi responsif, menu mobile, dark mode, onboarding, transisi halaman, dan ornamen visual Nusantara.
-- Tampilan desktop, tablet, dan ponsel.
+- Tiga halaman utama: Bermain (sekaligus pintu masuk), Budaya, dan Cara Main. Beranda lama dialihkan ke halaman Bermain.
+- Navigasi responsif, menu mobile, dark mode, onboarding, transisi halaman.
+- Tampilan desktop, tablet, dan layar sentuh besar (PID/IFP) — tanpa horizontal scrolling.
 
 ### 2. Gameplay Canvas
-- Mode Solo dan Co-op satu keyboard.
-- Pemain, penjaga horizontal/vertikal, checkpoint, bendera, Start, timer, nyawa, skor, Combo, dan Shield.
-- Pause, restart, fullscreen, kontrol sentuh Pemain 1 dan Pemain 2, serta kondisi menang/kalah.
-- Lima pulau dengan 3–6 penjaga, pola ritmis berbeda, dan perjalanan pulang yang lebih cepat.
-- Pilihan kesulitan Santai, Normal, dan Ahli serta countdown sebelum ronde.
+- Mode Satu Pemain dan Dua Pemain (keyboard atau layar sentuh). Dua Pemain: Pemain 1 Pembawa Bendera, Pemain 2 Pengalih Penjaga.
+- Satu arena tetap: pemain, penjaga horizontal/vertikal dengan lima pola ritme (steady, pause, pulse, surge, fakeout), checkpoint, bendera, dan START.
+- Pause, restart, "Ulangi Adegan" (Mode Simulasi Video), fullscreen, dan kontrol sentuh Pemain 1 dan Pemain 2.
+- Maksimal tiga kali tertangkap sebelum muncul pilihan lanjut dari posisi aman atau mengulang simulasi.
 
 ### 3. Sistem belajar
-- 28 soal JSON: masing-masing 7 soal IPS, PJOK, KKA, dan Seni Rupa bertema gobak sodor, dengan kalimat penjelasan edukatif.
-- Soal adaptif berdasarkan kategori yang perlu diperkuat.
-- Rapor akhir sesi, profil belajar lokal, bonus jawaban benar, dan penalti jawaban salah.
+- Enam soal tetap (Mode Simulasi Video) dan 12 soal acak berkuota kategori (Mode Latihan Kelas), masing-masing berbasis situasi permainan, logika jika–maka, dan analisis — bukan hafalan fakta.
+- Empat kategori: KKA, PJOK, IPS, dan Seni Rupa, dengan kalimat penjelasan singkat setelah setiap jawaban.
+- Halaman Hasil Simulasi Strategi: waktu, jawaban benar, jumlah tertangkap, garis dilewati, analisis strategi otomatis, dan refleksi digital vs. nyata.
 
-### 4. Aksesibilitas dan gamifikasi
-- Mode buta warna berbasis pola, remap delapan tombol, dan Mode Latihan tanpa penalti nyawa.
-- Leaderboard lokal, streak harian, progres pulau, dan tujuh achievement.
+### 4. Aksesibilitas
+- Mode buta warna berbasis pola (bukan warna semata), remap delapan tombol, dan Mode Latihan (sesi tidak berhenti karena batas tertangkap).
+- Target sentuh besar, teks berskala untuk dibaca dari jarak beberapa meter, fokus keyboard pada modal.
 
 ### 5. Fitur profesional
 - **Audio prosedural:** musik latar dan efek suara dibuat melalui Web Audio API tanpa file audio eksternal.
@@ -88,7 +104,6 @@ gobak-sodor-nusantara/
   game.html
   culture.html
   tutorial.html
-  leaderboard.html
   offline.html
   manifest.json
   service-worker.js
@@ -103,11 +118,8 @@ gobak-sodor-nusantara/
     player.js
     enemy.js
     quiz.js
-    map.js
+    arena.js
     accessibility.js
-    gamification.js
-    difficulty.js
-    leaderboard.js
     culture.js
   data/
     questions.json
@@ -155,10 +167,19 @@ npx serve .
 
 ## Kontrol standar
 
-- Pemain 1: **W, A, S, D**
-- Pemain 2: **Arrow Up, Left, Down, Right**
-- Pause/Resume: **P** atau **Escape**
-- Kontrol dapat diubah pada panel Aksesibilitas di halaman Bermain.
+- Pemain 1: **W, A, S, D** atau tombol arah sentuh di kiri bawah arena.
+- Pemain 2: **Arrow Up, Left, Down, Right** atau tombol arah sentuh di kanan bawah arena (Mode Dua Pemain).
+- Pause/Resume: **P** atau **Escape**.
+- Kontrol keyboard dapat diremap pada panel Aksesibilitas di halaman Bermain.
+
+## Mode Simulasi Video
+
+Buka `game.html?demo=1` untuk alur yang konsisten saat pengambilan gambar:
+
+- Urutan enam soal, posisi awal pemain/penjaga, dan pola gerak penjaga selalu sama (tidak ada elemen acak).
+- Mode Dua Pemain langsung terpilih; opsi Mode Satu Pemain disembunyikan.
+- Tombol kecil **"Ulangi Adegan"** muncul di HUD untuk mengembalikan simulasi ke kondisi awal.
+- Parameter `?demo=1` tidak ditampilkan ke pengguna di layar mana pun.
 
 ## Menguji PWA dan Offline Mode
 
@@ -168,8 +189,8 @@ npx serve .
 4. Buka Service Workers dan pastikan `service-worker.js` berstatus aktif.
 5. Gunakan tombol **Pasang Aplikasi** apabila browser menampilkan install prompt.
 6. Aktifkan mode Offline pada DevTools, lalu muat ulang halaman yang pernah dibuka.
-7. Pastikan game, bank soal, Mode Guru, dan leaderboard tetap dapat digunakan.
-8. Perubahan pada Local Storage tetap bertahan setelah aplikasi ditutup dan dibuka kembali.
+7. Pastikan simulasi dan bank soal tetap dapat digunakan secara offline.
+8. Perubahan pada Local Storage (tema, audio, aksesibilitas) tetap bertahan setelah aplikasi ditutup dan dibuka kembali.
 
 > Service worker hanya aktif pada `localhost` atau HTTPS. GitHub Pages sudah menggunakan HTTPS.
 
@@ -189,20 +210,14 @@ Seluruh URL menggunakan path relatif sehingga aman ketika repository diterbitkan
 - `gsn-theme`: tema terang/gelap.
 - `gsn-onboarding-seen-v1`: status onboarding.
 - `gsn-audio-muted-v1`: status mute.
-- `gsnLeaderboardV1`: skor lokal.
-- `gsnLearningProfileV1`: profil jawaban adaptif.
-- `gsnQuestionSetsV1`: set soal buatan guru.
-- `gsnActiveQuestionSetV1`: set soal yang aktif.
-- `gsnMapProgressV1`: pulau terpilih dan level selesai.
 - `gsnAccessibilityV1`: mode latihan, mode buta warna, dan remap kontrol.
-- `gsnGamificationV1`: streak, kemenangan, statistik soal, dan achievement.
-- `gsnDifficultyV1`: tingkat kesulitan terakhir yang dipilih.
-- `gsnPlaytestV1`: maksimal 120 catatan ronde anonim untuk evaluasi balancing.
+- `gsnTouchControlsV1`: preferensi paksa-tampil kontrol sentuh.
+
+Setiap simulasi berdiri sendiri (tanpa riwayat lintas sesi/perangkat) — tidak ada lagi profil belajar, set soal guru, progres pulau, streak, atau data playtest yang disimpan permanen.
 
 ## Batasan versi statis
 
-- Leaderboard hanya berlaku pada perangkat/browser yang sama.
-- Sinkronisasi lintas siswa/perangkat tidak disediakan di versi ini; leaderboard dan rapor bersifat lokal per perangkat.
+- Tidak ada penyimpanan skor atau peringkat lintas siswa/perangkat — sesuai tujuan simulasi (bukan kompetisi), hasil hanya ditampilkan untuk direfleksikan saat itu juga.
 - Font Poppins dan Font Awesome dimuat dari CDN saat pertama kali online. Jika CDN belum pernah masuk cache, mode offline tetap memakai font sistem dan seluruh fungsi utama tetap berjalan.
 
 
