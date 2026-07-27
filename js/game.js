@@ -1,7 +1,8 @@
 /**
- * Gobak Sodor Nusantara — Versi 1.2.3 Final Stabil.
- * Gameplay Solo/Co-op, peta Nusantara, set soal guru, aksesibilitas,
- * streak harian, achievement, rapor, dan leaderboard lokal.
+ * Gobak Sodor Nusantara — Versi 1.3.0 Interdisipliner.
+ * Gameplay Solo/Co-op (keyboard + sentuh dua pemain), peta Nusantara,
+ * soal empat mapel, aksesibilitas, streak harian, achievement, rapor,
+ * dan leaderboard lokal. Dioptimalkan untuk layar sentuh besar (IFP).
  */
 import { Player } from "./player.js";
 import { Enemy } from "./enemy.js";
@@ -21,6 +22,8 @@ const MAX_BONUS_TIME = 130;
 const START_ZONE_WIDTH = 108;
 const LEADERBOARD_KEY = "gsnLeaderboardV1";
 const PLAYTEST_KEY = "gsnPlaytestV1";
+const TOUCH_CONTROLS_KEY = "gsnTouchControlsV1";
+const GAME_VERSION = "1.3.0";
 const MAX_PLAYTEST_RECORDS = 120;
 
 const GAME_STATES = Object.freeze({
@@ -43,7 +46,9 @@ class InputController {
   constructor(settings) {
     this.settings = settings;
     this.keyboard = new Set();
-    this.touch = new Set();
+    // Satu set arah sentuh per pemain agar Co-op dapat dimainkan
+    // berdua di layar sentuh besar (IFP) tanpa keyboard.
+    this.touch = { p1: new Set(), p2: new Set() };
   }
 
   init() {
@@ -67,15 +72,16 @@ class InputController {
 
     document.querySelectorAll("[data-move]").forEach((button) => {
       const direction = button.dataset.move;
+      const player = button.closest("[data-touch-player]")?.dataset.touchPlayer === "p2" ? "p2" : "p1";
       const activate = (event) => {
         event.preventDefault();
-        this.touch.add(direction);
+        this.touch[player].add(direction);
         button.classList.add("pressed");
         button.setPointerCapture?.(event.pointerId);
       };
       const deactivate = (event) => {
         event.preventDefault();
-        this.touch.delete(direction);
+        this.touch[player].delete(direction);
         button.classList.remove("pressed");
       };
       button.addEventListener("pointerdown", activate);
@@ -99,17 +105,17 @@ class InputController {
 
   clear() {
     this.keyboard.clear();
-    this.touch.clear();
+    Object.values(this.touch).forEach((directions) => directions.clear());
     document.querySelectorAll("[data-move].pressed").forEach((button) => button.classList.remove("pressed"));
   }
 
   getDirection(playerId) {
     const controls = this.settings.controls[playerId];
-    const touchEnabled = playerId === "p1";
-    const left = this.keyboard.has(controls.left) || (touchEnabled && this.touch.has("left"));
-    const right = this.keyboard.has(controls.right) || (touchEnabled && this.touch.has("right"));
-    const up = this.keyboard.has(controls.up) || (touchEnabled && this.touch.has("up"));
-    const down = this.keyboard.has(controls.down) || (touchEnabled && this.touch.has("down"));
+    const touch = this.touch[playerId] ?? new Set();
+    const left = this.keyboard.has(controls.left) || touch.has("left");
+    const right = this.keyboard.has(controls.right) || touch.has("right");
+    const up = this.keyboard.has(controls.up) || touch.has("up");
+    const down = this.keyboard.has(controls.down) || touch.has("down");
     return { x: Number(right) - Number(left), y: Number(down) - Number(up) };
   }
 }
@@ -210,6 +216,9 @@ class GobakSodorGame {
       questionSet: document.querySelector("[data-question-set]"),
       p1Controls: document.querySelector("[data-p1-controls]"),
       p2Controls: document.querySelector("[data-p2-controls]"),
+      gameShell: document.querySelector(".game-shell"),
+      touchToggle: document.querySelector("[data-touch-toggle]"),
+      p2TouchZone: document.querySelector("[data-touch-player='p2']"),
       quizLayer: document.querySelector("[data-quiz-layer]"),
       quizCategory: document.querySelector("[data-quiz-category]"),
       quizProgress: document.querySelector("[data-quiz-progress]"),
@@ -291,6 +300,8 @@ class GobakSodorGame {
     });
     this.elements.exportPlaytest?.addEventListener("click", () => this.exportPlaytestData());
     this.elements.resetPlaytest?.addEventListener("click", () => this.resetPlaytestData());
+    this.elements.touchToggle?.addEventListener("click", () => this.toggleTouchControls());
+    this.applyTouchPreference(localStorage.getItem(TOUCH_CONTROLS_KEY) === "1");
 
     this.elements.adventureMap?.addEventListener("click", (event) => {
       const button = event.target.closest("[data-level-id]");
@@ -371,6 +382,20 @@ class GobakSodorGame {
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && this.state === GAME_STATES.RUNNING) this.pause();
     });
+  }
+
+  applyTouchPreference(forced) {
+    // Media query (pointer: coarse) tetap menjadi deteksi utama; tombol ini
+    // memaksa kontrol sentuh tampil pada perangkat yang salah terdeteksi (mis. IFP tertentu).
+    this.elements.gameShell?.classList.toggle("force-touch", forced);
+    this.elements.touchToggle?.setAttribute("aria-pressed", String(forced));
+  }
+
+  toggleTouchControls() {
+    const forced = !this.elements.gameShell?.classList.contains("force-touch");
+    this.applyTouchPreference(forced);
+    localStorage.setItem(TOUCH_CONTROLS_KEY, forced ? "1" : "0");
+    this.setStatus(forced ? "Kontrol sentuh selalu ditampilkan di layar." : "Kontrol sentuh kembali mengikuti deteksi perangkat.");
   }
 
   chooseModeAndStart(mode) {
@@ -672,6 +697,10 @@ class GobakSodorGame {
       if (index === result.selectedIndex && !result.isCorrect) button.classList.add("wrong");
     });
 
+    // Kalimat penjelasan singkat memperkuat nilai edukatif tiap soal.
+    const explanation = typeof result.question.explanation === "string" && result.question.explanation.trim()
+      ? ` ${result.question.explanation.trim()}`
+      : "";
     if (result.isCorrect) {
       this.changeScore(100, "Jawaban benar");
       this.combo += 1;
@@ -681,7 +710,7 @@ class GobakSodorGame {
       window.gsnAudio?.play("correct");
       this.pulseArena("success");
       window.gsnEffects?.burst(window.innerWidth / 2, window.innerHeight / 2, { count: 42, colors: ["#2ca66f", "#f7c948", "#ffffff"], speed: 6 });
-      this.elements.quizFeedback.textContent = `Benar! +100 poin, +${this.difficulty.quizTimeBonus} detik, Combo x${this.combo}, dan Shield tim selama ${this.difficulty.shieldDuration} detik.`;
+      this.elements.quizFeedback.textContent = `Benar!${explanation} +100 poin, +${this.difficulty.quizTimeBonus} detik, Combo x${this.combo}, dan Shield tim selama ${this.difficulty.shieldDuration} detik.`;
       this.elements.quizFeedback.className = "quiz-feedback correct";
     } else {
       this.changeScore(-10, "Jawaban salah");
@@ -690,7 +719,7 @@ class GobakSodorGame {
       window.gsnAudio?.play("wrong");
       this.pulseArena("danger");
       window.gsnEffects?.burst(window.innerWidth / 2, window.innerHeight / 2, { count: 22, colors: ["#e84444", "#172033"], speed: 4, gravity: 0.24 });
-      this.elements.quizFeedback.textContent = `Belum tepat. Jawaban benar: ${result.question.choices[result.correctIndex]}. Penjaga menjadi lebih cepat.`;
+      this.elements.quizFeedback.textContent = `Belum tepat. Jawaban benar: ${result.question.choices[result.correctIndex]}.${explanation} Penjaga menjadi lebih cepat.`;
       this.elements.quizFeedback.className = "quiz-feedback wrong";
     }
     this.questionAnsweredCount += 1;
@@ -877,6 +906,30 @@ class GobakSodorGame {
     this.showResultOverlay(won, detail);
     this.setStatus(won ? `Menang di ${this.level.name}. Skor akhir ${this.score}.` : `Ronde selesai. ${detail}`);
     this.updateButtons();
+
+    // Event ringkasan ronde untuk integrasi eksternal (tidak ada listener bawaan;
+    // seluruh data tetap tersimpan lokal di perangkat).
+    window.dispatchEvent(new CustomEvent("gsn:game-finished", { detail: {
+      gameSlug: "gobak-sodor",
+      score: this.score,
+      accuracy: report.accuracy,
+      result: won ? "won" : "lost",
+      mode: this.mode,
+      difficulty: this.difficulty.label,
+      levelId: this.level.id,
+      durationSeconds: Number(this.elapsedActiveTime.toFixed(2)),
+      correctCount: report.correct,
+      questionCount: report.total,
+      assignmentId: new URLSearchParams(location.search).get("assignment") || null,
+      metadata: {
+        collisions: this.collisions,
+        livesRemaining: this.settings.practiceMode ? null : Math.max(0, this.lives),
+        practiceMode: this.settings.practiceMode,
+        questionSet: report.set.name,
+        gameVersion: GAME_VERSION,
+        clientSessionId: this.roundId
+      }
+    }}));
   }
 
   renderReport() {
@@ -979,7 +1032,7 @@ class GobakSodorGame {
     records.push({
       id: this.roundId,
       date: new Date().toISOString(),
-      version: "1.2.3",
+      gameVersion: GAME_VERSION,
       levelId: this.level.id,
       level: this.level.name,
       difficultyId: this.difficulty.id,
@@ -1027,7 +1080,7 @@ class GobakSodorGame {
   exportPlaytestData() {
     const data = this.readPlaytestData();
     if (!data.length) return this.setStatus("Belum ada data playtest untuk diekspor.");
-    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), version: "1.2.3", records: data }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), gameVersion: GAME_VERSION, records: data }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -1127,6 +1180,7 @@ class GobakSodorGame {
   }
 
   updateSetupText() {
+    if (this.elements.p2TouchZone) this.elements.p2TouchZone.hidden = this.mode !== "Co-op";
     const icon = this.mode === "Co-op" ? "fa-user-group" : "fa-user";
     if (this.elements.modeBadge) this.elements.modeBadge.innerHTML = `<i class="fa-solid ${icon}"></i> ${this.mode} · ${this.difficulty.label}${this.settings.practiceMode ? " · Latihan" : ""}`;
     if (this.elements.gameTitle) this.elements.gameTitle.textContent = `${this.level.title} · ${this.level.name}`;

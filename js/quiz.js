@@ -1,6 +1,6 @@
 /**
  * Sistem soal adaptif Gobak Sodor Nusantara.
- * - Memuat 100 soal bawaan dari JSON.
+ * - Memuat bank soal empat mapel (IPS, PJOK, KKA, Seni Rupa) dari JSON.
  * - Membaca set soal buatan guru dari Local Storage.
  * - Memilih kategori berdasarkan kelemahan belajar yang tersimpan.
  * - Mencatat hasil sesi dan membuat rapor per mata pelajaran.
@@ -11,7 +11,9 @@ export const QUESTION_SETS_KEY = "gsnQuestionSetsV1";
 export const ACTIVE_QUESTION_SET_KEY = "gsnActiveQuestionSetV1";
 export const CAMPAIGN_QUESTION_HISTORY_KEY = "gsnCampaignQuestionHistoryV1";
 export const MIN_PLAYABLE_QUESTIONS = 6;
-export const CATEGORIES = ["Informatika", "IPS", "IPA", "Matematika", "Bahasa Indonesia"];
+// Minimal 6 soal per mapel agar satu perjalanan dapat menyentuh keempat TP.
+export const MIN_BASE_QUESTIONS = 24;
+export const CATEGORIES = ["IPS", "PJOK", "KKA", "Seni Rupa"];
 
 function emptyCategoryStats() {
   return Object.fromEntries(CATEGORIES.map((category) => [category, { correct: 0, total: 0 }]));
@@ -54,7 +56,7 @@ export class QuizSystem {
     if (!response.ok) throw new Error(`Bank soal gagal dimuat (${response.status}).`);
 
     const questions = await response.json();
-    this.validateQuestions(questions, { minimum: 100 });
+    this.validateQuestions(questions, { minimum: MIN_BASE_QUESTIONS });
     this.baseQuestions = questions;
     this.reloadQuestionSets();
 
@@ -83,7 +85,8 @@ export class QuizSystem {
         && question.choices.every((choice) => typeof choice === "string" && choice.trim().length > 0)
         && Number.isInteger(question.answer)
         && question.answer >= 0
-        && question.answer < question.choices.length;
+        && question.answer < question.choices.length
+        && (question.explanation === undefined || typeof question.explanation === "string");
 
       if (!valid) throw new Error(`Format soal ke-${index + 1} tidak valid.`);
       if (ids.has(question.id)) throw new Error(`ID soal ganda: ${question.id}.`);
@@ -108,7 +111,7 @@ export class QuizSystem {
 
   getAvailableSets() {
     return [
-      { id: "default", name: "Bank Soal Nusantara (100 soal)", count: this.baseQuestions.length, builtIn: true },
+      { id: "default", name: `Bank Soal 4 Mapel (${this.baseQuestions.length} soal)`, count: this.baseQuestions.length, builtIn: true },
       ...this.questionSets
         .filter((set) => set.questions.length >= MIN_PLAYABLE_QUESTIONS)
         .map((set) => ({ id: set.id, name: set.name, count: set.questions.length, builtIn: false }))
@@ -226,7 +229,10 @@ export class QuizSystem {
     }
 
     const categories = [...new Set(available.map((question) => question.category))];
-    const selectedCategory = this.weightedCategoryChoice(categories);
+    // Dahulukan mapel yang belum muncul pada ronde ini agar satu perjalanan
+    // (6 soal) mengusahakan campuran keempat mapel.
+    const unseen = categories.filter((category) => (this.sessionStats[category]?.total ?? 0) === 0);
+    const selectedCategory = this.weightedCategoryChoice(unseen.length ? unseen : categories);
     const categoryQuestions = available.filter((question) => question.category === selectedCategory);
     const question = categoryQuestions[Math.floor(Math.random() * categoryQuestions.length)];
 

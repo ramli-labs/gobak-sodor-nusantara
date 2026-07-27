@@ -1,1202 +1,366 @@
 [
   {
-    "id": "Q001",
-    "category": "Informatika",
-    "question": "Apa kepanjangan CPU?",
-    "choices": [
-      "Central Processing Unit",
-      "Computer Personal Unit",
-      "Central Program Unit",
-      "Control Processing Unit"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q002",
-    "category": "Informatika",
-    "question": "Perangkat yang digunakan untuk mengetik disebut ...",
-    "choices": [
-      "Monitor",
-      "Keyboard",
-      "Printer",
-      "Speaker"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q003",
-    "category": "Informatika",
-    "question": "Manakah yang termasuk perangkat keluaran?",
-    "choices": [
-      "Mouse",
-      "Keyboard",
-      "Monitor",
-      "Mikrofon"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q004",
-    "category": "Informatika",
-    "question": "Browser digunakan untuk ...",
-    "choices": [
-      "Mencetak dokumen",
-      "Membuka halaman web",
-      "Menggambar bangunan",
-      "Menghapus sistem operasi"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q005",
-    "category": "Informatika",
-    "question": "File dengan ekstensi .jpg biasanya berisi ...",
-    "choices": [
-      "Gambar",
-      "Audio",
-      "Program",
-      "Tabel"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q006",
-    "category": "Informatika",
-    "question": "Kata sandi yang lebih kuat adalah ...",
-    "choices": [
-      "123456",
-      "password",
-      "Budi2026",
-      "R4h@sia!27"
-    ],
-    "answer": 3
-  },
-  {
-    "id": "Q007",
-    "category": "Informatika",
-    "question": "Fungsi utama sistem operasi adalah ...",
-    "choices": [
-      "Mengelola perangkat keras dan aplikasi",
-      "Membuat meja",
-      "Menyimpan listrik",
-      "Mengganti jaringan internet"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q008",
-    "category": "Informatika",
-    "question": "Algoritma adalah ...",
-    "choices": [
-      "Urutan langkah untuk menyelesaikan masalah",
-      "Nama perangkat keras",
-      "Jenis virus",
-      "Kabel jaringan"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q009",
-    "category": "Informatika",
-    "question": "Dalam flowchart, simbol belah ketupat umumnya berarti ...",
-    "choices": [
-      "Mulai",
-      "Proses",
-      "Keputusan",
-      "Dokumen"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q010",
-    "category": "Informatika",
-    "question": "Contoh data pribadi yang harus dijaga adalah ...",
-    "choices": [
-      "Warna favorit",
-      "Nomor identitas",
-      "Nama mata pelajaran",
-      "Cuaca hari ini"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q011",
-    "category": "Informatika",
-    "question": "Ikon tempat sampah pada komputer biasanya digunakan untuk ...",
-    "choices": [
-      "Membuka internet",
-      "Menyimpan sementara file yang dihapus",
-      "Mengatur suara",
-      "Membuat folder baru"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q012",
-    "category": "Informatika",
-    "question": "Jaringan komputer dalam area sekolah disebut ...",
-    "choices": [
-      "LAN",
-      "GPS",
-      "CPU",
-      "PDF"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q013",
-    "category": "Informatika",
-    "question": "HTML digunakan terutama untuk ...",
-    "choices": [
-      "Menyusun struktur halaman web",
-      "Mengedit suara",
-      "Mengukur suhu",
-      "Menghapus virus"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q014",
-    "category": "Informatika",
-    "question": "CSS digunakan untuk ...",
-    "choices": [
-      "Mengatur tampilan halaman web",
-      "Menjalankan mesin cetak",
-      "Mengubah kata sandi Wi-Fi",
-      "Membuat database otomatis"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q015",
-    "category": "Informatika",
-    "question": "JavaScript pada website dapat digunakan untuk ...",
-    "choices": [
-      "Menambah interaksi",
-      "Mengganti monitor",
-      "Menambah kapasitas listrik",
-      "Mencetak buku tanpa printer"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q016",
-    "category": "Informatika",
-    "question": "Tindakan paling tepat saat menerima tautan mencurigakan adalah ...",
-    "choices": [
-      "Langsung membukanya",
-      "Meneruskannya ke semua teman",
-      "Memeriksa sumber dan tidak asal klik",
-      "Memasukkan kata sandi"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q017",
-    "category": "Informatika",
-    "question": "Penyimpanan awan atau cloud memungkinkan pengguna ...",
-    "choices": [
-      "Menyimpan file melalui internet",
-      "Menyalakan komputer tanpa listrik",
-      "Mencetak tanpa kertas",
-      "Menghapus semua virus"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q018",
-    "category": "Informatika",
-    "question": "Bilangan biner hanya menggunakan angka ...",
-    "choices": [
-      "0 dan 1",
-      "1 dan 2",
-      "0 sampai 9",
-      "2 dan 8"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q019",
-    "category": "Informatika",
-    "question": "Perintah untuk menyalin teks umumnya menggunakan pintasan ...",
-    "choices": [
-      "Ctrl+X",
-      "Ctrl+C",
-      "Ctrl+Z",
-      "Ctrl+P"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q020",
-    "category": "Informatika",
-    "question": "Jejak digital adalah ...",
-    "choices": [
-      "Rekam aktivitas yang ditinggalkan di dunia digital",
-      "Kabel di belakang komputer",
-      "Sidik jari pada layar",
-      "Aplikasi menggambar"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q021",
+    "id": "IPS01",
     "category": "IPS",
-    "question": "Indonesia terletak di antara dua benua, yaitu ...",
+    "question": "Di daerah Sunda dan Betawi, permainan gobak sodor lebih dikenal dengan nama ...",
     "choices": [
-      "Asia dan Australia",
-      "Afrika dan Eropa",
-      "Amerika dan Asia",
-      "Australia dan Eropa"
+      "Engklek",
+      "Galah Asin atau Galasin",
+      "Benteng-bentengan",
+      "Petak Umpet"
     ],
-    "answer": 0
+    "answer": 1,
+    "explanation": "Permainan yang sama dikenal dengan nama berbeda di tiap daerah: Gobak Sodor di Jawa, Galah Asin/Galasin di Sunda dan Betawi."
   },
   {
-    "id": "Q022",
+    "id": "IPS02",
     "category": "IPS",
-    "question": "Kegiatan menghasilkan barang atau jasa disebut ...",
+    "question": "Dalam perlombaan olahraga tradisional resmi di Indonesia, gobak sodor dipertandingkan dengan nama ...",
     "choices": [
-      "Konsumsi",
-      "Distribusi",
-      "Produksi",
-      "Investasi"
+      "Sodoran",
+      "Galah Raya",
+      "Hadang",
+      "Adang-adangan Nasional"
     ],
-    "answer": 2
+    "answer": 2,
+    "explanation": "Nama \"Hadang\" dipakai pada perlombaan olahraga tradisional resmi dengan aturan yang lebih terstandardisasi."
   },
   {
-    "id": "Q023",
+    "id": "IPS03",
     "category": "IPS",
-    "question": "Pelaku ekonomi yang menggunakan barang dan jasa disebut ...",
+    "question": "Satu permainan yang memiliki banyak nama daerah menunjukkan bahwa budaya ...",
     "choices": [
-      "Produsen",
-      "Konsumen",
-      "Distributor",
-      "Eksportir"
+      "hanya dimiliki satu daerah tertentu",
+      "tidak dapat berubah sepanjang waktu",
+      "harus memiliki nama yang seragam",
+      "menyebar dan menyesuaikan diri dengan ruang tempat masyarakat hidup"
     ],
-    "answer": 1
+    "answer": 3,
+    "explanation": "Budaya menyebar antarruang dan berubah seiring waktu; masyarakat tiap daerah menyesuaikan nama serta aturannya."
   },
   {
-    "id": "Q024",
+    "id": "IPS04",
     "category": "IPS",
-    "question": "ASEAN didirikan untuk meningkatkan kerja sama negara-negara di kawasan ...",
+    "question": "Saat regu penjaga membagi tugas menjaga garis masing-masing agar pertahanan kuat, nilai yang paling terlihat adalah ...",
     "choices": [
-      "Asia Selatan",
-      "Asia Tenggara",
-      "Eropa Barat",
-      "Afrika Utara"
+      "gotong royong dan kerja sama",
+      "persaingan antarteman satu regu",
+      "keberuntungan semata",
+      "kemandirian tanpa bantuan orang lain"
     ],
-    "answer": 1
+    "answer": 0,
+    "explanation": "Kemenangan regu bergantung pada pembagian tugas dan koordinasi, bukan kehebatan satu orang."
   },
   {
-    "id": "Q025",
+    "id": "IPS05",
     "category": "IPS",
-    "question": "Ibu kota Provinsi Jawa Tengah adalah ...",
+    "question": "Contoh sikap sportivitas dalam gobak sodor adalah ...",
     "choices": [
-      "Surabaya",
-      "Bandung",
-      "Semarang",
-      "Yogyakarta"
+      "berpura-pura tidak tersentuh agar tetap menang",
+      "mengakui diri tersentuh penjaga walau teman tidak melihat",
+      "memprotes semua keputusan regu penjaga",
+      "berhenti bermain saat regu tertinggal"
     ],
-    "answer": 2
+    "answer": 1,
+    "explanation": "Sportivitas berarti jujur pada aturan dan menerima hasil permainan dengan lapang dada."
   },
   {
-    "id": "Q026",
+    "id": "IPS06",
     "category": "IPS",
-    "question": "Peta digunakan untuk menunjukkan ...",
+    "question": "Gobak sodor disebut warisan budaya karena ...",
     "choices": [
-      "Permukaan bumi dalam bidang datar",
-      "Suara suatu wilayah",
-      "Rasa makanan",
-      "Kecepatan komputer"
+      "diciptakan oleh perusahaan game modern",
+      "hanya boleh dimainkan orang dewasa",
+      "diturunkan dari generasi ke generasi dan tetap dimainkan sampai kini",
+      "berasal dari luar negeri dan baru dikenal"
     ],
-    "answer": 0
+    "answer": 2,
+    "explanation": "Permainan tradisional diwariskan turun-temurun dan menjadi bagian identitas budaya masyarakat Indonesia."
   },
   {
-    "id": "Q027",
+    "id": "IPS07",
     "category": "IPS",
-    "question": "Garis khatulistiwa membagi bumi menjadi belahan ...",
+    "question": "Dahulu gobak sodor dimainkan di tanah lapang kampung; kini juga dimainkan di halaman sekolah bahkan lewat game digital. Perubahan ini menggambarkan ...",
     "choices": [
-      "Timur dan barat",
-      "Utara dan selatan",
-      "Darat dan laut",
-      "Panas dan dingin"
+      "kehidupan manusia yang berubah dalam ruang dan waktu",
+      "hilangnya seluruh nilai permainan tradisional",
+      "larangan bermain di ruang terbuka",
+      "permainan yang tidak lagi membutuhkan teman"
     ],
-    "answer": 1
+    "answer": 0,
+    "explanation": "Ruang dan bentuk permainan berubah mengikuti zaman, tetapi nilainya tetap dapat dijaga dan diterapkan."
   },
   {
-    "id": "Q028",
-    "category": "IPS",
-    "question": "Kegiatan menyalurkan barang dari produsen ke konsumen disebut ...",
+    "id": "PJK01",
+    "category": "PJOK",
+    "question": "Waktu paling tepat untuk menembus garis penjaga adalah ketika ...",
     "choices": [
-      "Produksi",
-      "Distribusi",
-      "Konsumsi",
-      "Eksplorasi"
+      "penjaga sedang menghadap ke arah kita",
+      "penjaga berdiri tepat di depan kita",
+      "kita merasa lelah dan ingin cepat selesai",
+      "penjaga bergerak menjauhi jalur yang akan kita lewati"
     ],
-    "answer": 1
+    "answer": 3,
+    "explanation": "Memilih waktu bergerak saat penjaga menjauh memberi celah paling aman untuk melintas."
   },
   {
-    "id": "Q029",
-    "category": "IPS",
-    "question": "Contoh interaksi sosial adalah ...",
+    "id": "PJK02",
+    "category": "PJOK",
+    "question": "Sikap tubuh yang baik saat menunggu celah untuk berlari adalah ...",
     "choices": [
-      "Belajar sendiri tanpa berkomunikasi",
-      "Berdiskusi dalam kelompok",
-      "Tidur di kamar",
-      "Membaca papan kosong"
+      "berdiri tegak kaku dengan kaki rapat",
+      "badan sedikit condong, lutut ditekuk, siap bergerak ke segala arah",
+      "duduk santai di dekat garis",
+      "membelakangi penjaga agar tidak terlihat"
     ],
-    "answer": 1
+    "answer": 1,
+    "explanation": "Posisi siap dengan lutut ditekuk membuat tubuh cepat bereaksi dan mudah mengubah arah gerak."
   },
   {
-    "id": "Q030",
-    "category": "IPS",
-    "question": "Sumber daya alam yang dapat diperbarui adalah ...",
+    "id": "PJK03",
+    "category": "PJOK",
+    "question": "Dalam permainan beregu, tugas pemain \"pemancing\" adalah ...",
     "choices": [
-      "Minyak bumi",
-      "Batu bara",
-      "Angin",
-      "Gas alam"
+      "berlari paling depan tanpa rencana",
+      "menjaga garis belakang milik lawan",
+      "menarik perhatian penjaga agar teman pembawa misi bisa lolos",
+      "berdiri diam sampai permainan selesai"
     ],
-    "answer": 2
+    "answer": 2,
+    "explanation": "Mengalihkan posisi penjaga adalah strategi tim: satu pemain memancing, pemain lain menembus pertahanan."
   },
   {
-    "id": "Q031",
-    "category": "IPS",
-    "question": "Ekspor berarti ...",
+    "id": "PJK04",
+    "category": "PJOK",
+    "question": "Gerak tipuan (mengecoh) berguna untuk ...",
     "choices": [
-      "Membeli barang dari luar negeri",
-      "Menjual barang ke luar negeri",
-      "Menyimpan barang di gudang",
-      "Menggunakan barang sendiri"
+      "membuat penjaga bergerak ke arah yang salah sebelum kita melintas",
+      "menambah waktu istirahat",
+      "membuat kita berlari lebih lambat",
+      "menggantikan kerja sama tim"
     ],
-    "answer": 1
+    "answer": 0,
+    "explanation": "Tipuan arah memaksa penjaga salah langkah sehingga celah untuk melintas terbuka lebih lebar."
   },
   {
-    "id": "Q032",
-    "category": "IPS",
-    "question": "Impor berarti ...",
+    "id": "PJK05",
+    "category": "PJOK",
+    "question": "Saat perjalanan pulang penjaga bergerak lebih cepat. Strategi yang paling aman adalah ...",
     "choices": [
-      "Membeli barang dari luar negeri",
-      "Menjual barang ke luar negeri",
-      "Membuat barang di rumah",
-      "Menukar barang tanpa uang"
+      "menerobos semua garis sekaligus tanpa melihat penjaga",
+      "berlari mundur sepanjang permainan",
+      "berhenti total di tengah lapangan",
+      "melewati satu garis pada satu waktu sambil menunggu ritme penjaga"
     ],
-    "answer": 0
+    "answer": 3,
+    "explanation": "Situasi gerak yang lebih menantang butuh kesabaran: amati ritme, lalu lewati garis satu per satu."
   },
   {
-    "id": "Q033",
-    "category": "IPS",
-    "question": "Mata pencaharian yang banyak dijumpai di wilayah pantai adalah ...",
+    "id": "PJK06",
+    "category": "PJOK",
+    "question": "Unsur kebugaran jasmani yang paling dominan dilatih dalam gobak sodor adalah ...",
     "choices": [
-      "Nelayan",
-      "Petani teh",
-      "Peternak sapi perah pegunungan",
-      "Penambang belerang"
+      "kekuatan otot lengan",
+      "kelincahan mengubah arah gerak dengan cepat",
+      "keseimbangan berdiri satu kaki",
+      "daya apung di air"
     ],
-    "answer": 0
+    "answer": 1,
+    "explanation": "Pemain terus berlari, berhenti, dan berbelok cepat untuk menghindari penjaga—itulah latihan kelincahan."
   },
   {
-    "id": "Q034",
-    "category": "IPS",
-    "question": "Keberagaman suku dan budaya Indonesia sebaiknya disikapi dengan ...",
+    "id": "PJK07",
+    "category": "PJOK",
+    "question": "Agar tidak tersentuh saat melintasi garis, pelintas sebaiknya ...",
     "choices": [
-      "Saling menghargai",
-      "Saling merendahkan",
-      "Menghindari kerja sama",
-      "Memaksakan kebiasaan sendiri"
+      "berjalan pelan tepat di samping penjaga",
+      "melintas sambil menutup mata",
+      "melewati titik yang paling jauh dari jangkauan tangan penjaga",
+      "menunggu penjaga menyentuh terlebih dahulu"
     ],
-    "answer": 0
+    "answer": 2,
+    "explanation": "Mengatur posisi lintasan sejauh mungkin dari penjaga memperkecil risiko tersentuh."
   },
   {
-    "id": "Q035",
-    "category": "IPS",
-    "question": "Lembaga yang menyusun dan mengesahkan undang-undang bersama presiden adalah ...",
+    "id": "KKA01",
+    "category": "KKA",
+    "question": "Mengamati penjaga yang bergerak bolak-balik secara teratur lalu menebak posisinya berikutnya adalah contoh ...",
     "choices": [
-      "DPR",
-      "BPS",
-      "BMKG",
-      "KPU"
+      "menghafal tanpa berpikir",
+      "pengenalan pola",
+      "abstraksi warna",
+      "kompresi data"
     ],
-    "answer": 0
+    "answer": 1,
+    "explanation": "Pengenalan pola: dari gerakan yang berulang kita dapat memprediksi posisi penjaga selanjutnya."
   },
   {
-    "id": "Q036",
-    "category": "IPS",
-    "question": "Perubahan jumlah penduduk karena kelahiran, kematian, dan perpindahan disebut ...",
+    "id": "KKA02",
+    "category": "KKA",
+    "question": "Memecah tantangan besar \"membawa bendera pulang\" menjadi langkah kecil—amati ritme, cari celah, tentukan waktu lari—disebut ...",
     "choices": [
-      "Dinamika penduduk",
-      "Cuaca",
-      "Produksi",
-      "Modernisasi alat"
+      "duplikasi",
+      "kompilasi",
+      "dekomposisi",
+      "enkripsi"
     ],
-    "answer": 0
+    "answer": 2,
+    "explanation": "Dekomposisi adalah memecah masalah besar menjadi bagian-bagian kecil yang lebih mudah diselesaikan."
   },
   {
-    "id": "Q037",
-    "category": "IPS",
-    "question": "Skala peta menunjukkan perbandingan antara ...",
+    "id": "KKA03",
+    "category": "KKA",
+    "question": "\"Tunggu penjaga bergerak ke atas, hitung dua detik, lalu lari lurus ke petak berikutnya.\" Urutan langkah yang jelas seperti ini disebut ...",
     "choices": [
-      "Jarak pada peta dan jarak sebenarnya",
-      "Jumlah penduduk dan luas wilayah",
-      "Waktu dan suhu",
-      "Harga dan barang"
+      "algoritma",
+      "variabel",
+      "perangkat keras",
+      "basis data"
     ],
-    "answer": 0
+    "answer": 0,
+    "explanation": "Algoritma adalah urutan langkah yang jelas dan berurutan untuk menyelesaikan suatu masalah."
   },
   {
-    "id": "Q038",
-    "category": "IPS",
-    "question": "Pasar berfungsi mempertemukan ...",
+    "id": "KKA04",
+    "category": "KKA",
+    "question": "Pada legenda ritme game ini, penjaga berikon \"Ⅱ\" kadang berhenti sejenak. Keputusan paling logis adalah ...",
     "choices": [
-      "Produsen dan konsumen",
-      "Guru dan papan tulis",
-      "Dokter dan obat",
-      "Awan dan hujan"
+      "melintas saat penjaga bergerak paling cepat",
+      "mengabaikan ikon karena tidak penting",
+      "menunggu sampai permainan berakhir",
+      "melintas tepat saat penjaga sedang berhenti"
     ],
-    "answer": 0
+    "answer": 3,
+    "explanation": "Membaca simbol pada legenda lalu memakainya untuk mengambil keputusan adalah inti berpikir komputasional."
   },
   {
-    "id": "Q039",
-    "category": "IPS",
-    "question": "Gotong royong mencerminkan bentuk ...",
+    "id": "KKA05",
+    "category": "KKA",
+    "question": "Penjaga berikon \"↔\" suka berbalik arah tiba-tiba (tipuan). Prediksi yang paling aman adalah ...",
     "choices": [
-      "Kerja sama sosial",
-      "Persaingan tanpa aturan",
-      "Konflik pribadi",
-      "Pengasingan sosial"
+      "langsung percaya pada gerakan pertamanya",
+      "menunggu arah geraknya benar-benar pasti sebelum melintas",
+      "menganggap ia tidak akan pernah berbalik",
+      "melintas tanpa melihat penjaga"
     ],
-    "answer": 0
+    "answer": 1,
+    "explanation": "Data yang bisa menipu perlu diverifikasi dulu—jangan mengambil keputusan dari satu pengamatan saja."
   },
   {
-    "id": "Q040",
-    "category": "IPS",
-    "question": "Kerajaan maritim berkembang terutama karena menguasai ...",
+    "id": "KKA06",
+    "category": "KKA",
+    "question": "Penjaga berikon \"~\" bergerak cepat lalu melambat bergantian. Waktu terbaik melintas adalah ...",
     "choices": [
-      "Jalur perdagangan laut",
-      "Puncak gunung",
-      "Padang pasir",
-      "Jalur kereta modern"
+      "saat fase geraknya sedang cepat",
+      "kapan saja karena hasilnya sama",
+      "saat fase geraknya sedang lambat",
+      "saat kita sedang tidak melihatnya"
     ],
-    "answer": 0
+    "answer": 2,
+    "explanation": "Setelah pola cepat–lambat dikenali, langkah aman ditentukan pada fase yang paling menguntungkan."
   },
   {
-    "id": "Q041",
-    "category": "IPA",
-    "question": "Satuan SI untuk panjang adalah ...",
+    "id": "KKA07",
+    "category": "KKA",
+    "question": "Kamu selalu tertangkap di garis kedua. Cara berpikir komputasional untuk memperbaikinya adalah ...",
     "choices": [
-      "Meter",
-      "Liter",
-      "Gram",
-      "Sekon"
+      "mengevaluasi polanya, mengubah satu strategi, lalu mengujinya lagi",
+      "menyerah dan tidak mencoba lagi",
+      "mengulang cara yang sama terus-menerus",
+      "menyalahkan penjaga yang terlalu hebat"
     ],
-    "answer": 0
+    "answer": 0,
+    "explanation": "Uji coba, evaluasi, lalu perbaikan (debugging) juga berlaku saat memecahkan masalah sehari-hari."
   },
   {
-    "id": "Q042",
-    "category": "IPA",
-    "question": "Organ pernapasan utama manusia adalah ...",
+    "id": "SEN01",
+    "category": "Seni Rupa",
+    "question": "Bahan yang paling mudah didapat untuk menggambar garis lapangan gobak sodor di lantai semen halaman sekolah adalah ...",
     "choices": [
-      "Jantung",
-      "Paru-paru",
-      "Lambung",
-      "Ginjal"
+      "cat minyak",
+      "spidol permanen",
+      "kapur tulis",
+      "pewarna kain"
     ],
-    "answer": 1
+    "answer": 2,
+    "explanation": "Kapur murah, mudah didapat, mudah dihapus, dan aman—contoh memanfaatkan potensi bahan di lingkungan sekitar."
   },
   {
-    "id": "Q043",
-    "category": "IPA",
-    "question": "Tumbuhan membuat makanan melalui proses ...",
+    "id": "SEN02",
+    "category": "Seni Rupa",
+    "question": "Elemen seni rupa yang paling dominan membentuk lapangan gobak sodor adalah ...",
     "choices": [
-      "Respirasi",
-      "Fotosintesis",
-      "Fermentasi",
-      "Evaporasi"
+      "garis",
+      "gelap terang",
+      "tekstur kasar",
+      "ruang tiga dimensi"
     ],
-    "answer": 1
+    "answer": 0,
+    "explanation": "Garis horizontal dan vertikal membagi lapangan menjadi petak-petak sekaligus menjadi jalur para penjaga."
   },
   {
-    "id": "Q044",
-    "category": "IPA",
-    "question": "Planet yang paling dekat dengan Matahari adalah ...",
+    "id": "SEN03",
+    "category": "Seni Rupa",
+    "question": "Untuk membuat garis lapangan di halaman berumput, bahan sekitar yang paling tepat adalah ...",
     "choices": [
-      "Bumi",
-      "Mars",
-      "Merkurius",
-      "Jupiter"
+      "cat tembok yang disiram ke rumput",
+      "tali rafia yang dibentangkan atau taburan kapur",
+      "paku besi yang ditanam di tanah",
+      "pecahan kaca sebagai pembatas"
     ],
-    "answer": 2
+    "answer": 1,
+    "explanation": "Bahan penanda dipilih yang aman bagi pemain dan tidak merusak lingkungan tempat bermain."
   },
   {
-    "id": "Q045",
-    "category": "IPA",
-    "question": "Perubahan wujud dari cair menjadi gas disebut ...",
+    "id": "SEN04",
+    "category": "Seni Rupa",
+    "question": "Bentuk dasar lapangan gobak sodor adalah ...",
     "choices": [
-      "Membeku",
-      "Menguap",
-      "Mengembun",
-      "Menyublim"
+      "lingkaran besar tanpa pembatas",
+      "segitiga dengan satu garis tengah",
+      "bentuk bebas tanpa aturan",
+      "persegi panjang yang dibagi menjadi petak-petak"
     ],
-    "answer": 1
+    "answer": 3,
+    "explanation": "Lapangan berupa persegi panjang berpetak; jumlah petak dapat disesuaikan dengan luas tempat dan jumlah pemain."
   },
   {
-    "id": "Q046",
-    "category": "IPA",
-    "question": "Gaya yang menarik benda menuju pusat bumi disebut ...",
+    "id": "SEN05",
+    "category": "Seni Rupa",
+    "question": "Memilih warna mencolok yang berbeda untuk penanda dua regu bertujuan agar ...",
     "choices": [
-      "Gaya magnet",
-      "Gaya gesek",
-      "Gaya gravitasi",
-      "Gaya pegas"
+      "lapangan terlihat lebih mahal",
+      "pemain tiap regu mudah dibedakan dari kejauhan",
+      "permainan menjadi lebih sulit",
+      "warna cepat pudar terkena sinar matahari"
     ],
-    "answer": 2
+    "answer": 1,
+    "explanation": "Kontras warna adalah prinsip visual yang membantu mata membedakan objek dengan cepat."
   },
   {
-    "id": "Q047",
-    "category": "IPA",
-    "question": "Bagian sel yang mengatur kegiatan sel adalah ...",
+    "id": "SEN06",
+    "category": "Seni Rupa",
+    "question": "Saat memilih alat dan bahan dari lingkungan sekitar untuk membuat perlengkapan permainan, pertimbangan utamanya adalah ...",
     "choices": [
-      "Membran sel",
-      "Inti sel",
-      "Sitoplasma",
-      "Dinding sel"
+      "harganya paling mahal agar terlihat bagus",
+      "berasal dari luar negeri",
+      "mudah didapat, aman digunakan, dan tidak merusak lingkungan",
+      "sekali pakai lalu dibuang sembarangan"
     ],
-    "answer": 1
+    "answer": 2,
+    "explanation": "Berkarya dengan bahan sekitar melatih kepekaan mengenali potensi lingkungan secara bertanggung jawab."
   },
   {
-    "id": "Q048",
-    "category": "IPA",
-    "question": "Hewan pemakan tumbuhan disebut ...",
+    "id": "SEN07",
+    "category": "Seni Rupa",
+    "question": "Batu pipih, sandal, atau ranting yang diletakkan di sudut lapangan tradisional biasanya berfungsi sebagai ...",
     "choices": [
-      "Karnivora",
-      "Herbivora",
-      "Omnivora",
-      "Detritivora"
+      "penanda batas atau titik penting lapangan",
+      "hiasan yang tidak boleh disentuh",
+      "senjata untuk regu penjaga",
+      "hadiah bagi pemenang"
     ],
-    "answer": 1
-  },
-  {
-    "id": "Q049",
-    "category": "IPA",
-    "question": "Campuran air dan gula termasuk ...",
-    "choices": [
-      "Larutan",
-      "Unsur",
-      "Senyawa murni",
-      "Logam"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q050",
-    "category": "IPA",
-    "question": "Sumber energi utama bagi bumi adalah ...",
-    "choices": [
-      "Bulan",
-      "Matahari",
-      "Angin",
-      "Batu"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q051",
-    "category": "IPA",
-    "question": "Alat untuk mengukur suhu adalah ...",
-    "choices": [
-      "Barometer",
-      "Termometer",
-      "Higrometer",
-      "Amperemeter"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q052",
-    "category": "IPA",
-    "question": "Darah dipompa ke seluruh tubuh oleh ...",
-    "choices": [
-      "Paru-paru",
-      "Jantung",
-      "Hati",
-      "Usus"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q053",
-    "category": "IPA",
-    "question": "Proses perubahan uap air menjadi titik-titik air disebut ...",
-    "choices": [
-      "Penguapan",
-      "Pengembunan",
-      "Pembekuan",
-      "Pencairan"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q054",
-    "category": "IPA",
-    "question": "Bunyi tidak dapat merambat melalui ...",
-    "choices": [
-      "Udara",
-      "Air",
-      "Besi",
-      "Ruang hampa"
-    ],
-    "answer": 3
-  },
-  {
-    "id": "Q055",
-    "category": "IPA",
-    "question": "Benda yang dapat ditarik magnet adalah ...",
-    "choices": [
-      "Kayu",
-      "Plastik",
-      "Besi",
-      "Kertas"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q056",
-    "category": "IPA",
-    "question": "Rantai makanan biasanya dimulai dari ...",
-    "choices": [
-      "Produsen",
-      "Konsumen puncak",
-      "Pengurai",
-      "Pemangsa"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q057",
-    "category": "IPA",
-    "question": "Lapisan bumi tempat manusia hidup disebut ...",
-    "choices": [
-      "Kerak bumi",
-      "Inti dalam",
-      "Inti luar",
-      "Mantel bawah"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q058",
-    "category": "IPA",
-    "question": "Contoh perubahan kimia adalah ...",
-    "choices": [
-      "Es mencair",
-      "Kertas dibakar",
-      "Air membeku",
-      "Gula larut"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q059",
-    "category": "IPA",
-    "question": "Zat hijau daun yang membantu fotosintesis disebut ...",
-    "choices": [
-      "Hemoglobin",
-      "Klorofil",
-      "Keratin",
-      "Insulin"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q060",
-    "category": "IPA",
-    "question": "Gerhana bulan terjadi ketika ...",
-    "choices": [
-      "Bumi berada di antara Matahari dan Bulan",
-      "Bulan berada di antara Matahari dan Bumi",
-      "Matahari berada di antara Bumi dan Bulan",
-      "Bulan menjauhi bumi"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q061",
-    "category": "Matematika",
-    "question": "Hasil dari 12 × 8 adalah ...",
-    "choices": [
-      "86",
-      "96",
-      "108",
-      "88"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q062",
-    "category": "Matematika",
-    "question": "Hasil dari 144 ÷ 12 adalah ...",
-    "choices": [
-      "10",
-      "11",
-      "12",
-      "14"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q063",
-    "category": "Matematika",
-    "question": "Nilai 25% dari 200 adalah ...",
-    "choices": [
-      "25",
-      "40",
-      "50",
-      "75"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q064",
-    "category": "Matematika",
-    "question": "Pecahan yang senilai dengan 1/2 adalah ...",
-    "choices": [
-      "2/3",
-      "2/4",
-      "3/5",
-      "4/10"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q065",
-    "category": "Matematika",
-    "question": "Keliling persegi dengan sisi 7 cm adalah ...",
-    "choices": [
-      "14 cm",
-      "21 cm",
-      "28 cm",
-      "49 cm"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q066",
-    "category": "Matematika",
-    "question": "Luas persegi panjang dengan panjang 10 cm dan lebar 4 cm adalah ...",
-    "choices": [
-      "14 cm²",
-      "28 cm²",
-      "40 cm²",
-      "80 cm²"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q067",
-    "category": "Matematika",
-    "question": "Hasil dari -5 + 12 adalah ...",
-    "choices": [
-      "-17",
-      "-7",
-      "7",
-      "17"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q068",
-    "category": "Matematika",
-    "question": "Bilangan prima di antara 10 dan 15 adalah ...",
-    "choices": [
-      "10",
-      "11",
-      "12",
-      "15"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q069",
-    "category": "Matematika",
-    "question": "Rata-rata dari 6, 8, dan 10 adalah ...",
-    "choices": [
-      "7",
-      "8",
-      "9",
-      "10"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q070",
-    "category": "Matematika",
-    "question": "Sudut siku-siku besarnya ...",
-    "choices": [
-      "45°",
-      "60°",
-      "90°",
-      "180°"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q071",
-    "category": "Matematika",
-    "question": "Jika x + 7 = 15, nilai x adalah ...",
-    "choices": [
-      "6",
-      "7",
-      "8",
-      "9"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q072",
-    "category": "Matematika",
-    "question": "Hasil dari 3² + 4² adalah ...",
-    "choices": [
-      "12",
-      "25",
-      "49",
-      "64"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q073",
-    "category": "Matematika",
-    "question": "Bentuk desimal dari 3/4 adalah ...",
-    "choices": [
-      "0,25",
-      "0,5",
-      "0,75",
-      "1,25"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q074",
-    "category": "Matematika",
-    "question": "FPB dari 12 dan 18 adalah ...",
-    "choices": [
-      "3",
-      "6",
-      "9",
-      "12"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q075",
-    "category": "Matematika",
-    "question": "KPK dari 4 dan 6 adalah ...",
-    "choices": [
-      "8",
-      "10",
-      "12",
-      "24"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q076",
-    "category": "Matematika",
-    "question": "Sebuah segitiga memiliki alas 8 cm dan tinggi 5 cm. Luasnya ...",
-    "choices": [
-      "13 cm²",
-      "20 cm²",
-      "40 cm²",
-      "80 cm²"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q077",
-    "category": "Matematika",
-    "question": "Perbandingan 2 : 3, jika nilai pertama 10 maka nilai kedua adalah ...",
-    "choices": [
-      "12",
-      "15",
-      "18",
-      "20"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q078",
-    "category": "Matematika",
-    "question": "Hasil dari 0,6 + 1,25 adalah ...",
-    "choices": [
-      "1,31",
-      "1,75",
-      "1,85",
-      "2,05"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q079",
-    "category": "Matematika",
-    "question": "Median dari 2, 4, 7, 9, 11 adalah ...",
-    "choices": [
-      "4",
-      "7",
-      "9",
-      "11"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q080",
-    "category": "Matematika",
-    "question": "Jika harga buku Rp20.000 didiskon 10%, harga setelah diskon adalah ...",
-    "choices": [
-      "Rp2.000",
-      "Rp18.000",
-      "Rp19.000",
-      "Rp22.000"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q081",
-    "category": "Bahasa Indonesia",
-    "question": "Gagasan utama dalam paragraf disebut juga ...",
-    "choices": [
-      "Kalimat penjelas",
-      "Ide pokok",
-      "Kata hubung",
-      "Tanda baca"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q082",
-    "category": "Bahasa Indonesia",
-    "question": "Lawan kata 'hemat' adalah ...",
-    "choices": [
-      "Boros",
-      "Rajin",
-      "Cepat",
-      "Cermat"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q083",
-    "category": "Bahasa Indonesia",
-    "question": "Persamaan kata 'indah' adalah ...",
-    "choices": [
-      "Buruk",
-      "Elok",
-      "Lambat",
-      "Sempit"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q084",
-    "category": "Bahasa Indonesia",
-    "question": "Kalimat yang menggunakan tanda tanya dengan tepat adalah ...",
-    "choices": [
-      "Siapa namamu?",
-      "Saya pergi? ke sekolah",
-      "Tolong tutup pintu?",
-      "Wah indah sekali?"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q085",
-    "category": "Bahasa Indonesia",
-    "question": "Kata baku yang benar adalah ...",
-    "choices": [
-      "Aktifitas",
-      "Aktivitas",
-      "Aktifitasi",
-      "Aktivtas"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q086",
-    "category": "Bahasa Indonesia",
-    "question": "Awalan me- pada kata 'baca' membentuk kata ...",
-    "choices": [
-      "Mebaca",
-      "Membaca",
-      "Menbaca",
-      "Mengbaca"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q087",
-    "category": "Bahasa Indonesia",
-    "question": "Kalimat efektif adalah ...",
-    "choices": [
-      "Para siswa-siswa sedang belajar",
-      "Siswa sedang belajar di kelas",
-      "Siswa-siswa para sedang belajar",
-      "Sedang siswa belajar para"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q088",
-    "category": "Bahasa Indonesia",
-    "question": "Teks yang berisi langkah-langkah melakukan sesuatu disebut teks ...",
-    "choices": [
-      "Deskripsi",
-      "Prosedur",
-      "Narasi",
-      "Eksposisi"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q089",
-    "category": "Bahasa Indonesia",
-    "question": "Kata hubung yang menyatakan sebab adalah ...",
-    "choices": [
-      "Karena",
-      "Tetapi",
-      "Atau",
-      "Lalu"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q090",
-    "category": "Bahasa Indonesia",
-    "question": "Tokoh, latar, dan alur merupakan unsur ...",
-    "choices": [
-      "Intrinsik cerita",
-      "Surat resmi",
-      "Daftar pustaka",
-      "Tabel"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q091",
-    "category": "Bahasa Indonesia",
-    "question": "Kalimat langsung biasanya ditandai dengan ...",
-    "choices": [
-      "Tanda petik",
-      "Tanda kurung",
-      "Garis miring",
-      "Titik dua saja"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q092",
-    "category": "Bahasa Indonesia",
-    "question": "Penulisan nama kota yang benar adalah ...",
-    "choices": [
-      "kota bandung",
-      "Kota bandung",
-      "kota Bandung",
-      "Kota Bandung"
-    ],
-    "answer": 3
-  },
-  {
-    "id": "Q093",
-    "category": "Bahasa Indonesia",
-    "question": "Kata 'mereka' termasuk kata ganti ...",
-    "choices": [
-      "Orang",
-      "Tempat",
-      "Waktu",
-      "Bilangan"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q094",
-    "category": "Bahasa Indonesia",
-    "question": "Pantun umumnya memiliki ... baris dalam satu bait.",
-    "choices": [
-      "Dua",
-      "Tiga",
-      "Empat",
-      "Lima"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "Q095",
-    "category": "Bahasa Indonesia",
-    "question": "Dua baris pertama pantun disebut ...",
-    "choices": [
-      "Isi",
-      "Sampiran",
-      "Judul",
-      "Amanat"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q096",
-    "category": "Bahasa Indonesia",
-    "question": "Teks deskripsi bertujuan ...",
-    "choices": [
-      "Menggambarkan objek secara rinci",
-      "Memberi langkah kerja",
-      "Menyajikan hitungan",
-      "Membuat daftar harga"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q097",
-    "category": "Bahasa Indonesia",
-    "question": "Kata serapan yang ditulis baku adalah ...",
-    "choices": [
-      "Resiko",
-      "Risiko",
-      "Ressiko",
-      "Riziko"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q098",
-    "category": "Bahasa Indonesia",
-    "question": "Amanat dalam cerita adalah ...",
-    "choices": [
-      "Pesan yang ingin disampaikan",
-      "Tempat kejadian",
-      "Nama tokoh",
-      "Urutan waktu"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "Q099",
-    "category": "Bahasa Indonesia",
-    "question": "Kalimat perintah yang tepat adalah ...",
-    "choices": [
-      "Apakah kamu sudah makan?",
-      "Tolong rapikan meja itu.",
-      "Meja itu berwarna cokelat.",
-      "Saya sedang merapikan meja."
-    ],
-    "answer": 1
-  },
-  {
-    "id": "Q100",
-    "category": "Bahasa Indonesia",
-    "question": "Ringkasan yang baik memuat ...",
-    "choices": [
-      "Gagasan penting secara singkat",
-      "Semua kalimat asli",
-      "Pendapat baru penulis ringkasan",
-      "Kata-kata acak"
-    ],
-    "answer": 0
+    "answer": 0,
+    "explanation": "Benda sederhana di sekitar dapat diolah menjadi penanda visual—bukti kreativitas memanfaatkan bahan yang ada."
   }
 ]

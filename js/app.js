@@ -22,7 +22,7 @@ const onboardingSlides = [
   {
     icon: "fa-wifi",
     title: "Siap dipakai online maupun offline",
-    description: "Pasang sebagai aplikasi, mainkan setelah aset tersimpan, dan gunakan Mode Guru untuk membuat set soal kelas sendiri."
+    description: "Pasang sebagai aplikasi, mainkan setelah aset tersimpan, dan tunjukkan kaitan kurikulumnya di halaman Budaya."
   }
 ];
 
@@ -220,7 +220,8 @@ class SiteApp {
       }
     });
 
-    const shouldShow = document.body.dataset.page === "home" && !localStorage.getItem(STORAGE_KEYS.onboarding);
+    // Beranda telah disederhanakan; panduan pertama kali tampil di halaman Bermain.
+    const shouldShow = document.body.dataset.page === "game" && !localStorage.getItem(STORAGE_KEYS.onboarding);
     if (shouldShow) window.setTimeout(() => this.openOnboarding(), 450);
   }
 
