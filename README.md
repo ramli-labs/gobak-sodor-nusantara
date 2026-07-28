@@ -1,4 +1,4 @@
-# Simulasi Strategi Gobak Sodor — Versi 1.5.0
+# Simulasi Strategi Gobak Sodor — Versi 1.6.0
 
 Simulasi pembelajaran interdisipliner untuk kelas VII, Hari 3 — Koding dan
 Kecerdasan Artifisial (KKA). Fokusnya bukan kompetisi atau petualangan membuka
@@ -6,9 +6,31 @@ level, melainkan: **membaca posisi dan target penjaga, menerapkan logika
 jika–maka, bekerja sama, mencoba strategi, dan merefleksikan hasil.**
 Teknologi berfungsi sebagai media simulasi dan analisis strategi, bukan
 pengganti permainan Gobak Sodor nyata yang sudah dilakukan pada pembelajaran
-PJOK.
+PJOK. Gim ini merupakan **adaptasi** aturan Gobak Sodor/Hadang untuk simulasi
+pembelajaran, bukan replika penuh aturan resmi.
 
-## Perubahan versi 1.5.0
+## Perubahan versi 1.6.0
+
+Revisi mekanik utama agar lebih sesuai dengan permainan tradisional Gobak
+Sodor/Hadang. Sistem soal, hasil belajar, kontrol, event log, Mode Simulasi
+Video, dan tampilan dasar dari versi 1.5.0 dipertahankan.
+
+- **Mekanik bendera dihapus sepenuhnya.** Tidak ada lagi objek bendera, status "membawa bendera", atau teks "Pembawa Bendera". Tujuan permainan kini: **lewati seluruh garis penjaga, capai Garis Belakang, lalu kembali ke START tanpa tersentuh.**
+- **P1 dan P2 menjadi penyerang yang setara.** Tidak ada lagi jabatan tetap "pembawa" atau "pengalih" — keduanya dapat melewati garis penjaga, mencapai Garis Belakang, dan kembali ke START secara independen, masing-masing dengan progres terpisah (`currentBox`, `highestLineReached`, `status`, dll.). Mengecoh penjaga tetap dapat terjadi, tetapi sebagai strategi yang muncul saat bermain (dicatat lewat event log), bukan peran baku. Mode Satu Pemain: hanya P1 yang bermain dengan aturan yang sama.
+- **Arena diberi nama garis eksplisit**: Garis Awal (START), Garis Penjaga 1–3, Garis Belakang, dan Garis Sodor (satu garis membujur di tengah lapangan) — semuanya digambar dan diberi label pada Canvas.
+- **Dua jenis penjaga dengan gerak dibatasi garis tugasnya.** Penjaga Garis Melintang (segi delapan, 3 unit) hanya bergerak kiri–kanan menyusuri lebar lapangan pada satu Garis Penjaga tetap. Penjaga Sodor (segi enam, warna berbeda, 1 unit) berdiri di Garis Sodor dan hanya bergerak maju–mundur menyusuri kedalaman lapangan. Tidak ada gerak diagonal maupun pindah garis.
+- **Kecerdasan penjaga mempertimbangkan kedua pemain sekaligus**: threat score kini menyertakan sinyal "pemain lain sedang membuka jalur" (`teammateOpening`, berdasarkan kecepatan gerak rekan satu tim) menggantikan sinyal status pembawa bendera. Target lock, histeresis, dan reaction delay tetap dipertahankan dari versi 1.5.0. Penjaga tidak pernah menargetkan pemain yang sudah tertangkap atau selesai.
+- **Sekali tertangkap, keluar dari percobaan itu — tanpa dibangkitkan kembali.** Sistem "tiga kali kesempatan" dan modal batas tangkapan dihapus. Pemain yang tertangkap berhenti bergerak dan tercatat (penjaga penangkap, garis, posisi, waktu, fase), sementara pemain lain tetap bermain. Percobaan berakhir ketika seluruh pemain tertangkap/selesai, atau waktu habis. Mode Latihan kini berarti: tertangkap hanya memberi jeda singkat, perjalanan tetap berlanjut.
+- **Skor perjalanan per pemain**: +1 saat mencapai Garis Belakang, +1 lagi saat kembali ke START (maksimal 2/pemain). Skor tim adalah jumlah P1 + P2 — dipakai sebagai data pembanding strategi belajar, bukan peringkat.
+- **HUD baru**: Waktu, Pemain Aktif, Tertangkap, Sampai Garis Belakang, Kembali ke START, Garis Dilewati, Jawaban, Skor Pemahaman. Indikator Bendera dan Kesempatan dihapus.
+- **Pemicu enam soal berbasis tonggak tim** (bukan per-perlintasan individu) agar totalnya selalu tepat enam: dua soal saat tim melewati garis-garis perjalanan pergi, satu soal saat pemain pertama mencapai Garis Belakang, dua soal saat tim melewati garis-garis perjalanan pulang, dan satu soal saat pemain pertama kembali ke START (atau sebagai penutup bila sesi berakhir sebelum ada yang kembali).
+- **Halaman Hasil Simulasi diperbarui**: waktu permainan, skor perjalanan P1/P2, jumlah mencapai Garis Belakang, jumlah kembali ke START, jumlah tertangkap, penjaga paling sering menangkap, garis paling sulit dilewati, jawaban benar, skor pemahaman, dan pola gerak berhasil/gagal — seluruh kalimat analisis diturunkan dari event log sesi itu sendiri, bukan teks tetap.
+- **Mode Simulasi Video** memakai pintasan adegan baru `&scene=start|quiz1|quiz2|backline|return|result` (menggantikan `scene=flag`); perjalanan pergi berakhir di Garis Belakang, perjalanan pulang berakhir di START, dan kedua jenis penjaga dibedakan jelas lewat bentuk serta warna.
+- Cache PWA dinaikkan ke `gsn-v1.6.0`.
+
+## Riwayat versi sebelumnya
+
+### Versi 1.5.0
 
 - **Penjaga mengejar target secara otomatis**, menggantikan pola patroli tetap. Setiap penjaga (`js/enemy.js`) tetap terikat pada garis tugasnya (horizontal/vertikal) tetapi mengejar *proyeksi* posisi pemain pada garis itu, dipilih lewat *threat score* (jarak ke garis, arah gerak, status pembawa bendera, kecepatan gerak) — bukan acak. Target dikunci minimal 1,5 detik dengan histeresis 20% agar tidak bergetar antarpemain, dan bergerak dengan reaction delay ±250–500 ms serta percepatan/perlambatan (bukan lompatan instan).
 - **Peran pemain dipisah ketat**: P1 (Pembawa Bendera) satu-satunya yang dapat memicu checkpoint, mengambil bendera, dan menyelesaikan sesi. P2 (Pengalih Penjaga) dapat menarik target penjaga tetapi tidak dapat mengambil bendera atau memicu checkpoint. Mode Satu Pemain: seluruh penjaga otomatis hanya dapat menargetkan P1.
@@ -23,8 +45,6 @@ PJOK.
 - **Mode Simulasi Video** (`game.html?demo=1`) kini mendukung pintasan adegan `&scene=start|quiz1|quiz2|flag|return|result` untuk memfilmkan tiap segmen tanpa mengulang seluruh alur; parameter teknis tidak pernah ditampilkan ke siswa.
 - **`leaderboard.html` dibuat ulang sebagai redirect aman** ke `game.html` (bukan 404) untuk tautan/bookmark lama. Local Storage lama (`gsnLeaderboardV1`, `gsnMapProgressV1`, dll.) dibersihkan otomatis sekali lewat migrasi aman di `js/app.js`.
 - Cache PWA dinaikkan ke `gsn-v1.5.0` dan kini mengabaikan string kueri (`ignoreSearch`) agar `game.html?demo=1` tetap dapat dibuka offline.
-
-## Riwayat versi sebelumnya
 
 ### Versi 1.4.0 — Simulasi, bukan kompetisi
 
@@ -80,25 +100,25 @@ Website simulasi edukasi berbasis **HTML5, CSS3, Vanilla JavaScript ES6, Canvas 
 - Tampilan desktop, tablet, dan layar sentuh besar (PID/IFP) — tanpa horizontal scrolling.
 
 ### 2. Gameplay Canvas
-- Mode Satu Pemain dan Dua Pemain (keyboard atau layar sentuh). Dua Pemain: P1 Pembawa Bendera (satu-satunya yang memicu checkpoint/bendera/penyelesaian), P2 Pengalih Penjaga (tidak dapat mengambil bendera/checkpoint, tetapi dapat menarik target penjaga).
-- Satu arena tetap: pemain, penjaga horizontal/vertikal yang mengejar target (lihat "Sistem Penjaga" di bawah), checkpoint, bendera, dan START.
+- Mode Satu Pemain dan Dua Pemain (keyboard atau layar sentuh). Dua Pemain: P1 dan P2 sama-sama penyerang, progres dicatat terpisah — tidak ada jabatan tetap "pembawa" atau "pengalih".
+- Satu arena tetap dengan garis bernama: Garis Awal (START), Garis Penjaga 1–3, Garis Belakang, dan Garis Sodor (lihat "Sistem Penjaga" di bawah). Tidak ada objek bendera.
 - Pause, restart, "Ulangi Adegan" (Mode Simulasi Video), fullscreen, dan kontrol sentuh P1 dan P2.
-- Maksimal tiga kali tertangkap P1 sebelum muncul pilihan lanjut dari posisi aman terakhir atau mengulang simulasi. Tertangkap P2 dicatat terpisah dan tidak menghentikan sesi.
+- Sekali tertangkap, pemain itu keluar dari percobaan (tidak dibangkitkan kembali) dan pemain lain tetap bermain. Percobaan berakhir saat semua pemain tertangkap/selesai atau waktu habis. Mode Latihan: tertangkap hanya memberi jeda singkat, perjalanan tetap berlanjut.
 
 ### 3. Sistem Penjaga (Target-Chasing AI)
-- Penjaga tetap terikat pada garis tugasnya (horizontal: kiri–kanan; vertikal: atas–bawah) tetapi mengejar proyeksi posisi pemain pada garis itu, bukan patroli tetap.
-- Target dipilih dari *threat score* (kedekatan ke garis, arah gerak menuju garis, status pembawa bendera, kecepatan gerak) — bukan acak — dengan target lock ≥1,5 detik dan histeresis 20% agar tidak bergetar.
+- Dua jenis penjaga terikat ketat pada garis tugasnya: **Penjaga Garis Melintang** (3 unit, segi delapan) hanya bergerak kiri–kanan menyusuri lebar lapangan pada satu Garis Penjaga tetap; **Penjaga Sodor** (1 unit, segi enam) berdiri di Garis Sodor dan hanya bergerak maju–mundur menyusuri kedalaman lapangan. Tidak ada gerak diagonal maupun pindah garis.
+- Target dipilih dari *threat score* (kedekatan ke garis, arah gerak menuju garis, kecepatan gerak, dan sinyal "pemain lain sedang membuka jalur") — bukan acak — dengan target lock ≥1,5 detik dan histeresis 20% agar tidak bergetar. Penjaga tidak pernah menargetkan pemain yang sudah tertangkap atau selesai.
 - Reaction delay ±250–500 ms (tetap ±350 ms pada Mode Simulasi Video) dan gerakan memakai percepatan/perlambatan (steering) dengan jarak berhenti agar tidak bergetar di dekat target.
 - Tanpa target dalam radius deteksi, penjaga kembali siaga (goyangan kecil di titik asal, bukan patroli panjang).
 - Indikator "Target: P1/P2/Siaga" tampil di atas tiap penjaga plus panel ringkas "Fokus Penjaga"; dapat disembunyikan lewat Aksesibilitas.
 
 ### 4. Sistem belajar
 - 12 soal tetap (3 KKA, 3 PJOK, 3 IPS, 3 Seni Rupa) berbasis situasi permainan, logika jika–maka, dan analisis — bukan hafalan fakta.
-- Mode Latihan Kelas: 6 dari 12 diacak dengan kuota kategori dan posisi pilihan A–D ikut diacak. Mode Simulasi Video: 6 soal urutan tetap, posisi pilihan tidak diacak.
-- Halaman Hasil Simulasi Strategi: waktu total/pergi/pulang, jawaban benar, skor pemahaman, tertangkap P1 & P2, garis dilewati, penjaga paling aktif, garis paling sering gagal, pengalihan berhasil/gagal, Analisis Strategi otomatis berbasis event log, Data untuk LKPD siap salin, dan refleksi digital vs. nyata.
+- Mode Latihan Kelas: 6 dari 12 diacak dengan kuota kategori dan posisi pilihan A–D ikut diacak. Mode Simulasi Video: 6 soal urutan tetap, posisi pilihan tidak diacak. Enam soal dipicu berdasarkan tonggak tim (garis-garis perjalanan pergi/pulang, mencapai Garis Belakang, dan kembali ke START), bukan per-perlintasan individu.
+- Halaman Hasil Simulasi Strategi: waktu permainan, skor perjalanan P1/P2, jumlah mencapai Garis Belakang, jumlah kembali ke START, jumlah tertangkap, penjaga paling sering menangkap, garis paling sulit dilewati, jawaban benar, skor pemahaman, Analisis Strategi otomatis berbasis event log, Data untuk LKPD siap salin, dan refleksi digital vs. nyata.
 
 ### 5. Aksesibilitas
-- Mode buta warna berbasis pola (bukan warna semata), remap delapan tombol, Mode Latihan (sesi tidak berhenti karena batas tertangkap), dan toggle sembunyikan indikator target penjaga (untuk guru).
+- Mode buta warna berbasis pola dan bentuk (bukan warna semata — termasuk bentuk penjaga), remap delapan tombol, Mode Latihan (tertangkap tidak menghentikan perjalanan pemain), dan toggle sembunyikan indikator target penjaga (untuk guru).
 - Target sentuh besar, teks berskala untuk dibaca dari jarak beberapa meter, fokus keyboard pada modal.
 
 ### 6. Fitur profesional
@@ -202,10 +222,10 @@ Pintasan adegan (tambahkan `&scene=...` setelah `?demo=1`) untuk memfilmkan tiap
 | Pintasan | Kondisi yang ditampilkan |
 |---|---|
 | `game.html?demo=1&scene=start` | Layar siap, sebelum countdown |
-| `game.html?demo=1&scene=quiz1` | Modal soal pertama (checkpoint pergi ke-1) |
-| `game.html?demo=1&scene=quiz2` | Modal soal kedua (checkpoint pergi ke-2) |
-| `game.html?demo=1&scene=flag` | P1 tepat di depan bendera |
-| `game.html?demo=1&scene=return` | Bendera sudah diambil, perjalanan pulang |
+| `game.html?demo=1&scene=quiz1` | Modal soal pertama (Garis Penjaga 1) |
+| `game.html?demo=1&scene=quiz2` | Modal soal kedua (Garis Penjaga 2) |
+| `game.html?demo=1&scene=backline` | P1 tepat di depan Garis Belakang |
+| `game.html?demo=1&scene=return` | P1 sudah mencapai Garis Belakang, perjalanan pulang |
 | `game.html?demo=1&scene=result` | Halaman Hasil Simulasi Strategi |
 
 ## Menguji PWA dan Offline Mode

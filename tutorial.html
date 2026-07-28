@@ -45,7 +45,7 @@
     <nav class="breadcrumb" aria-label="Breadcrumb"><a href="game.html">Bermain</a><i class="fa-solid fa-chevron-right"></i><span>Cara Bermain</span></nav>
     <span class="eyebrow"><i class="fa-solid fa-route"></i> Tutorial visual</span>
     <h1>Enam langkah menuju <span>garis kemenangan.</span></h1>
-    <p>Pahami alur inti: jawab soal saat pergi, ambil bendera, lalu jawab soal baru saat kembali ke Start.</p>
+    <p>Pahami alur inti: lewati garis-garis penjaga, capai Garis Belakang, lalu kembali ke Garis Awal tanpa tersentuh.</p>
   </div>
 </section>
 <section class="section-sm">
@@ -54,7 +54,7 @@
       <div class="mini-field">
         <div class="demo-player"><i class="fa-solid fa-person-running"></i></div>
         <div class="demo-guard"><i class="fa-solid fa-user-shield"></i></div>
-        <div class="demo-flag"><i class="fa-solid fa-flag"></i></div>
+        <div class="demo-goal"><i class="fa-solid fa-grip-lines-vertical"></i></div>
       </div>
     </div>
   </div>
@@ -65,8 +65,8 @@
       <span class="eyebrow"><i class="fa-solid fa-keyboard"></i> Kontrol utama</span>
       <h2>Keyboard atau layar sentuh</h2>
       <ul class="check-list">
-        <li><i class="fa-solid fa-circle-check"></i><span><strong>P1 (Pembawa Bendera):</strong> tombol W, A, S, D — atau tombol arah sentuh di kiri bawah arena. Hanya P1 yang memicu checkpoint, mengambil bendera, dan menyelesaikan sesi.</span></li>
-        <li><i class="fa-solid fa-circle-check"></i><span><strong>P2 (Pengalih Penjaga):</strong> tombol panah — atau tombol arah sentuh di kanan bawah arena (Mode Dua Pemain). P2 dapat menarik target penjaga tetapi tidak dapat mengambil bendera.</span></li>
+        <li><i class="fa-solid fa-circle-check"></i><span><strong>P1:</strong> tombol W, A, S, D — atau tombol arah sentuh di kiri bawah arena. P1 dan P2 sama-sama penyerang; keduanya dapat melewati garis penjaga, mencapai Garis Belakang, dan kembali ke START.</span></li>
+        <li><i class="fa-solid fa-circle-check"></i><span><strong>P2:</strong> tombol panah — atau tombol arah sentuh di kanan bawah arena (Mode Dua Pemain). Progres P1 dan P2 dicatat terpisah; mengecoh penjaga adalah strategi tim, bukan peran tetap.</span></li>
         <li><i class="fa-solid fa-circle-check"></i><span>Di papan tulis interaktif (IFP), dua siswa dapat bermain berdampingan hanya dengan jari.</span></li>
         <li><i class="fa-solid fa-circle-check"></i><span>Tombol keyboard dapat diremap pada tahap aksesibilitas.</span></li>
       </ul>
@@ -77,7 +77,7 @@
       <ul class="check-list">
         <li><i class="fa-solid fa-circle-check"></i><span>Jawaban benar ditandai "Jawaban Tepat" dan menaikkan Skor Pemahaman.</span></li>
         <li><i class="fa-solid fa-triangle-exclamation"></i><span>Jawaban salah ditandai "Perlu Ditinjau Kembali" disertai penjelasan singkat, tanpa hukuman besar.</span></li>
-        <li><i class="fa-solid fa-circle-check"></i><span>Tertangkap penjaga tiga kali memunculkan pilihan: lanjutkan dari posisi aman atau ulangi simulasi.</span></li>
+        <li><i class="fa-solid fa-circle-check"></i><span>Sekali tersentuh penjaga, pemain itu keluar dari percobaan tersebut — pemain lain tetap dapat melanjutkan.</span></li>
       </ul>
     </div>
   </div>
@@ -86,12 +86,12 @@
   <div class="container">
     <div class="section-heading reveal"><span class="eyebrow"><i class="fa-solid fa-list-ol"></i> Alur utama</span><h2>Cara menyelesaikan satu ronde</h2></div>
     <ol class="steps-list reveal">
-      <li><div><h3>Bergerak menuju checkpoint</h3><p>Gunakan kontrol P1 dan jaga jarak dari penjaga yang sedang menargetkan P1.</p></div></li>
-      <li><div><h3>Jawab tiga soal perjalanan pergi</h3><p>Setiap garis checkpoint (hanya dipicu P1) membuka soal baru sebelum pemain dapat melanjutkan menuju bendera.</p></div></li>
-      <li><div><h3>Amati target penjaga</h3><p>Chip "Target: P1/P2/Siaga" di atas tiap penjaga menunjukkan siapa yang sedang dikejar. Dalam Mode Dua Pemain, P2 dapat memancing penjaga menjauh agar P1 mendapat jalur terbuka.</p></div></li>
-      <li><div><h3>Ambil bendera</h3><p>Capai sisi tujuan dan sentuh bendera dengan P1 untuk mengaktifkan perjalanan pulang.</p></div></li>
-      <li><div><h3>Jawab tiga soal perjalanan pulang</h3><p>Pembawa bendera harus membuka kembali setiap garis dari kanan ke kiri dengan soal yang belum pernah muncul.</p></div></li>
-      <li><div><h3>Kembali ke Start</h3><p>Bawa bendera ke garis awal untuk membuka halaman Hasil Simulasi Strategi dan refleksi.</p></div></li>
+      <li><div><h3>Bergerak menuju Garis Penjaga 1</h3><p>Gunakan kontrol P1 (dan P2 pada Mode Dua Pemain) sambil menjaga jarak dari penjaga yang sedang menargetkanmu.</p></div></li>
+      <li><div><h3>Jawab dua soal perjalanan pergi</h3><p>Melewati garis-garis penjaga saat perjalanan pergi membuka soal baru sebelum tim dapat melanjutkan menuju Garis Belakang.</p></div></li>
+      <li><div><h3>Amati target penjaga</h3><p>Chip "Target: P1/P2/Siaga" di atas tiap penjaga menunjukkan siapa yang sedang dikejar. Dalam Mode Dua Pemain, salah satu pemain dapat memancing penjaga menjauh agar pemain lain mendapat jalur terbuka — strategi ini muncul secara emergent, bukan peran tetap.</p></div></li>
+      <li><div><h3>Capai Garis Belakang</h3><p>Pemain pertama yang mencapai Garis Belakang membuka satu soal dan mendapat 1 poin perjalanan, lalu harus kembali ke START.</p></div></li>
+      <li><div><h3>Jawab dua soal perjalanan pulang</h3><p>Melewati kembali garis-garis penjaga dari kanan ke kiri membuka soal baru yang belum pernah muncul.</p></div></li>
+      <li><div><h3>Kembali ke Garis Awal</h3><p>Kembali ke START menambah 1 poin perjalanan dan membuka halaman Hasil Simulasi Strategi serta refleksi.</p></div></li>
     </ol>
   </div>
 </section>
@@ -125,7 +125,7 @@
     </div>
     <div class="footer-bottom">
       <span>© <span data-current-year></span> Gobak Sodor Nusantara.</span>
-      <span>Versi 1.5.0 — Penjaga mengejar target, peran P1/P2, dan event log pembelajaran.</span>
+      <span>Versi 1.6.0 — Tanpa mekanik bendera; dua penyerang setara, dua jenis penjaga, dan event log pembelajaran.</span>
     </div>
   </div>
 </footer>

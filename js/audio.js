@@ -69,10 +69,11 @@
         checkpoint: [[440, 0.08, "sine", 0], [587.33, 0.1, "sine", 0.08]],
         correct: [[523.25, 0.09, "triangle", 0], [659.25, 0.09, "triangle", 0.08], [783.99, 0.18, "triangle", 0.16]],
         wrong: [[220, 0.13, "sawtooth", 0], [164.81, 0.2, "sawtooth", 0.12]],
-        flag: [[659.25, 0.08, "square", 0], [880, 0.18, "triangle", 0.08]],
+        milestone: [[659.25, 0.08, "square", 0], [880, 0.18, "triangle", 0.08]],
         collision: [[150, 0.12, "sawtooth", 0], [95, 0.18, "square", 0.08]],
         pause: [[330, 0.07, "sine", 0]],
-        win: [[392, 0.1, "triangle", 0], [523.25, 0.1, "triangle", 0.1], [659.25, 0.12, "triangle", 0.2], [783.99, 0.28, "triangle", 0.32]]
+        win: [[392, 0.1, "triangle", 0], [523.25, 0.1, "triangle", 0.1], [659.25, 0.12, "triangle", 0.2], [783.99, 0.28, "triangle", 0.32]],
+        lose: [[293.66, 0.16, "sawtooth", 0], [246.94, 0.2, "sawtooth", 0.14], [196, 0.32, "sawtooth", 0.28]]
       };
 
       (recipes[name] || recipes.click).forEach(([frequency, duration, type, delay]) => {

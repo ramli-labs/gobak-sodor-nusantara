@@ -41,9 +41,9 @@ const onboardingSlides = [
     description: "Setiap penjaga menampilkan target yang sedang dikejar (P1/P2/Siaga). Simulasi ini untuk mengamati pola dan mencoba strategi—bukan kompetisi. Mainkan Satu Pemain atau Dua Pemain (keyboard maupun layar sentuh)."
   },
   {
-    icon: "fa-flag",
-    title: "P1 membawa bendera, P2 mengalihkan penjaga",
-    description: "Hanya P1 yang dapat memicu checkpoint dan mengambil bendera. P2 dapat menarik target penjaga agar jalur P1 terbuka. Jawaban salah tidak dihukum berat—cukup ditinjau lagi."
+    icon: "fa-people-arrows-left-right",
+    title: "P1 dan P2 sama-sama penyerang",
+    description: "Keduanya melewati garis penjaga, mencapai Garis Belakang, lalu kembali ke START—progres dicatat terpisah. Sekali tersentuh penjaga, pemain itu keluar dari percobaan; pemain lain tetap lanjut. Jawaban salah tidak dihukum berat—cukup ditinjau lagi."
   },
   {
     icon: "fa-comments",

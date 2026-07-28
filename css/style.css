@@ -888,7 +888,7 @@ main {
   animation: guard-move 2.4s ease-in-out infinite alternate;
 }
 
-.demo-flag {
+.demo-goal {
   position: absolute;
   right: 35px;
   top: 30px;

@@ -46,20 +46,21 @@
       <span class="eyebrow"><i class="fa-solid fa-diagram-project"></i> Simulasi pembelajaran KKA</span>
       <h1>Simulasi Strategi <span>Gobak Sodor</span></h1>
       <p>Amati target penjaga, gunakan logika jika–maka, dan temukan strategi yang paling efektif.</p>
+      <p class="adaptation-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Gim ini merupakan adaptasi aturan Gobak Sodor/Hadang untuk simulasi pembelajaran.</p>
     </div>
   </section>
 
   <section class="section-sm">
     <div class="container">
       <div class="intro-grid reveal">
-        <article class="intro-card"><span class="intro-card-icon"><i class="fa-solid fa-bullseye"></i></span><h2>Tujuan</h2><p>Bawa P1 menuju bendera dan kembali ke START tanpa tertangkap.</p></article>
+        <article class="intro-card"><span class="intro-card-icon"><i class="fa-solid fa-bullseye"></i></span><h2>Tujuan</h2><p>Lewati seluruh garis penjaga, capai Garis Belakang, lalu kembali ke START tanpa tersentuh.</p></article>
         <article class="intro-card"><span class="intro-card-icon"><i class="fa-solid fa-crosshairs"></i></span><h2>Tantangan</h2><p>Amati pemain yang sedang menjadi target penjaga dan manfaatkan jalur yang terbuka.</p></article>
         <article class="intro-card"><span class="intro-card-icon"><i class="fa-solid fa-clipboard-list"></i></span><h2>Tugas Pengamatan</h2><p>Catat strategi yang berhasil, strategi yang gagal, dan bukti yang menunjukkannya.</p></article>
       </div>
 
       <div class="mode-picker reveal">
         <button class="btn btn-success btn-xl" type="button" data-start-coop><i class="fa-solid fa-people-group"></i> MULAI SIMULASI</button>
-        <p class="mode-picker-note">Mode Dua Pemain — P1 Pembawa Bendera · P2 Pengalih Penjaga</p>
+        <p class="mode-picker-note">Mode Dua Pemain — P1 dan P2 sama-sama penyerang, progres dicatat terpisah</p>
         <div class="mode-picker-alt" data-solo-option>
           <button class="btn btn-secondary" type="button" data-start-solo><i class="fa-solid fa-user"></i> Mode Satu Pemain</button>
           <small>P1 menghadapi penjaga secara mandiri</small>
@@ -67,15 +68,16 @@
       </div>
 
       <article class="game-shell reveal" aria-label="Arena permainan Gobak Sodor">
-        <div class="game-mode-status"><span class="badge" data-mode-badge><i class="fa-solid fa-user"></i> Mode Satu Pemain</span><span data-game-description>3 kesempatan · 6 soal</span></div>
+        <div class="game-mode-status"><span class="badge" data-mode-badge><i class="fa-solid fa-user"></i> Mode Satu Pemain</span><span data-game-description>sekali tertangkap, keluar dari percobaan · 6 soal</span></div>
         <div class="game-hud" aria-label="Indikator permainan">
           <div class="hud-item"><span>Waktu</span><strong data-hud-time>00:00</strong></div>
-          <div class="hud-item"><span>Kesempatan</span><strong data-hud-chances>3 tersisa</strong></div>
-          <div class="hud-item"><span>Tertangkap</span><strong data-hud-caught>0</strong></div>
-          <div class="hud-item"><span>Garis Dilewati</span><strong data-hud-lines>0/6</strong></div>
+          <div class="hud-item"><span>Pemain Aktif</span><strong data-hud-active>1/1</strong></div>
+          <div class="hud-item"><span>Tertangkap</span><strong data-hud-caught>0/1</strong></div>
+          <div class="hud-item"><span>Sampai Garis Belakang</span><strong data-hud-backline>0/1</strong></div>
+          <div class="hud-item"><span>Kembali ke START</span><strong data-hud-returned>0/1</strong></div>
+          <div class="hud-item"><span>Garis Dilewati</span><strong data-hud-lines>0</strong></div>
           <div class="hud-item"><span>Jawaban</span><strong data-hud-answers>0/6</strong></div>
           <div class="hud-item"><span>Skor Pemahaman</span><strong data-hud-score>0%</strong></div>
-          <div class="hud-item"><span>Bendera</span><strong data-hud-flag>Belum</strong></div>
           <div class="hud-controls">
             <button class="game-control-button" type="button" data-pause-game disabled title="Pause atau lanjutkan permainan"><i class="fa-solid fa-pause"></i><span>Pause</span></button>
             <button class="game-control-button icon-only" type="button" data-restart-game title="Ulangi simulasi" aria-label="Ulangi simulasi"><i class="fa-solid fa-rotate-right"></i></button>
@@ -93,7 +95,7 @@
         <div class="journey-strip" aria-label="Progres perjalanan">
           <div class="journey-stat"><span>Status</span><strong data-hud-phase>Belum dimulai</strong></div>
           <div class="journey-track-wrap">
-            <div class="journey-track-label"><span>START</span><span>BENDERA</span><span>START</span></div>
+            <div class="journey-track-label"><span>START</span><span>GARIS BELAKANG</span><span>START</span></div>
             <div class="journey-track" role="progressbar" aria-label="Progres perjalanan pergi dan pulang" aria-valuemin="0" aria-valuemax="100"><span data-journey-progress-bar></span><i class="fa-solid fa-person-running" aria-hidden="true"></i></div>
           </div>
         </div>
@@ -102,18 +104,18 @@
           <div class="game-countdown" data-game-countdown aria-hidden="true" aria-live="assertive">
             <strong data-countdown-value>3</strong>
           </div>
-          <canvas id="gameCanvas" data-game-canvas tabindex="0" role="img" aria-label="Arena Gobak Sodor. Ambil bendera di kanan lalu kembali ke Start di kiri sambil menghindari penjaga."></canvas>
+          <canvas id="gameCanvas" data-game-canvas tabindex="0" role="img" aria-label="Arena Gobak Sodor. Lewati garis-garis penjaga menuju Garis Belakang di kanan, lalu kembali ke Garis Awal di kiri sambil menghindari penjaga."></canvas>
           <div class="game-overlay show" data-game-overlay aria-hidden="false">
             <div class="game-overlay-card">
               <div class="game-overlay-icon" aria-hidden="true"><i class="fa-solid fa-person-running" data-overlay-icon></i></div>
-              <small data-overlay-eyebrow>Menyiapkan simulasi</small><h2 data-overlay-title>Siap menembus garis penjaga?</h2><p data-overlay-text>Jawab soal saat pergi, ambil bendera, lalu jawab lagi saat kembali ke START.</p>
+              <small data-overlay-eyebrow>Menyiapkan simulasi</small><h2 data-overlay-title>Siap menembus garis penjaga?</h2><p data-overlay-text>Lewati seluruh garis penjaga, capai Garis Belakang, lalu kembali ke START tanpa tersentuh.</p>
               <div class="game-overlay-actions"><button class="btn btn-primary" type="button" data-overlay-primary>Mulai <i class="fa-solid fa-arrow-right"></i></button><button class="btn btn-secondary" type="button" data-overlay-secondary hidden>Ulangi</button></div>
             </div>
           </div>
 
           <div class="quiz-layer" data-quiz-layer aria-hidden="true">
             <article class="quiz-card" role="dialog" aria-modal="true" aria-labelledby="quiz-question">
-              <div class="quiz-card-head"><span class="quiz-category" data-quiz-category>KKA</span><span class="quiz-progress" data-quiz-progress>Perjalanan pergi 1/3 · Soal 1 dari 6</span></div>
+              <div class="quiz-card-head"><span class="quiz-category" data-quiz-category>KKA</span><span class="quiz-progress" data-quiz-progress>Soal 1 dari 6</span></div>
               <h2 id="quiz-question" data-quiz-question>Soal sedang dimuat...</h2><div class="quiz-choices" data-quiz-choices></div><div class="quiz-feedback" data-quiz-feedback aria-live="polite"></div><button class="btn btn-primary quiz-continue" type="button" data-quiz-continue hidden>Lanjut Bermain <i class="fa-solid fa-arrow-right"></i></button>
             </article>
           </div>
@@ -135,18 +137,17 @@
       <section class="result-section reveal" data-result-section hidden aria-labelledby="result-title">
         <div class="result-heading"><span class="eyebrow"><i class="fa-solid fa-chart-column"></i> Ringkasan sesi</span><h2 id="result-title">Hasil Simulasi Strategi</h2></div>
         <div class="result-grid">
-          <article><span>Waktu Penyelesaian</span><strong data-result-time>00:00</strong></article>
-          <article><span>Waktu Pergi</span><strong data-result-outbound>00:00</strong></article>
-          <article><span>Waktu Pulang</span><strong data-result-return>00:00</strong></article>
+          <article><span>Waktu Permainan</span><strong data-result-time>00:00</strong></article>
+          <article><span>Skor Perjalanan P1</span><strong data-result-score-p1>0/2</strong></article>
+          <article data-result-p2-wrap><span>Skor Perjalanan P2</span><strong data-result-score-p2>0/2</strong></article>
+          <article><span>Sampai Garis Belakang</span><strong data-result-backline>0/1</strong></article>
+          <article><span>Kembali ke START</span><strong data-result-returned>0/1</strong></article>
+          <article><span>Tertangkap</span><strong data-result-caught>0/1</strong></article>
+          <article><span>Garis Dilewati</span><strong data-result-lines>0</strong></article>
           <article><span>Jawaban Benar</span><strong data-result-correct>0/6</strong></article>
           <article><span>Skor Pemahaman</span><strong data-result-score>0%</strong></article>
-          <article><span>Tertangkap P1</span><strong data-result-caught-p1>0</strong></article>
-          <article><span>Tertangkap P2</span><strong data-result-caught-p2>0</strong></article>
-          <article><span>Garis Dilewati</span><strong data-result-lines>0</strong></article>
           <article><span>Penjaga Paling Sering Menangkap</span><strong data-result-top-enemy>Tidak ada</strong></article>
-          <article><span>Garis Paling Sering Gagal</span><strong data-result-worst-line>Tidak ada</strong></article>
-          <article><span>Pengalihan Berhasil</span><strong data-result-diversion-success>0</strong></article>
-          <article><span>Pengalihan Gagal</span><strong data-result-diversion-fail>0</strong></article>
+          <article><span>Garis Paling Sulit Dilewati</span><strong data-result-worst-line>Tidak ada</strong></article>
         </div>
 
         <div class="strategy-analysis">
@@ -185,8 +186,8 @@
 
       <div class="game-help-grid reveal">
         <article class="game-help-card"><span class="eyebrow"><i class="fa-solid fa-keyboard"></i> Kontrol</span><h3>Keyboard atau layar sentuh</h3><p><strong>P1:</strong> <span data-p1-controls>W A S D</span> · <strong>P2:</strong> <span data-p2-controls>↑ ← ↓ →</span>. Di layar sentuh (termasuk papan tulis interaktif), gunakan tombol arah P1 di kiri dan P2 di kanan bawah arena. Tekan P atau Escape untuk pause.</p></article>
-        <article class="game-help-card"><span class="eyebrow"><i class="fa-solid fa-people-arrows-left-right"></i> Peran Dua Pemain</span><h3>P1 pembawa bendera, P2 pengalih penjaga</h3><p>P2 mendekati satu sisi untuk menarik penjaga. Ketika penjaga bergerak menuju P2, P1 memanfaatkan bagian garis yang terbuka untuk melintas, mengambil bendera, dan kembali ke START.</p></article>
-        <article class="game-help-card"><span class="eyebrow"><i class="fa-solid fa-crosshairs"></i> Target Penjaga</span><h3>Baca target sebelum bergerak</h3><p>Setiap penjaga memilih target berdasarkan posisi, arah gerak, dan siapa pembawa bendera—bukan acak. Chip di atas penjaga menampilkan <strong>Target: P1</strong>, <strong>Target: P2</strong>, atau <strong>Siaga</strong>, dan berubah paling cepat sekali setiap ± 1,5 detik.</p></article>
+        <article class="game-help-card"><span class="eyebrow"><i class="fa-solid fa-people-arrows-left-right"></i> Dua Penyerang Setara</span><h3>P1 dan P2 sama-sama penyerang</h3><p>Tidak ada jabatan tetap. Salah satu pemain dapat mendekati satu sisi untuk menarik perhatian penjaga sehingga pemain lain memanfaatkan bagian garis yang terbuka — itu murni strategi tim, dan progres keduanya dicatat terpisah.</p></article>
+        <article class="game-help-card"><span class="eyebrow"><i class="fa-solid fa-crosshairs"></i> Dua Jenis Penjaga</span><h3>Penjaga Garis dan Penjaga Sodor</h3><p><strong>Penjaga Garis Melintang</strong> (segi delapan) hanya bergerak kiri–kanan di garisnya. <strong>Penjaga Sodor</strong> (segi enam, di tengah lapangan) hanya bergerak maju–mundur. Chip di atas penjaga menampilkan <strong>Target: P1</strong>, <strong>Target: P2</strong>, atau <strong>Siaga</strong>, dan berubah paling cepat sekali setiap ± 1,5 detik.</p></article>
       </div>
     </div>
   </section>
@@ -197,7 +198,7 @@
       <form class="accessibility-panel reveal" data-accessibility-form>
         <div class="accessibility-toggles">
           <label class="setting-toggle"><input type="checkbox" name="colorBlind"><span><strong>Mode buta warna</strong><small>Tambahkan pola dan bentuk pembeda pada pemain serta penjaga.</small></span></label>
-          <label class="setting-toggle"><input type="checkbox" name="practiceMode"><span><strong>Mode Latihan</strong><small>Sesi tidak pernah berhenti karena batas tiga kali tertangkap.</small></span></label>
+          <label class="setting-toggle"><input type="checkbox" name="practiceMode"><span><strong>Mode Latihan</strong><small>Tertangkap tidak menghentikan perjalanan pemain — hanya jeda singkat sebelum lanjut bergerak.</small></span></label>
           <label class="setting-toggle"><input type="checkbox" name="hideTargetIndicators"><span><strong>Sembunyikan indikator target penjaga</strong><small>Untuk guru: matikan label "Target: P1/P2/Siaga" di atas penjaga bila diperlukan.</small></span></label>
         </div>
         <div class="remap-grid">
@@ -210,7 +211,7 @@
   </section>
 </main>
 
-<footer class="site-footer"><div class="container"><div class="footer-grid"><div><a class="brand footer-brand" href="game.html"><span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-person-running"></i></span><span class="brand-text">Gobak Sodor Nusantara<small>Simulasi strategi pembelajaran</small></span></a><p>Simulasi digital sebagai media pengamatan pola dan strategi, pelengkap permainan Gobak Sodor nyata pada pembelajaran PJOK.</p></div><div><h3>Jelajah</h3><div class="footer-links"><a href="game.html">Mulai simulasi</a><a href="culture.html">Belajar budaya</a><a href="tutorial.html">Cara bermain</a></div></div><div><h3>Untuk Kelas</h3><div class="footer-links"><a href="culture.html#kurikulum">Kaitan kurikulum</a><button class="btn btn-secondary" type="button" data-open-onboarding><i class="fa-solid fa-circle-question"></i> Ulangi panduan</button></div></div></div><div class="footer-bottom"><span>© <span data-current-year></span> Gobak Sodor Nusantara.</span><span>Versi 1.5.0 — Penjaga mengejar target, peran P1/P2, dan event log pembelajaran.</span></div></div></footer>
+<footer class="site-footer"><div class="container"><div class="footer-grid"><div><a class="brand footer-brand" href="game.html"><span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-person-running"></i></span><span class="brand-text">Gobak Sodor Nusantara<small>Simulasi strategi pembelajaran</small></span></a><p>Simulasi digital sebagai media pengamatan pola dan strategi, pelengkap permainan Gobak Sodor nyata pada pembelajaran PJOK.</p></div><div><h3>Jelajah</h3><div class="footer-links"><a href="game.html">Mulai simulasi</a><a href="culture.html">Belajar budaya</a><a href="tutorial.html">Cara bermain</a></div></div><div><h3>Untuk Kelas</h3><div class="footer-links"><a href="culture.html#kurikulum">Kaitan kurikulum</a><button class="btn btn-secondary" type="button" data-open-onboarding><i class="fa-solid fa-circle-question"></i> Ulangi panduan</button></div></div></div><div class="footer-bottom"><span>© <span data-current-year></span> Gobak Sodor Nusantara.</span><span>Versi 1.6.0 — Tanpa mekanik bendera; dua penyerang setara, dua jenis penjaga, dan event log pembelajaran.</span></div></div></footer>
 
 <div class="modal-backdrop" data-onboarding-modal aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="onboarding-title"><article class="onboarding"><button class="icon-button modal-close" type="button" data-onboarding-close aria-label="Tutup panduan"><i class="fa-solid fa-xmark"></i></button><div class="onboarding-progress" aria-hidden="true"><span data-onboarding-progress></span></div><div class="onboarding-body"><div class="onboarding-visual" aria-hidden="true"><i class="fa-solid fa-people-group" data-onboarding-icon></i></div><div class="onboarding-content"><span class="badge"><i class="fa-solid fa-compass"></i> Panduan singkat · <span data-onboarding-step>1 / 3</span></span><h2 id="onboarding-title" data-onboarding-title>Belajar lewat kerja sama</h2><p data-onboarding-description>Gobak Sodor mengajarkan strategi, komunikasi, dan gotong royong.</p></div></div><div class="onboarding-footer"><button class="btn btn-secondary" type="button" data-onboarding-prev hidden><i class="fa-solid fa-arrow-left"></i> Kembali</button><button class="btn btn-primary" type="button" data-onboarding-next>Lanjut <i class="fa-solid fa-arrow-right"></i></button></div></article></div>
 </body>

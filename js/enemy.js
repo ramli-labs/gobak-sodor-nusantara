@@ -1,10 +1,13 @@
 /**
  * Kelas Enemy — penjaga yang mengejar target secara otomatis.
  *
- * Penjaga tetap terikat pada satu garis tugas (horizontal atau vertikal) dan
- * bergerak dengan mengejar PROYEKSI posisi pemain pada garis tersebut:
- * - Penjaga horizontal mengincar koordinat X target, Y penjaga tetap tetap.
- * - Penjaga vertikal mengincar koordinat Y target, X penjaga tetap tetap.
+ * Dua jenis penjaga, dibedakan lewat orientasi garis tugasnya (lihat arena.js):
+ * - Penjaga Garis Melintang ("vertical"): X tetap pada garis tugasnya, hanya
+ *   bergerak kiri–kanan menyusuri LEBAR lapangan (Y), mengejar posisi Y target.
+ * - Penjaga Sodor ("horizontal"): Y tetap di garis sodor (tengah lapangan),
+ *   hanya bergerak maju–mundur menyusuri KEDALAMAN lapangan (X), mengejar
+ *   posisi X target.
+ * Penjaga tidak pernah bergerak diagonal dan tidak dapat pindah garis tugas.
  *
  * Target dipilih lewat threat score (bukan acak), dikunci minimal 1,5 detik
  * (anti-jitter/hysteresis), dan gerakannya memakai percepatan/perlambatan
@@ -26,8 +29,10 @@ const STANDBY_WOBBLE_SPEED = 0.6;
 const THREAT_WEIGHT = {
   proximity: 40,
   crossingIntent: 25,
-  flagCarrier: 20,
-  recentMovement: 15
+  recentMovement: 15,
+  // "Apakah pemain lain sedang membuka jalur": tim yang sama-sama aktif
+  // bergerak dianggap sedang menyusun serangan bersama.
+  teammateOpening: 10
 };
 
 function clamp(value, min, max) {
@@ -38,6 +43,7 @@ export class Enemy {
   constructor({
     id,
     name,
+    type = "melintang",
     orientation,
     fixed,
     min,
@@ -49,6 +55,7 @@ export class Enemy {
   }) {
     this.id = id || label;
     this.name = name || label;
+    this.type = type; // "melintang" | "sodor" — untuk label dan warna berbeda
     this.orientation = orientation;
     this.fixed = fixed;
     this.min = min;
@@ -105,14 +112,21 @@ export class Enemy {
     return clamp(Math.abs(axisVelocity) / 260, 0, 1);
   }
 
-  threatScore(player) {
+  teammateOpeningScore(player, allPlayers) {
+    const teammate = allPlayers.find((candidate) => candidate.playerNumber !== player.playerNumber);
+    if (!teammate || !teammate.isActive?.()) return 0;
+    const teammateSpeed = Math.hypot(teammate.vx, teammate.vy);
+    return clamp(teammateSpeed / 260, 0, 1) * THREAT_WEIGHT.teammateOpening;
+  }
+
+  threatScore(player, allPlayers) {
     const distance = this.distanceToLine(player);
     const proximity = clamp(1 - distance / DETECTION_RADIUS, 0, 1) * THREAT_WEIGHT.proximity;
     const crossing = this.crossingIntent(player) * THREAT_WEIGHT.crossingIntent;
-    const flagCarrier = player.hasFlag ? THREAT_WEIGHT.flagCarrier : 0;
     const speedMagnitude = Math.hypot(player.vx, player.vy);
     const recentMovement = clamp(speedMagnitude / 260, 0, 1) * THREAT_WEIGHT.recentMovement;
-    return proximity + crossing + flagCarrier + recentMovement;
+    const teammateOpening = this.teammateOpeningScore(player, allPlayers);
+    return proximity + crossing + recentMovement + teammateOpening;
   }
 
   pickReactionDelay() {
@@ -140,10 +154,12 @@ export class Enemy {
   evaluateTarget(players, deltaTime) {
     this.clock += deltaTime;
 
-    const candidates = players
+    // Pemain yang sudah tertangkap atau selesai bukan lagi target yang sah.
+    const activePlayers = players.filter((player) => player.isActive?.() ?? true);
+    const candidates = activePlayers
       .map((player) => ({ player, distance: this.distanceToLine(player) }))
       .filter((entry) => entry.distance <= DETECTION_RADIUS)
-      .map((entry) => ({ id: entry.player.playerNumber, score: this.threatScore(entry.player) }));
+      .map((entry) => ({ id: entry.player.playerNumber, score: this.threatScore(entry.player, activePlayers) }));
 
     if (!candidates.length) {
       if (this.currentTargetId !== null) return this.changeTarget(null, 0, "tidak-ada-target-dalam-radius");
@@ -328,6 +344,10 @@ export class Enemy {
     const x = this.x;
     const y = this.y;
     const half = this.size / 2;
+    // Penjaga Sodor memakai bentuk dan warna berbeda dari Penjaga Garis
+    // Melintang agar kedua jenis penjaga mudah dibedakan (bukan hanya warna).
+    const isSodor = this.type === "sodor";
+    const drawShape = isSodor ? this.drawHexagon.bind(this) : this.drawOctagon.bind(this);
 
     ctx.save();
     ctx.translate(x, y);
@@ -338,16 +358,20 @@ export class Enemy {
     ctx.fill();
 
     ctx.fillStyle = "#ffffff";
-    this.drawOctagon(ctx, half + 4);
+    drawShape(ctx, half + 4);
     ctx.fill();
 
-    ctx.fillStyle = colorBlind ? "#7b3fb3" : "#e84444";
-    this.drawOctagon(ctx, half);
+    if (isSodor) {
+      ctx.fillStyle = colorBlind ? "#7b3fb3" : "#2f6fed";
+    } else {
+      ctx.fillStyle = colorBlind ? "#c46a1f" : "#e84444";
+    }
+    drawShape(ctx, half);
     ctx.fill();
 
     if (colorBlind) {
       ctx.save();
-      this.drawOctagon(ctx, half - 2);
+      drawShape(ctx, half - 2);
       ctx.clip();
       ctx.strokeStyle = "rgba(255,255,255,0.9)";
       ctx.lineWidth = 3;
@@ -385,6 +409,18 @@ export class Enemy {
     ctx.beginPath();
     for (let index = 0; index < 8; index += 1) {
       const angle = Math.PI / 8 + index * Math.PI / 4;
+      const px = Math.cos(angle) * radius;
+      const py = Math.sin(angle) * radius;
+      if (index === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+  }
+
+  drawHexagon(ctx, radius) {
+    ctx.beginPath();
+    for (let index = 0; index < 6; index += 1) {
+      const angle = -Math.PI / 2 + index * Math.PI / 3;
       const px = Math.cos(angle) * radius;
       const py = Math.sin(angle) * radius;
       if (index === 0) ctx.moveTo(px, py);

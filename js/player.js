@@ -1,8 +1,9 @@
 /**
- * Kelas Player.
- * Menangani posisi, gerakan, benturan batas arena, dan visual pemain.
+ * Kelas Player — penyerang dalam adaptasi Gobak Sodor/Hadang.
+ * Menangani posisi, gerakan, benturan batas arena, visual pemain, dan
+ * progres perjalanan masing-masing pemain (independen, tanpa mekanik bendera).
  */
-const INVULNERABLE_SECONDS = 1;
+const START_INVULNERABLE_SECONDS = 1;
 
 export class Player {
   constructor({
@@ -23,32 +24,49 @@ export class Player {
     this.playerNumber = playerNumber;
     this.color = color;
     this.accent = accent;
-    this.hasFlag = false;
-    this.invulnerableTime = 0;
+    this.invulnerableTime = START_INVULNERABLE_SECONDS;
     this.animationTime = 0;
     this.vx = 0;
     this.vy = 0;
-    // Posisi aman terakhir: diperbarui setelah checkpoint berhasil dilewati
-    // atau area aman tercapai, dipakai saat pemain tertangkap (bukan selalu START).
-    this.lastSafeX = x;
-    this.lastSafeY = y;
+
+    // Progres perjalanan per pemain (independen antara P1 dan P2).
+    this.status = "active"; // "active" | "caught" | "completed"
+    this.currentBox = 0;
+    this.highestLineReached = 0;
+    this.hasReachedBackLine = false;
+    this.hasReturnedToStart = false;
+    this.outwardCrossings = 0;
+    this.returnCrossings = 0;
+    this.crossedOutboundLines = new Set();
+    this.crossedReturnLines = new Set();
+    this.caughtByEnemyId = null;
+    this.caughtAtLineId = null;
+    this.travelScore = 0; // 0–2: +1 mencapai garis belakang, +1 kembali ke START
   }
 
-  updateLastSafePosition(x = this.x, y = this.y) {
-    this.lastSafeX = x;
-    this.lastSafeY = y;
+  isActive() {
+    return this.status === "active";
   }
 
-  reset({ keepFlag = false, x, y } = {}) {
-    this.x = x ?? this.lastSafeX;
-    this.y = y ?? this.lastSafeY;
-    this.hasFlag = keepFlag;
-    this.invulnerableTime = INVULNERABLE_SECONDS;
+  markCaught(enemyId, lineId) {
+    if (!this.isActive()) return;
+    this.status = "caught";
+    this.caughtByEnemyId = enemyId;
+    this.caughtAtLineId = lineId;
+  }
+
+  markCompleted() {
+    if (this.status === "caught") return;
+    this.status = "completed";
+    this.hasReturnedToStart = true;
+    this.travelScore = 2;
   }
 
   update(deltaTime, direction, bounds) {
     this.animationTime += deltaTime;
     this.invulnerableTime = Math.max(0, this.invulnerableTime - deltaTime);
+
+    if (!this.isActive()) return;
 
     let { x: dx, y: dy } = direction;
     const length = Math.hypot(dx, dy);
@@ -74,12 +92,15 @@ export class Player {
   }
 
   draw(ctx, { colorBlind = false } = {}) {
-    const blinking = this.isInvulnerable() && Math.floor(this.invulnerableTime * 10) % 2 === 0;
+    const caught = this.status === "caught";
+    const completed = this.status === "completed";
+    const blinking = this.isActive() && this.isInvulnerable() && Math.floor(this.invulnerableTime * 10) % 2 === 0;
     if (blinking) return;
 
-    const bounce = Math.sin(this.animationTime * 9 + this.playerNumber) * 1.8;
+    const bounce = this.isActive() ? Math.sin(this.animationTime * 9 + this.playerNumber) * 1.8 : 0;
     ctx.save();
     ctx.translate(this.x, this.y + bounce);
+    if (caught) ctx.globalAlpha = 0.55;
 
     ctx.fillStyle = "rgba(0, 0, 0, 0.22)";
     ctx.beginPath();
@@ -91,7 +112,7 @@ export class Player {
     ctx.arc(0, 0, this.radius + 4, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = this.color;
+    ctx.fillStyle = caught ? "#8a8f98" : this.color;
     ctx.beginPath();
     ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
     ctx.fill();
@@ -123,22 +144,29 @@ export class Player {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(String(this.playerNumber), 0, 1);
+    ctx.globalAlpha = 1;
 
-    if (this.hasFlag) {
-      ctx.strokeStyle = "#172033";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(this.radius - 2, 5);
-      ctx.lineTo(this.radius - 2, -28);
-      ctx.stroke();
+    if (caught) {
+      ctx.strokeStyle = "#e84444";
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      const r = this.radius + 3;
+      ctx.beginPath(); ctx.moveTo(-r * 0.7, -r * 0.7); ctx.lineTo(r * 0.7, r * 0.7); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(r * 0.7, -r * 0.7); ctx.lineTo(-r * 0.7, r * 0.7); ctx.stroke();
+    }
 
-      ctx.fillStyle = "#f7c948";
+    if (completed) {
+      ctx.fillStyle = "#1ec28b";
       ctx.beginPath();
-      ctx.moveTo(this.radius, -27);
-      ctx.lineTo(this.radius + 25, -20);
-      ctx.lineTo(this.radius, -12);
-      ctx.closePath();
+      ctx.arc(this.radius - 2, -(this.radius - 2), 9, 0, Math.PI * 2);
       ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(this.radius - 6, -(this.radius - 2));
+      ctx.lineTo(this.radius - 3, -(this.radius + 1));
+      ctx.lineTo(this.radius + 2, -(this.radius - 6));
+      ctx.stroke();
     }
 
     ctx.restore();

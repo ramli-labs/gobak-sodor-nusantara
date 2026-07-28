@@ -1,7 +1,7 @@
-/* Simulasi Strategi Gobak Sodor v1.5.0 — PWA shell (situs game tunggal).
+/* Simulasi Strategi Gobak Sodor v1.6.0 — PWA shell (situs game tunggal).
    Naikkan versi cache setiap kali aset precache berubah agar pengguna lama
    menerima konten baru. Cache versi lama (ppn-*, gsn-v1.4.0 dst.) ikut dibersihkan. */
-const CACHE_NAME = "gsn-v1.5.0";
+const CACHE_NAME = "gsn-v1.6.0";
 const APP_SHELL = [
   "./",
   "./index.html",

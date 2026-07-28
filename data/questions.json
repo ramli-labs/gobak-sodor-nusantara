@@ -34,7 +34,7 @@
         "Warna latar permainan",
         "Jumlah tombol kontrol",
         "Target dan arah penjaga",
-        "Bentuk bendera permainan"
+        "Bentuk lapangan permainan"
       ],
       "answer": 2,
       "explanation": "Perubahan target dan arah penjaga menunjukkan hubungan antara tindakan pemain dan respons sistem."
@@ -76,7 +76,7 @@
         "Waktu otomatis bertambah"
       ],
       "answer": 1,
-      "explanation": "Komunikasi dibutuhkan agar pengalihan P2 dan pergerakan P1 dilakukan pada waktu yang sesuai."
+      "explanation": "Komunikasi dibutuhkan agar strategi membuka jalur dan waktu bergerak setiap pemain tetap selaras."
     },
     {
       "id": "IPS-01",
@@ -112,7 +112,7 @@
         "Ruang bermain semakin terbatas",
         "Jumlah garis semakin banyak",
         "Warna lapangan semakin cerah",
-        "Ukuran bendera semakin kecil"
+        "Nama permainan semakin dikenal"
       ],
       "answer": 0,
       "explanation": "Berkurangnya ruang bermain dan perubahan gaya hidup dapat memengaruhi keberlanjutan permainan tradisional."
